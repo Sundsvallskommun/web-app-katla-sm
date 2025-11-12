@@ -1,0 +1,12 @@
+{
+  "errands": {
+    "open": "öppna ärenden",
+    "draft": "utkast",
+    "closed": "avslutade ärenden"
+  },
+  "type_to_search": "Skriv för att söka",
+  "new_errand": "Nytt ärende",
+  "show_filter": "Visa filter",
+  "hide_filter": "Dölj filter",
+  "my_errands": "Mina ärenden"
+}

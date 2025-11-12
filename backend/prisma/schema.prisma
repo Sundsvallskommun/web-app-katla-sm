@@ -1,0 +1,13 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../data/database/database.db"
+}
+
+model UserSettings {
+  id     Int    @id @default(autoincrement())
+  userId String @unique
+}
