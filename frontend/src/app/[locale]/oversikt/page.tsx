@@ -19,6 +19,7 @@ const Oversikt: React.FC = () => {
   const { t } = useTranslation();
   console.log('user', user);
   const [show, setShow] = useState<boolean>(false);
+
   return (
     <>
       <FilteringLayout>

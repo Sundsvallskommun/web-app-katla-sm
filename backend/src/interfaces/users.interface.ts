@@ -1,5 +1,6 @@
 export type User = {
   // personId: string;
+  partyId?: string;
   username: string;
   name: string;
   givenName: string;
