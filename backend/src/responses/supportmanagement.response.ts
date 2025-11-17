@@ -1,0 +1,207 @@
+import { Errand, PageableObject, PageErrand, Priority, SortObject, Stakeholder } from '@/data-contracts/supportmanagement/data-contracts';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+
+export class ErrandsQueryDTO {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  page?: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  size?: number;
+  @IsOptional()
+  @IsString()
+  sort?: string;
+  @IsOptional()
+  @IsString()
+  status?: string;
+}
+
+class StakeholderDTO implements Partial<Stakeholder> {
+  @IsString()
+  @IsOptional()
+  externalId?: string;
+  @IsString()
+  @IsOptional()
+  externalIdType?: string;
+  @IsString()
+  @IsOptional()
+  role?: string;
+  @IsString()
+  @IsOptional()
+  city?: string;
+  @IsString()
+  @IsOptional()
+  organizationName?: string;
+  @IsString()
+  @IsOptional()
+  firstName?: string;
+  @IsString()
+  @IsOptional()
+  lastName?: string;
+  @IsString()
+  @IsOptional()
+  address?: string;
+  @IsString()
+  @IsOptional()
+  careOf?: string;
+  @IsString()
+  @IsOptional()
+  zipCode?: string;
+  @IsString()
+  @IsOptional()
+  country?: string;
+  //   contactChannels?: ContactChannel[];
+  //   /** Parameters for the stakeholder */
+  //   parameters?: Parameter[];
+}
+
+class ErrandDTO implements Partial<Errand> {
+  @IsString()
+  @IsOptional()
+  id?: string;
+  @IsString()
+  @IsOptional()
+  errandNumber?: string;
+  @IsString()
+  @IsOptional()
+  title?: string;
+  @IsEnum(Priority)
+  @IsOptional()
+  priority?: Priority;
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => StakeholderDTO)
+  stakeholders?: StakeholderDTO[];
+  //   /** @uniqueItems true */
+  //   externalTags?: ExternalTag[];
+  //   /** Parameters for the errand */
+  //   parameters?: Parameter[];
+  //   /** Classification model */
+  //   classification?: Classification;
+  @IsString()
+  @IsOptional()
+  status?: string;
+  @IsString()
+  @IsOptional()
+  resolution?: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
+  @IsString()
+  @IsOptional()
+  channel?: string;
+  @IsString()
+  @IsOptional()
+  reporterUserId?: string;
+  @IsString()
+  @IsOptional()
+  assignedUserId?: string;
+  @IsString()
+  @IsOptional()
+  assignedGroupId?: string;
+  @IsString()
+  @IsOptional()
+  escalationEmail?: string;
+  @IsString()
+  @IsOptional()
+  contactReason?: string;
+  @IsString()
+  @IsOptional()
+  contactReasonDescription?: string;
+  //   /** Suspension information */
+  //   suspension?: Suspension;
+  @IsString()
+  @IsBoolean()
+  businessRelated?: boolean;
+  //   /** List of labels for the errand */
+  //   labels?: ErrandLabel[];
+  /** List of active notifications for the errand */
+  //   activeNotifications?: Notification[];
+  @IsString()
+  @IsOptional()
+  created?: string;
+  @IsString()
+  @IsOptional()
+  modified?: string;
+  @IsString()
+  @IsOptional()
+  touched?: string;
+}
+
+class SortObjectDTO implements SortObject {
+  @IsBoolean()
+  @IsOptional()
+  sorted?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  empty?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  unsorted?: boolean;
+}
+
+class PageableObjectDTO implements PageableObject {
+  @IsBoolean()
+  @IsOptional()
+  paged?: boolean;
+  @IsNumber()
+  @IsOptional()
+  pageNumber?: number;
+  @IsNumber()
+  @IsOptional()
+  pageSize?: number;
+  @IsNumber()
+  @IsOptional()
+  offset?: number;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SortObjectDTO)
+  sort?: SortObjectDTO;
+  @IsBoolean()
+  @IsOptional()
+  unpaged?: boolean;
+}
+
+export class PageErrandDTO implements PageErrand {
+  @IsNumber()
+  @IsOptional()
+  totalElements?: number;
+  @IsNumber()
+  @IsOptional()
+  totalPages?: number;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PageableObjectDTO)
+  pageable?: PageableObjectDTO;
+  @IsNumber()
+  @IsOptional()
+  size?: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ErrandDTO)
+  @IsOptional()
+  content?: ErrandDTO[];
+  @IsNumber()
+  @IsOptional()
+  number?: number;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SortObjectDTO)
+  sort?: SortObjectDTO;
+  @IsNumber()
+  @IsOptional()
+  numberOfElements?: number;
+  @IsBoolean()
+  @IsOptional()
+  first?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  last?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  empty?: boolean;
+}

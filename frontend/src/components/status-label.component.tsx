@@ -2,7 +2,7 @@ import LucideIcon, { LucideIconProps } from '@sk-web-gui/lucide-icon';
 import { Label, LabelProps } from '@sk-web-gui/react';
 
 
-export const StatusLabel: React.FC<{ status: string; }> = ({
+export const StatusLabel: React.FC<{ status?: string; }> = ({
   status
 }) => {
   let color: LabelProps['color'],

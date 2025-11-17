@@ -1,33 +1,37 @@
-import { useSidebarStore } from '@services/sidebar-store';
+import { getErrandsCount } from '@services/errand-service/errand-service';
 import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Badge, Button } from '@sk-web-gui/react';
 import { capitalize } from 'lodash';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useErrandCountStore } from 'src/stores/errand-count-store';
+import { useFilterStore } from 'src/stores/filter-store';
 
-// export interface SupportManagementStatusFilter {
-//   status: Status[];
-// }
-
-// export const SupportManagementStatusValues = {
-//   status: [],
-// };
+//TODO: Set correct statuses
 
 type LucideIconName = React.ComponentProps<typeof LucideIcon>['name'];
 
 interface SidebarButton {
   label: string;
-  //   key: Status | ErrandStatus;
-  //   statuses: Status[] | ErrandStatus[];
+  statuses: string[];
   icon: LucideIconName;
-  totalStatusErrands: number;
+  errandsCount: number;
 }
 
 export const FilterOverviewSidebarStatusSelector: React.FC<{
   smallSideBar: boolean;
 }> = ({ smallSideBar }) => {
+  const [Isloading, setIsLoading] = useState<boolean>(false);
   const { t } = useTranslation();
-  const { activeStatus, setActiveStatus } = useSidebarStore();
+  const { activeStatus, setActiveStatus, setStatuses, statuses } = useFilterStore();
+  const {
+    newErrandCount,
+    draftErrandCount,
+    closedErrandCount,
+    setNewErrandCount,
+    setDraftErrandCount,
+    setClosedErrandCount,
+  } = useErrandCountStore();
 
   useEffect(() => {
     if (!activeStatus) {
@@ -35,56 +39,41 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
     }
   }, [t, activeStatus, setActiveStatus]);
 
-  //   const {
-  //     isLoading,
-  //     setSidebarLabel,
-  //     setSelectedSupportErrandStatuses,
-  //     selectedSupportErrandStatuses,
-  //     newSupportErrands,
-  //     ongoingSupportErrands,
-  //     assignedSupportErrands,
-  //     suspendedSupportErrands,
-  //     solvedSupportErrands,
-  //   }: AppContextInterface = useAppContext();
-
-  //   const updateStatusFilter = (ss: Status[]) => {
-  //     try {
-  //       const storedFilter = store.get('filter');
-  //       const jsonparsedstatus = JSON.parse(storedFilter);
-  //       const status = ss.join(',');
-  //       jsonparsedstatus.status = status;
-  //       const stringified = JSON.stringify(jsonparsedstatus);
-  //       store.set('filter', stringified);
-  //       setSelectedSupportErrandStatuses(ss);
-  //     } catch (error) {
-  //       console.error('Error updating status filter');
-  //     }
-  //   };
-
-
   const supportSidebarButtons: SidebarButton[] = [
     {
       label: t('filtering:errands.open'),
-      // key: newStatuses[0],
-      // statuses: newStatuses,
+      statuses: ['NEW'],
       icon: 'clipboard-pen',
-      totalStatusErrands: 1,
+      errandsCount: newErrandCount,
     },
     {
       label: t('filtering:errands.draft'),
-      // key: newStatuses[0],
-      // statuses: newStatuses,
+      statuses: ['SUSPENDED', 'ASSIGNED'],
       icon: 'square-pen',
-      totalStatusErrands: 2,
+      errandsCount: draftErrandCount,
     },
     {
       label: t('filtering:errands.closed'),
-      // key: newStatuses[0],
-      // statuses: newStatuses,
+      statuses: ['SOLVED'],
       icon: 'circle-check-big',
-      totalStatusErrands: 3,
+      errandsCount: closedErrandCount,
     },
   ];
+
+  useEffect(() => {
+    setIsLoading(true);
+    getErrandsCount({ statuses: supportSidebarButtons[0].statuses }).then((data) => {
+      setNewErrandCount(data.count || 0);
+    });
+    getErrandsCount({ statuses: supportSidebarButtons[1].statuses }).then((data) => {
+      setDraftErrandCount(data.count || 0);
+    });
+    getErrandsCount({ statuses: supportSidebarButtons[2].statuses }).then((data) => {
+      setClosedErrandCount(data.count || 0);
+    });
+    setIsLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statuses]);
 
   return (
     <>
@@ -94,8 +83,7 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
           <Button
             onClick={() => {
               setActiveStatus(button.label);
-              //   updateStatusFilter(button.statuses as Status[]);
-              //   setShowAttestationTable(false);
+              setStatuses(button.statuses);
             }}
             aria-label={`status-button-${button.label}`}
             variant={isActive ? 'primary' : 'ghost'}
@@ -112,17 +100,17 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
                   inverted={!isActive}
                   color={isActive ? 'tertiary' : 'vattjom'}
                   counter={
-                    !activeStatus ? '-'
-                    : button.totalStatusErrands > 999 ?
+                    Isloading ? '-'
+                    : button.errandsCount > 999 ?
                       '999+'
-                    : button.totalStatusErrands || '0'
+                    : button.errandsCount || '0'
                   }
                 />
               </span>
             )}
           </Button>
         );
-      })} 
+      })}
     </>
   );
 };
