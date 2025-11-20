@@ -8,6 +8,7 @@ import { ApiResponse } from '@services/api-service';
 export const emptyUser: User = {
   name: '',
   username: '',
+  initials: ''
   //   permissions: defaultPermissions,
 };
 

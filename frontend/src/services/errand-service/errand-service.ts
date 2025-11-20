@@ -1,4 +1,4 @@
-import { PageErrandDTO } from '@data-contracts/backend/data-contracts';
+import { ErrandDTO, MetadataResponseDTO, PageErrandDTO } from '@data-contracts/backend/data-contracts';
 import { apiService } from '@services/api-service'; 
 
 export interface ErrandQuery {
@@ -8,6 +8,13 @@ export interface ErrandQuery {
   sortOrder?: 'asc' | 'desc';
   statuses?: string[];
 }
+
+export const getErrandUsingErrandNumber = async (errandNumber: string): Promise<ErrandDTO> => {
+  return apiService
+    .get<ErrandDTO>(`supportmanagement/errand/${errandNumber}`)
+    .then((res) => res.data);
+};
+
 
 export const getErrands = async (q?: ErrandQuery): Promise<PageErrandDTO> => {
   const params: Record<string, string | number> = {};
@@ -42,3 +49,13 @@ export const getErrandsCount = async (q?: ErrandQuery): Promise<{count: number}>
     })
     .then((res) => res.data);
 };
+
+export const getMetadata = async (): Promise<MetadataResponseDTO> => {
+  return apiService
+    .get<MetadataResponseDTO>('supportmanagement/metadata')
+    .then((res) => res.data);
+};
+
+export const createErrand = async (errand: ErrandDTO): Promise<ErrandDTO> => {
+  return apiService.post<ErrandDTO>('supportmanagement/errand/create', errand).then((res) => res.data)
+}

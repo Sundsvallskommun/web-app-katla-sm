@@ -10,4 +10,5 @@ export type User = {
 export type ClientUser = {
   name: string;
   username: string;
+  initials: string;
 };

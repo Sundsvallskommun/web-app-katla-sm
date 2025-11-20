@@ -87,7 +87,7 @@ const Login: React.FC = () => {
         <CardElevated>
           <Main>
             <CenterDiv className="py-24">
-              {isLoggedOut ? (
+              {isLoggedOut ?
                 <>
                   <div className="flex flex-col w-full gap-12">
                     <h1 className="text-center text-h2-sm lg:text-h2-lg m-0">Du är nu utloggad</h1>
@@ -99,27 +99,22 @@ const Login: React.FC = () => {
                     </Button>
                   </div>
                 </>
-              ) : (
-                <>
+              : <>
                   <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">{t('login:choose_login_method')}</h1>
-                  <Divider className='w-full'/>
+                  <Divider className="w-full" />
                   <div className="flex flex-row desktop:flex-col gap-56 w-full desktop:w-fit px-80 pb-[10.4rem] pt-80 items-center">
                     <span>{t('login:login_problem')}</span>
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      onClick={() => onLogin()}
-                    >
-                       {capitalize(t('common:login'))}
+                    <Button variant="primary" size="lg" onClick={() => onLogin()}>
+                      {capitalize(t('common:login'))}
                     </Button>
                   </div>
                   {errorMessage && <FormErrorMessage className="text-error mt-lg">{errorMessage}</FormErrorMessage>}
                 </>
-              )}
+              }
             </CenterDiv>
           </Main>
         </CardElevated>
-        </div>
+      </div>
     </EntryLayout>
   );
 };

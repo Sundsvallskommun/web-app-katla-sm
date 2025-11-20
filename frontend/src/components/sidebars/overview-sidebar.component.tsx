@@ -3,10 +3,10 @@ import { Button, cx, Divider, Logo, UserMenu } from '@sk-web-gui/react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import NextLink from 'next/link';
-// import { FormProvider } from 'react-hook-form';
 import LucideIcon from '@sk-web-gui/lucide-icon';
 import { FilterOverviewSidebarStatusSelector } from './filter-overview-sidebar-status-selector.component';
 import { LogoutButton } from '@components/buttons/logout-button.component';
+import { userMenuGroups } from '@layouts/userMenuGroup';
 
 export const OverviewSidebar: React.FC = () => {
   const [open, setOpen] = useState<boolean>(true);
@@ -17,9 +17,7 @@ export const OverviewSidebar: React.FC = () => {
     <NextLink
       href="/"
       className="no-underline"
-      //   aria-label={`Katla - ${
-      //     appConfig.applicationName + (applicationEnvironment ? ` ${applicationEnvironment}` : '')
-      //   }. Gå till startsidan.`}
+        aria-label={`Katla - ${process.env.NEXT_PUBLIC_APP_NAME}. Gå till startsidan.`}
     >
       <Logo
         className={cx(open ? '' : 'w-[2.8rem]')}
@@ -51,13 +49,12 @@ export const OverviewSidebar: React.FC = () => {
             <div className="flex gap-12 justify-between items-center">
               <UserMenu
                 data-cy="avatar-aside"
-                initials={`${user.name.charAt(0).toUpperCase()}${user.name.charAt(user.name.indexOf(' ') + 1).toUpperCase()}`}
+                initials={`${user.initials}`}
                 menuTitle={`${user.name} (${user.username})`}
-                // menuGroups={userMenuGroups}
+                menuGroups={userMenuGroups}
                 buttonSize="md"
-                // className="flex-shrink-0"
+                className="flex-shrink-0"
                 buttonRounded={false}
-                menuGroups={[]}
               />
               <span className="leading-tight h-fit font-bold mb-0" data-cy="userinfo">
                 {user.name}
@@ -70,14 +67,7 @@ export const OverviewSidebar: React.FC = () => {
         </div>
         <Divider className={cx(open ? '' : 'w-[4rem] mx-auto')} />
         <div className={cx('flex flex-col gap-8', open ? 'py-24' : 'items-center justify-center py-15')}>
-          {/* <FormProvider {...suppportManagementFilterForm}> */}
           <FilterOverviewSidebarStatusSelector smallSideBar={!open}/>
-          {/* <SupportManagementFilterSidebarStatusSelector
-                showAttestationTable={showAttestationTable}
-                setShowAttestationTable={setShowAttestationTable}
-                iconButton={!open}
-              /> */}
-          {/* </FormProvider> */}
         </div>
         <Divider className={cx(open ? '' : 'w-[4rem] mx-auto')} />
         <div className="py-10 w-full ">

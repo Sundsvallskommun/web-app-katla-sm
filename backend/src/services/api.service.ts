@@ -7,6 +7,7 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { Request } from 'express';
 import ApiTokenService from './api-token.service';
 import { v4 as uuidv4 } from 'uuid';
+import { API_BASE_URL } from '@/config';
 
 class ApiResponse<T> {
   data: T;
@@ -27,16 +28,15 @@ class ApiService {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
       'X-Request-Id': uuidv4(),
+      'X-Sent-By': `type=adAccount; ${req?.user?.username}`
     };
     const defaultParams = {};
 
-    const sentBy = req?.user?.partyId ? { 'X-Sent-By': `${req?.user?.partyId};type=partyId` } : {};
-
     const preparedConfig: AxiosRequestConfig = {
       ...config,
-      headers: { ...defaultHeaders, ...config.headers, ...sentBy },
+      headers: { ...defaultHeaders, ...config.headers, },
       params: { ...defaultParams, ...config.params },
-      url: apiURL(config.url),
+      url: config.baseURL ? config.url : apiURL(config.url),
     };
 
     try {
@@ -45,7 +45,14 @@ class ApiService {
         logger.info(`x-request-id: ${defaultHeaders['X-Request-Id']}`);
       }
       const res = await axios(preparedConfig);
-      return { data: res.data, message: 'success' };
+
+      if(!res.headers.location){
+        return { data: res.data, message: 'success' };
+      }
+
+      const getRes = await axios.get(res.headers.location, { baseURL: config.baseURL, headers: defaultHeaders })
+
+      return { data: getRes.data, message: 'success' };
     } catch (error: unknown | AxiosError) {
       if (axios.isAxiosError(error) && (error as AxiosError).response?.status === 404) {
         logger.error(`ERROR: API request failed with status: ${error.response?.status}`);

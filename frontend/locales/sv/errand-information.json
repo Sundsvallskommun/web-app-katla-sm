@@ -1,0 +1,37 @@
+{
+  "cancel": "Avbryt",
+  "save_draft": "Spara utkast",
+  "register": "Skicka in ärendet",
+  "no_errands": "Det finns inga ärenden att visa",
+  "errand": "Ärende: ",
+  "save_message": {
+    "draft": "Utkast sparades",
+    "register": "Ärendet skickades in",
+    "error": "Något gick fel när ärendet sparades"
+  },
+  "about": {
+    "title": "Om ärendet",
+    "description": "Välj avvikelsetyp.",
+    "first_level_categorization": "Avvikelsetyp",
+    "second_level_categorization": "Detaljerad typ av avvikelse",
+    "choose_one_option": "Välj ett alternativ"
+  },
+  "reporter": {
+    "title": "Rapportör",
+    "description": "Rapportören är den person som initierat ärendet och vår primära kontakt när ärendet handläggs. Om du rapporterar åt en kollega så ska du ange kollegan som övrig part."
+  },
+  "user": {
+    "title": "Brukare",
+    "description": "En brukare är den individ som berörs av ärendet."
+  },
+  "other_parties": {
+    "title": "Övriga parter",
+    "description": "En part kan vara en kontaktperson, läkare eller en anhörig vars roll är viktig för ärendet. Om du rapporterar åt en kollega så ska du ange kollegan som övrig part."
+  },
+  "deviation_information": {
+    "title": "Uppgifter kring avvikelsen"
+  },
+  "sequence_of_events": {
+    "title": "Händelseförlopp"
+  }
+}

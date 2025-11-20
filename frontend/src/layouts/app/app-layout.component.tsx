@@ -1,15 +1,15 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
-import 'dayjs/locale/sv';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import updateLocale from 'dayjs/plugin/updateLocale';
+import LoaderFullScreen from '@components/loader/loader-fullscreen';
+import { useUserStore } from '@services/user-service/user-service';
 import { GuiProvider } from '@sk-web-gui/react';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
+import dayjs from 'dayjs';
+import 'dayjs/locale/sv';
+import updateLocale from 'dayjs/plugin/updateLocale';
+import utc from 'dayjs/plugin/utc';
+import { ReactNode, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useUserStore } from '@services/user-service/user-service';
-import LoaderFullScreen from '@components/loader/loader-fullscreen';
 
 dayjs.extend(utc);
 dayjs.locale('sv');

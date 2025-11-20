@@ -1,12 +1,16 @@
 import { MUNICIPALITY_ID, NAMESPACE } from '@/config';
 import { getApiBase } from '@/config/api-config';
+import { Errand, MetadataResponse, PageErrand } from '@/data-contracts/supportmanagement/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import ApiResponse from '@/interfaces/api-service.interface';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
+import { MetadataResponseDTO } from '@/responses/supportmanagement-metadata.response';
 import { ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
 import ApiService from '@/services/api.service';
-import { Controller, Get, QueryParams, Req, UseBefore } from 'routing-controllers';
+import { logger } from '@/utils/logger';
+import { apiURL } from '@/utils/util';
+import { Body, Controller, Get, Param, Post, QueryParams, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 @Controller()
@@ -14,11 +18,50 @@ export class SupportManagementController {
   private apiService = new ApiService();
   private apiBase = getApiBase('supportmanagement');
 
-  @Get('/supportmanagement/errands')
-  @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
+  @Post('/supportmanagement/errand/create')
+  @OpenAPI({ summary: 'Create new errand' })
   @UseBefore(authMiddleware)
   @ResponseSchema(PageErrandDTO)
-  async getErrands(@Req() req: RequestWithUser, @QueryParams() query: ErrandsQueryDTO): Promise<ApiResponse<PageErrandDTO>> {
+  async createErrand(@Req() req: RequestWithUser, @Body() errand: Errand): Promise<Errand> {
+    const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands`;
+    const baseURL = apiURL(this.apiBase);
+
+    try {
+      const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errand }, req).catch(e => {
+        logger.error('Error when initiating support errand');
+        logger.error(e);
+        throw e;
+      });
+
+      return res.data;
+    } catch (error: any) {
+      return {};
+    }
+  }
+
+  @Get('/supportmanagement/errand/:errandNumber')
+  @OpenAPI({ summary: 'Read maching errands' })
+  @UseBefore(authMiddleware)
+  @ResponseSchema(PageErrandDTO)
+  async getErrand(@Req() req: RequestWithUser, @Param('errandNumber') errandNumber: string): Promise<Errand> {
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands?filter=errandNumber:'${errandNumber}'`;
+
+    try {
+      const res = await this.apiService.get<PageErrand>({ url: url }, req);
+
+      if (!res.data.content[0]) throw new HttpException(500, 'No data from API');
+
+      return res.data.content[0];
+    } catch (error: any) {
+      return {};
+    }
+  }
+
+  @Get('/supportmanagement/errands')
+  @OpenAPI({ summary: 'Read maching errands' })
+  @UseBefore(authMiddleware)
+  @ResponseSchema(PageErrandDTO)
+  async getErrands(@Req() req: RequestWithUser, @QueryParams() query: ErrandsQueryDTO): Promise<ApiResponse<PageErrand>> {
     const baseUrl = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands`;
     const params = new URLSearchParams();
 
@@ -44,7 +87,7 @@ export class SupportManagementController {
     const finalUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
 
     try {
-      const res = await this.apiService.get<ApiResponse<PageErrandDTO>>({ url: finalUrl }, req);
+      const res = await this.apiService.get<ApiResponse<PageErrand>>({ url: finalUrl }, req);
 
       if (!res.data) throw new HttpException(500, 'No data from API');
 
@@ -58,10 +101,10 @@ export class SupportManagementController {
   }
 
   @Get('/supportmanagement/count')
-  @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
+  @OpenAPI({ summary: 'Count errands' })
   @UseBefore(authMiddleware)
   @ResponseSchema(PageErrandDTO)
-  async getNumberOfErrands(@Req() req: RequestWithUser, @QueryParams() query: ErrandsQueryDTO): Promise<ApiResponse<{count: number}>> {
+  async getNumberOfErrands(@Req() req: RequestWithUser, @QueryParams() query: ErrandsQueryDTO): Promise<ApiResponse<{ count: number }>> {
     const baseUrl = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands/count`;
     const params = new URLSearchParams();
 
@@ -82,7 +125,28 @@ export class SupportManagementController {
     const finalUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
 
     try {
-      const res = await this.apiService.get<ApiResponse<{count: number}>>({ url: finalUrl }, req);
+      const res = await this.apiService.get<ApiResponse<{ count: number }>>({ url: finalUrl }, req);
+
+      if (!res.data) throw new HttpException(500, 'No data from API');
+
+      return res.data;
+    } catch (error: any) {
+      if (error.status === 404) {
+        return { data: null, message: '404 from api' };
+      }
+      return { data: null, message: 'error' };
+    }
+  }
+
+  @Get('/supportmanagement/metadata')
+  @OpenAPI({ summary: 'Get all metadata for provided namespace and municipality' })
+  @UseBefore(authMiddleware)
+  @ResponseSchema(MetadataResponseDTO)
+  async getMetadata(@Req() req: RequestWithUser): Promise<ApiResponse<MetadataResponse>> {
+    const Url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/metadata`;
+
+    try {
+      const res = await this.apiService.get<ApiResponse<MetadataResponse>>({ url: Url }, req);
 
       if (!res.data) throw new HttpException(500, 'No data from API');
 

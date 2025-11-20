@@ -2,6 +2,18 @@ import LucideIcon, { LucideIconProps } from '@sk-web-gui/lucide-icon';
 import { Label, LabelProps } from '@sk-web-gui/react';
 
 
+//TODO: Ajust enum values
+enum StatusLabelEnum {
+  NEW = 'Inskickat',
+  ONGOING = 'Pågående',
+  PENDING = 'Komplettering',
+  SUSPENDED = 'Parkerat',
+  ASSIGNED = 'Tilldelat',
+  SOLVED = 'Löst',
+  AWAITING_INTERNAL_RESPONSE = 'Intern återkoppling',
+}
+
+
 export const StatusLabel: React.FC<{ status?: string; }> = ({
   status
 }) => {
@@ -75,7 +87,7 @@ export const StatusLabel: React.FC<{ status?: string; }> = ({
 
   return (
     <Label rounded inverted={inverted} color={color} className={`max-h-full h-auto text-center whitespace-nowrap`}>
-      {icon ? <LucideIcon name={icon} size={16} /> : null} {status}
+      {icon ? <LucideIcon name={icon} size={16} /> : null} {StatusLabelEnum[status as keyof typeof StatusLabelEnum] }
     </Label>
   );
 };

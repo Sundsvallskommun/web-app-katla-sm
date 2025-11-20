@@ -9,6 +9,7 @@ import { User } from '@data-contracts/backend/data-contracts';
 const handleSetUserResponse: (res: ApiResponse<User>) => User = (res) => ({
   name: res.data.name,
   username: res.data.username,
+  initials: res.data.initials
   // permissions: res.data.permissions,
 });
 

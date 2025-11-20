@@ -1,26 +1,41 @@
 'use client';
+
 import { VisibleTabs } from '@components/tabs/tabs';
 import BaseErrandLayout from '@layouts/base-errand-layout/base-errand-layout.component';
 import Main from '@layouts/main/main.component';
 import { Tabs } from '@sk-web-gui/react';
-// import BaseErrandLayout from '@common/components/layout/layout.component';
-// import { yupResolver } from '@hookform/resolvers/yup';
-// import { defaultSupportErrandInformation, SupportErrand } from '@supportmanagement/services/support-errand-service';
+import { ErrandDTO } from '@data-contracts/backend/data-contracts';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { default as NextLink } from 'next/link';
 import { useRef } from 'react';
+import { FormProvider, Resolver, useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
+import { useTranslation } from 'react-i18next';
+import { usePathname } from 'next/navigation';
 
-// let FormSchema = yup
-//   .object({
-//     id: yup.string(),
-//     category: yup.string().required('Välj ärendekategori'),
-//     type: yup.string().required('Välj ärendetyp'),
-//     channel: yup.string().required('Välj kanal'),
-//     description: yup.string(),
-//     parameters: yup.array(),
-//   })
-//   .required();
+const FormSchema = yup
+  .object({
+    classification: yup
+      .object({
+        category: yup
+          .string()
+          .notOneOf(['Välj ett alternativ', ''], 'Välj ett alternativ')
+          .required('Välj en kategori'),
+        type: yup.string().notOneOf(['Välj ett alternativ', ''], 'Välj ett alternativ').required('Välj ett alternativ'),
+      })
+      .required(),
+
+    // description: yup.string().notRequired(),
+    // parameters: yup.array().of(yup.mixed()).notRequired(),
+    // channel: yup.string().notRequired(),
+  })
+  .required();
 
 export default function ErrandLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
+  const pathName = usePathname()
+  const registerNewErrand = !!pathName.includes('/registrera')
   const initialFocus = useRef<HTMLBodyElement>(null);
   const setInitalFocus = () => {
     setTimeout(() => {
@@ -29,18 +44,21 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
     });
   };
 
-  //   const supportManagementMethods = useForm<SupportErrand>({
-  //     resolver: yupResolver(FormSchema),
-  //     defaultValues: defaultSupportErrandInformation,
-  //     mode: 'onSubmit',
-  //   });
+  //TODO: Update default values for form
+  const defaultErrand: ErrandDTO = {
+    title: 'Empty errand',
+    reporterUserId: 'edw25mol',
+    priority: 'MEDIUM',
+    status: 'NEW',
+    channel: 'PHONE',
+    resolution: 'INFORMED',
+  };
 
-  //   useEffect(() => {
-  //     getMe().then((user) => setUser(user));
-  //     getAdminUsers().then((data) => setAdministrators(data));
-  //     setMunicipalityId(process.env.NEXT_PUBLIC_MUNICIPALITY_ID);
-  //     // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   }, []);
+  const methods = useForm<ErrandDTO>({
+    resolver: yupResolver(FormSchema) as unknown as Resolver<ErrandDTO>,
+    defaultValues: defaultErrand,
+    mode: 'onSubmit',
+  });
 
   return (
     <>
@@ -53,40 +71,44 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
       >
         Hoppa till innehåll
       </NextLink>
-      {/* <FormProvider {...supportManagementMethods} > */}
-      <BaseErrandLayout>
-        <div className="grow shrink overflow-y-hidden">
-          <div className="container m-auto bg-transparent py-12">
-            <div className="mb-xl">
-              <Main>
-                <Tabs
-                  className="border-1 rounded-12 bg-background-content pt-22 pl-5"
-                  tabslistClassName="border-0 -m-b-12 flex-wrap ml-10"
-                  panelsClassName="border-t-1"
-                  size="sm"
-                  // current={tabs.filter((tab) => tab.visible).findIndex((tab) => tab.path === pathname)}
-                >
-                  {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
-                    return (
-                      <Tabs.Item key={tab.label}>
-                        <Tabs.Button className={'text-base'}>
-                          <NextLink href={tab.path} className="block w-full h-full">
-                            {tab.label}
-                          </NextLink>
-                        </Tabs.Button>
-                        <Tabs.Content>
-                          <div className="pt-xl pb-64 px-40">{children}</div>
-                        </Tabs.Content>
-                      </Tabs.Item>
-                    );
-                  })}
-                </Tabs>
-              </Main>
+      <FormProvider {...methods}>
+        <BaseErrandLayout registerNewErrand={registerNewErrand}>
+          <div className="grow shrink overflow-y-auto">
+            <div className="bg-transparent">
+              <div className="mb-xl">
+                <div className="mx-auto max-w-[108rem] flex flex-row justify-between pt-32 pb-12">
+                  <h1 className="text-h2-lg">{registerNewErrand ? t('filtering:new_errand') : `${t('errand-information:errand')} ${methods.getValues('errandNumber')}`}</h1>
+                  <ErrandButtonGroup />
+                </div>
+                <Main>
+                  <Tabs
+                    className="border-1 rounded-12 bg-background-content pt-22 pl-5 mx-auto max-w-[108rem]"
+                    tabslistClassName="border-0 -m-b-12 flex-wrap ml-10"
+                    panelsClassName="border-t-1"
+                    size="sm"
+                    // current={tabs.filter((tab) => tab.visible).findIndex((tab) => tab.path === pathname)}
+                  >
+                    {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
+                      return (
+                        <Tabs.Item key={tab.label}>
+                          <Tabs.Button className={'text-base'}>
+                            <NextLink href={tab.path} className="block w-full h-full">
+                              {tab.label}
+                            </NextLink>
+                          </Tabs.Button>
+                          <Tabs.Content>
+                            <div className="pt-xl pb-64 px-40">{children}</div>
+                          </Tabs.Content>
+                        </Tabs.Item>
+                      );
+                    })}
+                  </Tabs>
+                </Main>
+              </div>
             </div>
           </div>
-        </div>
-      </BaseErrandLayout>
-      {/* </FormProvider> */}
+        </BaseErrandLayout>
+      </FormProvider>
     </>
   );
 }

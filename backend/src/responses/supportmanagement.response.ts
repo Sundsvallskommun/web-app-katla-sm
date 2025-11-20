@@ -1,4 +1,14 @@
-import { Errand, PageableObject, PageErrand, Priority, SortObject, Stakeholder } from '@/data-contracts/supportmanagement/data-contracts';
+import {
+  Classification,
+  Errand,
+  ExternalTag,
+  PageableObject,
+  PageErrand,
+  Parameter,
+  Priority,
+  SortObject,
+  Stakeholder,
+} from '@/data-contracts/supportmanagement/data-contracts';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 
@@ -58,7 +68,38 @@ class StakeholderDTO implements Partial<Stakeholder> {
   //   parameters?: Parameter[];
 }
 
-class ErrandDTO implements Partial<Errand> {
+export class ClassificationDTO implements Classification {
+  @IsString()
+  @IsOptional()
+  category?: string;
+  @IsString()
+  @IsOptional()
+  type?: string;
+}
+
+export class ParameterDTO implements Parameter {
+  @IsString()
+  key: string;
+  @IsString()
+  @IsOptional()
+  displayName?: string;
+  @IsString()
+  @IsOptional()
+  group?: string;
+  @IsArray()
+  @IsString()
+  @IsOptional()
+  values?: string[];
+}
+
+export class ExternalTagDTO implements ExternalTag {
+  @IsString()
+  key: string;
+  @IsString()
+  value: string;
+}
+
+class ErrandDTO implements Errand {
   @IsString()
   @IsOptional()
   id?: string;
@@ -76,12 +117,20 @@ class ErrandDTO implements Partial<Errand> {
   @ValidateNested({ each: true })
   @Type(() => StakeholderDTO)
   stakeholders?: StakeholderDTO[];
-  //   /** @uniqueItems true */
-  //   externalTags?: ExternalTag[];
-  //   /** Parameters for the errand */
-  //   parameters?: Parameter[];
-  //   /** Classification model */
-  //   classification?: Classification;
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ExternalTagDTO)
+  externalTags?: ExternalTag[];
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParameterDTO)
+  parameters?: Parameter[];
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ClassificationDTO)
+  classification?: ClassificationDTO;
   @IsString()
   @IsOptional()
   status?: string;
@@ -114,8 +163,8 @@ class ErrandDTO implements Partial<Errand> {
   contactReasonDescription?: string;
   //   /** Suspension information */
   //   suspension?: Suspension;
-  @IsString()
   @IsBoolean()
+  @IsOptional()
   businessRelated?: boolean;
   //   /** List of labels for the errand */
   //   labels?: ErrandLabel[];

@@ -13,6 +13,8 @@ export class User implements ClientUser {
   name: string;
   @IsString()
   username: string;
+  @IsString()
+  initials: string;
   // @IsEnum(InternalRoleEnum)
   // role: InternalRole;
   // @ValidateNested()

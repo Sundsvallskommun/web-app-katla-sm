@@ -1,49 +1,51 @@
-import { PageHeader } from "@layouts/page-header.component";
-import { userMenuGroups } from "@layouts/userMenuGroup";
-import LucideIcon from "@sk-web-gui/lucide-icon";
-import { Button, Divider, Link, Logo, PopupMenu, UserMenu } from "@sk-web-gui/react";
-import { usePathname } from "next/navigation";
-import { Fragment } from "react";
+import { StatusLabel } from '@components/misc/status-label.component';
+import { ErrandDTO } from '@data-contracts/backend/data-contracts';
+import { PageHeader } from '@layouts/page-header.component';
+import { userMenuGroups } from '@layouts/userMenuGroup';
+import { useUserStore } from '@services/user-service/user-service';
+import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Button, Divider, Link, Logo, PopupMenu, UserMenu } from '@sk-web-gui/react';
+import { Fragment } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { useMetadataStore } from 'src/stores/metadata-store';
 
 interface BaseErrandLayoutProps {
   children: React.ReactNode;
+  registerNewErrand: boolean;
 }
 
-export default function BaseErrandLayout({ children }: BaseErrandLayoutProps) {
+export default function BaseErrandLayout({ children, registerNewErrand }: BaseErrandLayoutProps) {
+  const { metadata } = useMetadataStore();
+  const { user } =useUserStore()
+  const { watch } = useFormContext<ErrandDTO>();
+  const { t } = useTranslation();
 
-//   const applicationEnvironment = getApplicationEnvironment();
-//   const { isMinLargeDevice } = useThemeQueries();
-  const pathName = usePathname();
-
-  pathName.includes('registrera');
-
+  const errandNumber = watch('errandNumber');
+  const category = watch('classification.category');
+  const type = watch('classification.type');
+  const status = watch('status');
 
   const SingleErrandTitle = () => (
     <div className="flex items-center gap-24 py-10">
       <a
         href={`${process.env.NEXT_PUBLIC_BASEPATH}`}
-        title={`Draken - ${
-          process.env.NEXT_PUBLIC_APP_NAME
-        }. Gå till startsidan.`}
+        title={`Katla - ${process.env.NEXT_PUBLIC_APP_NAME}. Gå till startsidan.`}
       >
-        <Logo
-          variant="symbol"
-          className="h-40"
-        />
+        <Logo variant="symbol" className="h-40" />
       </a>
       <span className="text-large">
-{ pathName.includes('registrera') && (
-    <>
-            {/* <StatusLabel status={supportErrand.status} />
-            <span className="font-bold ml-8">
-              {supportMetadata?.categories
-                ?.find((t) => t.name === supportErrand.category)
-                ?.types.find((t) => t.name === supportErrand.classification.type)?.displayName ||
-                supportErrand.type}{' '}
+        {registerNewErrand ?
+          <strong className="text-large ml-8 font-bold">{t('filtering:new_errand')}</strong>
+        : <>
+            <StatusLabel status={status} />
+            <span className="text-large ml-8 font-bold">
+              {metadata?.categories?.find((t) => t.name === category)?.types?.find((t) => t.name === type)
+                ?.displayName ?? type}
             </span>
-            <span className="text-small">({errandNumber})</span> */}
-            </>
-   )}
+            <span className="ml-8 text-small">{errandNumber}</span>
+          </>
+        }
       </span>
     </div>
   );
@@ -58,8 +60,8 @@ export default function BaseErrandLayout({ children }: BaseErrandLayoutProps) {
               <div className="flex items-center h-fit">
                 <span data-cy="usermenu">
                   <UserMenu
-                    // initials={`${user.firstName[0]}${user.lastName[0]}`}
-                    // menuTitle={`${user.name} (${user.username})`}
+                    initials={`${user.initials}`}
+                    menuTitle={`${user.name} (${user.username})`}
                     menuSubTitle=""
                     menuGroups={userMenuGroups}
                     buttonRounded={false}
@@ -78,7 +80,7 @@ export default function BaseErrandLayout({ children }: BaseErrandLayoutProps) {
                     variant={'tertiary'}
                     rightIcon={<LucideIcon name="external-link" color="primary" variant="tertiary" />}
                   >
-                    Nytt ärende
+                    {t('filtering:new_errand')}
                   </Button>
                 </Link>
               </div>
@@ -90,16 +92,15 @@ export default function BaseErrandLayout({ children }: BaseErrandLayoutProps) {
                 </PopupMenu.Button>
                 <PopupMenu.Panel>
                   <PopupMenu.Group>
-                    {/* <div className="font-bold">{`${user.name} (${user.username})`}</div> */}
+                    <div className="font-bold">{`${user.name} (${user.username})`}</div>
                   </PopupMenu.Group>
                   <PopupMenu.Items>
                     <PopupMenu.Group>
-                        <PopupMenu.Item>
-                          <Link href={`${process.env.NEXT_PUBLIC_BASEPATH}/registrera`}>
-                            <LucideIcon name="external-link" className="h-md" color="primary" variant="tertiary" /> Nytt
-                            ärende
-                          </Link>
-                        </PopupMenu.Item>
+                      <PopupMenu.Item>
+                        <Link href={`${process.env.NEXT_PUBLIC_BASEPATH}/registrera`}>
+                          <LucideIcon name="external-link" className="h-md" color="primary" variant="tertiary" /> {t('filtering:new_errand')}
+                        </Link>
+                      </PopupMenu.Item>
                     </PopupMenu.Group>
 
                     {userMenuGroups.map((group, groupindex) => (
@@ -113,8 +114,7 @@ export default function BaseErrandLayout({ children }: BaseErrandLayoutProps) {
                 </PopupMenu.Panel>
               </PopupMenu>
             }
-          >
-          </PageHeader>
+          ></PageHeader>
         </div>
 
         {children}
