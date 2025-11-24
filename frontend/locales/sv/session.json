@@ -1,0 +1,7 @@
+{
+  "warning_title": "Är du kvar?",
+  "warning_message": "Du loggas automatiskt ut om",
+  "warning_message_suffix": "minuter. Välj om du vill logga ut eller stanna kvar.",
+  "logout_button": "Logga ut",
+  "stay_button": "Stanna kvar"
+}

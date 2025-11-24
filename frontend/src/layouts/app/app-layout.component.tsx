@@ -1,6 +1,7 @@
 'use client';
 
 import LoaderFullScreen from '@components/loader/loader-fullscreen';
+import { InactivityMonitor } from '@components/inactivity-monitor.component';
 import { useUserStore } from '@services/user-service/user-service';
 import { GuiProvider } from '@sk-web-gui/react';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
@@ -50,7 +51,12 @@ const AppLayout = ({ children }: ClientApplicationProps) => {
     return <LoaderFullScreen />;
   }
 
-  return <GuiProvider colorScheme={colorScheme}>{children}</GuiProvider>;
+  return (
+    <GuiProvider colorScheme={colorScheme}>
+      {children}
+      <InactivityMonitor />
+    </GuiProvider>
+  );
 };
 
 export default AppLayout;
