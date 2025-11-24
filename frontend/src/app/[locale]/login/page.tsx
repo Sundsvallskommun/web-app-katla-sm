@@ -56,7 +56,6 @@ const Login: React.FC = () => {
     if (!router) return;
 
     if (isLoggedOut) {
-      router.push('/login');
       setIsLoading(false);
     } else {
       if (failMessage === 'NOT_AUTHORIZED' && autoLogin) {
@@ -86,19 +85,14 @@ const Login: React.FC = () => {
       <div className="w-full max-w-[64rem]">
         <CardElevated>
           <Main>
-            <CenterDiv className="py-24">
+            <CenterDiv className="py-24 px-8">
               {isLoggedOut ?
-                <>
-                  <div className="flex flex-col w-full gap-12">
-                    <h1 className="text-center text-h2-sm lg:text-h2-lg m-0">Du är nu utloggad</h1>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <Button variant="primary" color="vattjom" size="lg" onClick={() => router.push('/login')}>
-                      Logga in igen
-                    </Button>
-                  </div>
-                </>
+                <div className="flex flex-col items-center gap-[4rem] w-full">
+                  <h1 className="text-center text-[4rem] font-bold leading-[5.6rem] m-0">{t('login:logged_out_title')}</h1>
+                  <Button variant="primary" color="vattjom" size="lg" onClick={() => router.push('/login')}>
+                    {t('login:login_again_button')}
+                  </Button>
+                </div>
               : <>
                   <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">{t('login:choose_login_method')}</h1>
                   <Divider className="w-full" />

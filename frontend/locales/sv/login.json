@@ -8,5 +8,7 @@
     "NO_USER": "Misslyckades att konfigurera användare"
   },
   "login_problem": "Har du problem med inloggning, kontakta loerem ipsum",
-  "choose_login_method": "Välj hur du vill logga in"
+  "choose_login_method": "Välj hur du vill logga in",
+  "logged_out_title": "Du är nu utloggad",
+  "login_again_button": "Logga in igen"
 }
