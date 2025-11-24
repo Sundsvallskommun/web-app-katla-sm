@@ -540,7 +540,6 @@ export interface Errand {
   description?: string;
   /**
    * The channel from which the errand originated
-   * @minLength 0
    * @maxLength 255
    * @example "THE_CHANNEL"
    */
@@ -573,7 +572,6 @@ export interface Errand {
   contactReason?: string;
   /**
    * Contact reason description for the errand
-   * @minLength 0
    * @maxLength 4096
    * @example "The printer is not working since the power cord is missing"
    */
@@ -642,16 +640,14 @@ export interface ErrandLabel {
 export interface ExternalTag {
   /**
    * Key for external tag
-   * @minLength 1
    * @example "caseId"
    */
-  key: string;
+  key?: string;
   /**
    * Value for external tag
-   * @minLength 1
    * @example "8849-2848"
    */
-  value: string;
+  value?: string;
 }
 
 /** List of active notifications for the errand */
@@ -1202,10 +1198,10 @@ export interface MetadataResponse {
 }
 
 export interface PageErrand {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1431,10 +1427,10 @@ export enum EventType {
 }
 
 export interface PageEvent {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1605,10 +1601,10 @@ export interface Message {
 }
 
 export interface PageMessage {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;

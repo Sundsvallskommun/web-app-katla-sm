@@ -1,5 +1,6 @@
 import {
   Classification,
+  ContactChannel,
   Errand,
   ExternalTag,
   PageableObject,
@@ -29,10 +30,22 @@ export class ErrandsQueryDTO {
   status?: string;
 }
 
-class StakeholderDTO implements Partial<Stakeholder> {
+ class ContactChannelDTO implements ContactChannel {
+  @IsOptional()
+  @IsString()
+  type?: string;
+  @IsOptional()
+  @IsString() 
+  value?: string;
+}
+
+export class StakeholderDTO implements Partial<Stakeholder> {
   @IsString()
   @IsOptional()
   externalId?: string;
+    @IsString()
+  @IsOptional()
+  personNumber?: string;
   @IsString()
   @IsOptional()
   externalIdType?: string;
@@ -63,9 +76,13 @@ class StakeholderDTO implements Partial<Stakeholder> {
   @IsString()
   @IsOptional()
   country?: string;
-  //   contactChannels?: ContactChannel[];
-  //   /** Parameters for the stakeholder */
-  //   parameters?: Parameter[];
+    @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ContactChannelDTO)
+    contactChannels?: ContactChannel[];
+    // /** Parameters for the stakeholder */
+    // parameters?: Parameter[];
 }
 
 export class ClassificationDTO implements Classification {
