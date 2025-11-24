@@ -17,7 +17,7 @@ export interface SortState {
 }
 
 const DEFAULTS = {
-  sortColumn: 'updated',
+  sortColumn: 'created',
   sortOrder: 'desc' as SortOrder,
   page: 0,
   size: 12,
