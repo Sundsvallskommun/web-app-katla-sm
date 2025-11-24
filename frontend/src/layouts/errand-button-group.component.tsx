@@ -37,7 +37,6 @@ export const ErrandButtonGroup: React.FC = () => {
   };
 
   const onRegister = async (logout?: boolean) => {
-
     const errand = await createErrand(getValues())
       .then((res) => {
         return res;
@@ -83,7 +82,9 @@ export const ErrandButtonGroup: React.FC = () => {
           <Button variant="secondary" onClick={() => setIsOpen(false)}>
             Nej
           </Button>
-          <Button variant="primary" onClick={() => onRegister()}>Skicka in</Button>
+          <Button variant="primary" onClick={() => onRegister()}>
+            Skicka in
+          </Button>
           <Button variant="primary" color="vattjom" onClick={() => onRegister(true)}>
             Skicka in och logga ut
           </Button>

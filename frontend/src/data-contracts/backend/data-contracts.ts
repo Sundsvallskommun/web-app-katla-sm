@@ -92,8 +92,14 @@ export interface ErrandsQueryDTO {
   status?: string;
 }
 
+export interface ContactChannelDTO {
+  type?: string;
+  value?: string;
+}
+
 export interface StakeholderDTO {
   externalId?: string;
+  personNumber?: string;
   externalIdType?: string;
   role?: string;
   city?: string;
@@ -104,6 +110,7 @@ export interface StakeholderDTO {
   careOf?: string;
   zipCode?: string;
   country?: string;
+  contactChannels?: ContactChannelDTO[];
 }
 
 export interface ClassificationDTO {
