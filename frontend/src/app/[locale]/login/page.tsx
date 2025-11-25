@@ -39,7 +39,7 @@ const Login: React.FC = () => {
     const searchPath = searchParams.get('path');
     const nonLoginPath = !pathName?.match(/\/login/) && pathName; // Contains path as long as it's not /login
     const nonLoginSearch = !searchPath?.match(/\/login|\/logout/) && searchPath; // Contains redirect path as long as it's not /login or /logout
-    const path = nonLoginPath || nonLoginSearch || '/';
+    const path = nonLoginPath || nonLoginSearch || `${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`;
 
     const url = new URL(apiURL('/saml/login'));
     const queries = new URLSearchParams({
