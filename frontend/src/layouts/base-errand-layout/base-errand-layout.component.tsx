@@ -29,7 +29,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
   const SingleErrandTitle = () => (
     <div className="flex items-center gap-24 py-10">
       <a
-        href={`${process.env.NEXT_PUBLIC_BASEPATH}`}
+        href={`${process.env.NEXT_PUBLIC_BASE_PATH}`}
         title={`Katla - ${process.env.NEXT_PUBLIC_APP_NAME}. Gå till startsidan.`}
       >
         <Logo variant="symbol" className="h-40" />
@@ -71,7 +71,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
 
                 <Divider orientation="vertical" className="mx-24" />
                 <Link
-                  href={`${process.env.NEXT_PUBLIC_BASEPATH}/arende/registrera`}
+                  href={`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/registrera`}
                   target="_blank"
                   data-cy="register-new-errand-button"
                 >
@@ -97,7 +97,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
                   <PopupMenu.Items>
                     <PopupMenu.Group>
                       <PopupMenu.Item>
-                        <Link href={`${process.env.NEXT_PUBLIC_BASEPATH}/registrera`}>
+                        <Link href={`${process.env.NEXT_PUBLIC_BASE_PATH}/registrera`}>
                           <LucideIcon name="external-link" className="h-md" color="primary" variant="tertiary" /> {t('filtering:new_errand')}
                         </Link>
                       </PopupMenu.Item>

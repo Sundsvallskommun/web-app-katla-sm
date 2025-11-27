@@ -21,6 +21,25 @@ export interface UserApiResponse {
   message: string;
 }
 
+export interface NotificationDTO {
+  id?: string;
+  created?: string;
+  modified?: string;
+  ownerFullName?: string;
+  ownerId?: string;
+  createdBy?: string;
+  createdByFullName?: string;
+  type?: string;
+  subtype?: string;
+  description?: string;
+  content?: string;
+  expires?: string;
+  globalAcknowledged?: boolean;
+  acknowledged?: boolean;
+  errandId?: string;
+  errandNumber?: string;
+}
+
 export interface TypeDTO {
   name: string;
   displayName?: string;

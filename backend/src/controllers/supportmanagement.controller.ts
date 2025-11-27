@@ -5,12 +5,13 @@ import { HttpException } from '@/exceptions/HttpException';
 import ApiResponse from '@/interfaces/api-service.interface';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
+import { NotificationDTO } from '@/responses/notification.response';
 import { MetadataResponseDTO } from '@/responses/supportmanagement-metadata.response';
 import { ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
 import ApiService from '@/services/api.service';
 import { logger } from '@/utils/logger';
 import { apiURL } from '@/utils/util';
-import { Body, Controller, Get, Param, Post, QueryParams, Req, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, Param, Patch, Post, QueryParams, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 @Controller()
@@ -47,7 +48,7 @@ export class SupportManagementController {
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands?filter=errandNumber:'${errandNumber}'`;
 
     try {
-      const res = await this.apiService.get<PageErrand>({ url: url }, req);
+      const res = await this.apiService.get<PageErrand>({ url }, req);
 
       if (!res.data.content[0]) throw new HttpException(500, 'No data from API');
 
@@ -143,10 +144,10 @@ export class SupportManagementController {
   @UseBefore(authMiddleware)
   @ResponseSchema(MetadataResponseDTO)
   async getMetadata(@Req() req: RequestWithUser): Promise<ApiResponse<MetadataResponse>> {
-    const Url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/metadata`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/metadata`;
 
     try {
-      const res = await this.apiService.get<ApiResponse<MetadataResponse>>({ url: Url }, req);
+      const res = await this.apiService.get<ApiResponse<MetadataResponse>>({ url }, req);
 
       if (!res.data) throw new HttpException(500, 'No data from API');
 
@@ -156,6 +157,48 @@ export class SupportManagementController {
         return { data: null, message: '404 from api' };
       }
       return { data: null, message: 'error' };
+    }
+  }
+
+  @Get('/supportmanagement/notifications')
+  @OpenAPI({ summary: 'Get notifications for the namespace and municipality with the specified ownerId' })
+  @UseBefore(authMiddleware)
+  @ResponseSchema(NotificationDTO)
+  async getNotifications(@Req() req: RequestWithUser): Promise<ApiResponse<Notification[]>> {
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/notifications?ownerId=${req.user.username}`;
+
+    try {
+      const res = await this.apiService.get<ApiResponse<Notification[]>>({ url }, req);
+
+      if (!res.data) throw new HttpException(500, 'No data from API');
+
+      return res.data;
+    } catch (error: any) {
+      if (error.status === 404) {
+        return { data: null, message: '404 from api' };
+      }
+      return { data: null, message: 'error' };
+    }
+  }
+
+  @Patch('/supportmanagement/notifications')
+  @OpenAPI({ summary: 'Acknowledge notification' })
+  @UseBefore(authMiddleware)
+  @ResponseSchema(NotificationDTO)
+  async acknowlegeNotifications(@Req() req: RequestWithUser, @Body() notification: NotificationDTO): Promise<ApiResponse<Boolean>> {
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/notifications`;
+
+    try {
+      const res = await this.apiService.patch<ApiResponse<Notification>>({ url, data: notification }, req);
+
+      if (!res.data) throw new HttpException(500, 'No data from API');
+
+      return { data: true, message: 'Success' };
+    } catch (error: any) {
+      if (error.status === 404) {
+        return { data: false, message: '404 from api' };
+      }
+      return { data: false, message: 'error' };
     }
   }
 }
