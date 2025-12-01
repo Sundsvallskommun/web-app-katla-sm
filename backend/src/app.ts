@@ -203,6 +203,8 @@ class App {
       cors({
         credentials: CREDENTIALS,
         origin: function (origin, callback) {
+          console.log('ORIGIN', origin)
+          console.log('corsWhitelist', corsWhitelist)
           if (origin === undefined || corsWhitelist.indexOf(origin) !== -1 || corsWhitelist.indexOf('*') !== -1) {
             callback(null, true);
           } else {
