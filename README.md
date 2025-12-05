@@ -1,8 +1,8 @@
-# Katla supportmanagement
+# Sundsvalls Kommun Katla supportmanagement
 
 ## APIer som används
 
-Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumerera på dessa. Systemet utgår ifrån /backend/api-config.ts där dessa står specificerade.
+Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumerera på dessa.
 
 | API               | Version |
 | ----------------- | ------: |
