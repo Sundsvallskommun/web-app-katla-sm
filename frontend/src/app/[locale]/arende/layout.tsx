@@ -48,7 +48,7 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
   const defaultErrand: ErrandDTO = {
     title: 'Empty errand',
     priority: 'MEDIUM',
-    status: 'NEW',
+    status: 'DRAFT',
     channel: 'PHONE',
     resolution: 'INFORMED',
   };

@@ -1,5 +1,5 @@
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
-import { createErrand } from '@services/errand-service/errand-service';
+import { createErrand, saveErrand } from '@services/errand-service/errand-service';
 import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
@@ -15,13 +15,16 @@ export const ErrandButtonGroup: React.FC = () => {
   const toastMessage = useSnackbar();
   const router = useRouter();
   const context = useFormContext<ErrandDTO>();
-  const { handleSubmit, getValues, trigger, reset } = context;
+  const { handleSubmit, getValues, setValue, trigger, reset } = context;
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const onSaveDraft = async () => {
     const isValid = await trigger(['classification.category', 'classification.type']);
     if (!isValid) return;
-    const errand = await createErrand(getValues())
+    const values = getValues();
+    const apiCall = values.id ? saveErrand : createErrand;
+
+    const errand = await apiCall(values)
       .then((res) => {
         toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
         return res;
@@ -34,11 +37,15 @@ export const ErrandButtonGroup: React.FC = () => {
     reset(errand);
 
     router.push(`/arende/${errand.errandNumber}/grundinformation`);
-    setIsOpen(false)
+    setIsOpen(false);
   };
 
   const onRegister = async (logout?: boolean) => {
-    const errand = await createErrand(getValues())
+    setValue('status', 'NEW');
+    const values = getValues();
+    const apiCall = values.id ? saveErrand : createErrand;
+
+    const errand = await apiCall(values)
       .then((res) => {
         return res;
       })
@@ -46,15 +53,14 @@ export const ErrandButtonGroup: React.FC = () => {
         toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
         return res;
       });
-      reset(errand)
-
+    reset(errand);
 
     if (logout) {
       router.push('/logout');
     } else {
       router.push(`/arende/${errand.errandNumber}/grundinformation`);
     }
-    setIsOpen(false)
+    setIsOpen(false);
   };
 
   return (

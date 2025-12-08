@@ -42,6 +42,42 @@ export class SupportManagementController {
     }
   }
 
+  @Patch('/supportmanagement/errand/save')
+  @OpenAPI({ summary: 'Save an errand' })
+  @UseBefore(authMiddleware)
+  @ResponseSchema(PageErrandDTO)
+  async saveErrand(@Req() req: RequestWithUser, @Body() errand: Errand): Promise<Errand> {
+
+    if(!errand.id){
+      logger.error('No errand id')
+      return
+    }
+
+    const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${errand.id}`;
+
+    delete errand.activeNotifications;
+    delete errand.created;
+    delete errand.errandNumber;
+    delete errand.id;
+    delete errand.reporterUserId;
+    delete errand.touched;
+    delete errand.modified;
+
+    const baseURL = apiURL(this.apiBase);
+
+    try {
+      const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errand }, req).catch(e => {
+        logger.error('Error when initiating support errand');
+        logger.error(e);
+        throw e;
+      });
+
+      return res.data;
+    } catch (error: any) {
+      return {};
+    }
+  }
+
   @Get('/supportmanagement/errand/:errandNumber')
   @OpenAPI({ summary: 'Read maching errands' })
   @UseBefore(authMiddleware)
