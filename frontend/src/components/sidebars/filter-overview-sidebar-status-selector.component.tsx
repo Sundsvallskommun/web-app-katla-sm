@@ -48,7 +48,7 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
     },
     {
       label: t('filtering:errands.draft'),
-      statuses: ['SUSPENDED', 'ASSIGNED'],
+      statuses: ['DRAFT'],
       icon: 'square-pen',
       errandsCount: draftErrandCount,
     },

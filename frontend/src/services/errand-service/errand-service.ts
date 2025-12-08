@@ -55,6 +55,10 @@ export const createErrand = async (errand: ErrandDTO): Promise<ErrandDTO> => {
   return apiService.post<ErrandDTO>('supportmanagement/errand/create', errand).then((res) => res.data);
 };
 
+export const saveErrand = async (errand: ErrandDTO): Promise<ErrandDTO> => {
+  return apiService.patch<ErrandDTO>('supportmanagement/errand/save', errand).then((res) => res.data);
+};
+
 export const getNotifications = async (): Promise<NotificationDTO[]> => {
   return apiService.get<NotificationDTO[]>('supportmanagement/notifications').then((res) => res.data);
 };
@@ -73,4 +77,8 @@ export const acknowledgeNotification: (notification: NotificationDTO) => Promise
       console.error('Something went wrong when acknowledging notification');
       throw e;
     });
+};
+
+export const upsertErrand = async (errand: ErrandDTO): Promise<ErrandDTO> => {
+  return errand.id ? saveErrand(errand) : createErrand(errand);
 };
