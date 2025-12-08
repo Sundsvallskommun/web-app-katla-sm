@@ -34,6 +34,7 @@ export const ErrandButtonGroup: React.FC = () => {
     reset(errand);
 
     router.push(`/arende/${errand.errandNumber}/grundinformation`);
+    setIsOpen(false)
   };
 
   const onRegister = async (logout?: boolean) => {
@@ -45,14 +46,15 @@ export const ErrandButtonGroup: React.FC = () => {
         toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
         return res;
       });
+      reset(errand)
 
-    reset(errand);
 
     if (logout) {
       router.push('/logout');
     } else {
       router.push(`/arende/${errand.errandNumber}/grundinformation`);
     }
+    setIsOpen(false)
   };
 
   return (
