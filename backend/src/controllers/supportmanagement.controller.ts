@@ -27,8 +27,10 @@ export class SupportManagementController {
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands`;
     const baseURL = apiURL(this.apiBase);
 
+    const errandInformation = {...errand, reporterUserId: req.user.username}
+
     try {
-      const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errand }, req).catch(e => {
+      const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errandInformation }, req).catch(e => {
         logger.error('Error when initiating support errand');
         logger.error(e);
         throw e;

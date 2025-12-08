@@ -47,7 +47,6 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
   //TODO: Update default values for form
   const defaultErrand: ErrandDTO = {
     title: 'Empty errand',
-    reporterUserId: 'edw25mol',
     priority: 'MEDIUM',
     status: 'NEW',
     channel: 'PHONE',
