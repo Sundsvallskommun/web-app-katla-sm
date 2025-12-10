@@ -5,11 +5,11 @@ import { getErrands } from '@services/errand-service/errand-service';
 import { Spinner, Table } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFilterStore } from 'src/stores/filter-store';
 import { useSorteStore } from 'src/stores/sort-store';
 import { ErrandTableFooter } from './errand-table-footer.component';
 import { ErrandTableHeader } from './errand-table-header.component';
-import { useTranslation } from 'react-i18next';
 
 export const ErrandTable: React.FC = () => {
   const { t } = useTranslation();
@@ -45,13 +45,24 @@ export const ErrandTable: React.FC = () => {
       {rows.map((errand, index) => (
         <Table.Row
           key={`errand-row-${index}`}
+          tabIndex={0}
           onClick={() =>
             window.open(`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`, '_blank')
           }
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              window.open(
+                `${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`,
+                '_blank'
+              );
+            }
+          }}
         >
           <Table.Column>
             <StatusLabel status={errand?.status} />
           </Table.Column>
+          <Table.Column>{errand.errandNumber}</Table.Column>
           <Table.Column>{errand.title}</Table.Column>
           <Table.Column>{dayjs(errand.touched).format('YYYY-MM-DD HH:mm')}</Table.Column>
         </Table.Row>

@@ -18,6 +18,13 @@ export const ErrandTableHeader: React.FC = () => {
       sticky: true,
     },
     {
+      label: 'Ärendenummer',
+      property: 'errandNumber',
+      sortable: true,
+      screenReaderOnly: false,
+      sticky: false,
+    },
+    {
       label: 'Ärendetyp',
       property: 'title',
       sortable: true,
