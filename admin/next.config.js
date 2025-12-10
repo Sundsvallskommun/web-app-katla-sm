@@ -31,7 +31,7 @@ module.exports = withBundleAnalyzer({
   },
   basePath: process.env.NEXT_PUBLIC_BASE_PATH,
   sassOptions: {
-    prependData: `$basePath: '${process.env.BASE_PATH}';`,
+    prependData: `$basePath: '${process.env.NEXT_PUBLIC_BASE_PATH}';`,
   },
   transpilePackages: ['lucide-react'],
   experimental: {

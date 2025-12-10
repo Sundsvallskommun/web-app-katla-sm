@@ -46,7 +46,7 @@ export const ErrandTable: React.FC = () => {
         <Table.Row
           key={`errand-row-${index}`}
           onClick={() =>
-            window.open(`${process.env.NEXT_PUBLIC_BASEPATH}/arende/${errand.errandNumber}/grundinformation`, '_blank')
+            window.open(`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`, '_blank')
           }
         >
           <Table.Column>

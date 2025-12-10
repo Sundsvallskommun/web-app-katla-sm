@@ -1,5 +1,5 @@
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
-import { createErrand } from '@services/errand-service/errand-service';
+import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
@@ -8,58 +8,74 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { CenterDiv } from './center-div.component';
 
-//TODO: Adjust dialog text
+interface ErrandButtonGroupProps {
+  isNewErrand: boolean;
+}
 
-export const ErrandButtonGroup: React.FC = () => {
+export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErrand }) => {
   const { t } = useTranslation();
   const toastMessage = useSnackbar();
   const router = useRouter();
   const context = useFormContext<ErrandDTO>();
-  const { handleSubmit, getValues, trigger, reset } = context;
+  const { handleSubmit, getValues, trigger, reset, watch } = context;
   const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const errandStatus = watch('status');
+  const errandId = watch('id');
+
+  const isDraft = errandStatus === 'DRAFT';
+  const showButtons = isNewErrand || isDraft;
 
   const onSaveDraft = async () => {
     const isValid = await trigger(['classification.category', 'classification.type']);
     if (!isValid) return;
-    const errand = await createErrand(getValues())
-      .then((res) => {
-        toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
-        return res;
-      })
-      .catch((res) => {
-        toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
-        return res;
-      });
 
-    reset(errand);
+    const errandData = { ...getValues(), status: 'DRAFT' };
 
-    router.push(`/arende/${errand.errandNumber}/grundinformation`);
-  };
+    try {
+      const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
+      toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
+      reset(errand);
 
-  const onRegister = async (logout?: boolean) => {
-    const errand = await createErrand(getValues())
-      .then((res) => {
-        return res;
-      })
-      .catch((res) => {
-        toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
-        return res;
-      });
-
-    reset(errand);
-
-    if (logout) {
-      router.push('/logout');
-    } else {
-      router.push(`/arende/${errand.errandNumber}/grundinformation`);
+      if (isNewErrand) {
+        router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`);
+      }
+    } catch {
+      toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
     }
   };
 
+  const onRegister = async (logout?: boolean) => {
+    setIsOpen(false);
+
+    const errandData = { ...getValues(), status: 'NEW' };
+
+    try {
+      const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
+      toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.register') });
+      reset(errand);
+
+      if (logout) {
+        router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/logout`);
+      } else {
+        router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`);
+      }
+    } catch {
+      toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
+    }
+  };
+
+  if (!showButtons) {
+    return null;
+  }
+
   return (
     <div className="flex flex-row gap-[1.8rem]">
-      <Button variant="secondary" onClick={() => window.close()}>
-        {t('errand-information:cancel')}
-      </Button>
+      {isNewErrand && (
+        <Button variant="secondary" onClick={() => window.close()}>
+          {t('errand-information:cancel')}
+        </Button>
+      )}
       <Button variant="primary" onClick={() => onSaveDraft()}>
         {t('errand-information:save_draft')}
       </Button>
