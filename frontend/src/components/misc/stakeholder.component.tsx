@@ -68,6 +68,7 @@ export const StakeholderList: React.FC<{
         <FormControl className="w-full">
           <FormLabel>Sök på personnummer</FormLabel>
           <SearchField
+            data-cy="person-number-input"
             size="md"
             className="max-w-[52.5rem]"
             value={personNumber ?? ''}

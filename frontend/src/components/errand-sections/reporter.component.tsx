@@ -23,7 +23,7 @@ export const Reporter: React.FC = () => {
     <ErrandDisclosure header={t('errand-information:reporter.title')} lucideIconName="user">
       <div className="flex flex-col gap-[2.4rem] pb-[2.4rem]">
         <span className="text-dark-secondary">{t('errand-information:reporter.description')}</span>
-        <StakeholderCard stakeholder={getReporterStakeholder(stakeholders) ?? {}} />
+        <StakeholderCard type="reporter-card" stakeholder={getReporterStakeholder(stakeholders) ?? {}} />
       </div>
     </ErrandDisclosure>
   );

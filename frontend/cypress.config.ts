@@ -2,9 +2,10 @@ import { defineConfig } from 'cypress';
 import codeCoverageTask from '@cypress/code-coverage/task';
 
 export default defineConfig({
+  retries: 2,
   e2e: {
     // supportFile: false,
-    baseUrl: `http://localhost:${process.env.PORT || '3000'}${process.env.NEXT_PUBLIC_BASEPATH || ''}`,
+    baseUrl: `http://localhost:${process.env.PORT || '3000'}${process.env.NEXT_PUBLIC_BASE_PATH || ''}`,
     env: {
       apiUrl: `${process.env.NEXT_PUBLIC_API_URL}`,
       // IMPORTANT
@@ -12,6 +13,8 @@ export default defineConfig({
       mockEmail: 'mail@example.com',
       // The value below is a test phone number from Post- och telestyrelsen, it is not a real phone number
       mockPhoneNumber: '0701740635',
+      // The value below is a test person number from Skatteverket, it is not a real person number
+      mockPersonNumber: '199001012385',
     },
     video: false,
     screenshotOnRunFailure: false,

@@ -98,7 +98,7 @@ export interface ContactReasonDTO {
 export interface MetadataResponseDTO {
   categories?: CategoryDTO[];
   externalIdTypes?: ExternalIdTypeDTO[];
-  labels?: LabelsDTO[];
+  labels?: LabelsDTO;
   statuses?: StatusDTO[];
   roles?: RoleDTO[];
   contactReasons?: ContactReasonDTO[];
