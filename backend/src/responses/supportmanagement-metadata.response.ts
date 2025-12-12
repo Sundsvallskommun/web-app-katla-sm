@@ -135,6 +135,7 @@ export class MetadataResponseDTO implements MetadataResponse {
   @TypeTransformer(() => ExternalIdTypeDTO)
   externalIdTypes?: ExternalIdTypeDTO[];
   @IsOptional()
+  @ValidateNested()
   @TypeTransformer(() => LabelsDTO)
   labels?: Labels;
   @IsOptional()
