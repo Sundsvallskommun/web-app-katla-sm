@@ -68,10 +68,10 @@ export const ErrandButtonGroup: React.FC = () => {
       <Button variant="secondary" onClick={() => window.close()}>
         {t('errand-information:cancel')}
       </Button>
-      <Button variant="primary" onClick={() => onSaveDraft()}>
+      <Button data-cy="save-draft-errand" variant="primary" onClick={() => onSaveDraft()}>
         {t('errand-information:save_draft')}
       </Button>
-      <Button variant="primary" color="vattjom" onClick={handleSubmit(() => setIsOpen(true))}>
+      <Button data-cy="register-errand" variant="primary" color="vattjom" onClick={handleSubmit(() => setIsOpen(true))}>
         {t('errand-information:register')}
       </Button>
       <Dialog show={isOpen}>

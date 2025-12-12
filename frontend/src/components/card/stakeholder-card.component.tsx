@@ -4,16 +4,19 @@ import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Button } from '@sk-web-gui/react';
 import { useState } from 'react';
 
+// TODO: Refactor type prop
+
 export const StakeholderCard: React.FC<{
   stakeholder: StakeholderDTO;
   isEditable?: boolean;
   onRemove?: () => void;
   index?: number;
-}> = ({ stakeholder, isEditable, onRemove, index }) => {
+  type?: string;
+}> = ({ stakeholder, isEditable, onRemove, index, type }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
-    <>
+    <div data-cy={type ?? ''}>
       <div className="border-1 rounded-12 bg-background-content w-full max-w-[52.5rem] my-15">
         <div className="rounded-t-12 bg-vattjom-background-200 h-[4rem] flex items-center mb-[1.5rem]">
           <strong className="px-[1rem]">{stakeholder.role}</strong>
@@ -71,6 +74,6 @@ export const StakeholderCard: React.FC<{
         show={isOpen}
         onClose={() => setIsOpen(false)}
       />
-    </>
+    </div>
   );
 };
