@@ -1,4 +1,6 @@
-import { ErrandDTO } from '@data-contracts/backend/data-contracts';
+import { validateErrandFormData } from '@components/json/utils/schema-utils';
+import { useFormValidation } from '@contexts/form-validation-context';
+import { ErrandFormDTO } from '@app/[locale]/arende/layout';
 import { createErrand } from '@services/errand-service/errand-service';
 import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
@@ -12,16 +14,19 @@ import { CenterDiv } from './center-div.component';
 
 export const ErrandButtonGroup: React.FC = () => {
   const { t } = useTranslation();
+  const { t: tForms } = useTranslation('forms');
   const toastMessage = useSnackbar();
   const router = useRouter();
-  const context = useFormContext<ErrandDTO>();
-  const { handleSubmit, getValues, trigger, reset } = context;
+  const context = useFormContext<ErrandFormDTO>();
+  const { getValues, trigger, reset } = context;
+  const { setShowValidation } = useFormValidation();
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const onSaveDraft = async () => {
     const isValid = await trigger(['classification.category', 'classification.type']);
     if (!isValid) return;
-    const errand = await createErrand(getValues())
+    const values = getValues();
+    const errand = await createErrand(values)
       .then((res) => {
         toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
         return res;
@@ -37,7 +42,8 @@ export const ErrandButtonGroup: React.FC = () => {
   };
 
   const onRegister = async (logout?: boolean) => {
-    const errand = await createErrand(getValues())
+    const values = getValues();
+    const errand = await createErrand(values)
       .then((res) => {
         return res;
       })
@@ -63,7 +69,27 @@ export const ErrandButtonGroup: React.FC = () => {
       <Button variant="primary" onClick={() => onSaveDraft()}>
         {t('errand-information:save_draft')}
       </Button>
-      <Button variant="primary" color="vattjom" onClick={handleSubmit(() => setIsOpen(true))}>
+      <Button
+        variant="primary"
+        color="vattjom"
+        onClick={async () => {
+          // Aktivera validering för JSON-formulär
+          setShowValidation(true);
+
+          // Validera classification först
+          const isClassificationValid = await trigger(['classification.category', 'classification.type']);
+
+          // Validera errandFormData
+          const values = getValues();
+          const formDataErrors = await validateErrandFormData(values.errandFormData, tForms);
+
+          if (!isClassificationValid || formDataErrors.length > 0) {
+            return;
+          }
+
+          setIsOpen(true);
+        }}
+      >
         {t('errand-information:register')}
       </Button>
       <Dialog show={isOpen}>

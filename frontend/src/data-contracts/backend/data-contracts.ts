@@ -183,3 +183,56 @@ export interface PageErrandDTO {
   last?: boolean;
   empty?: boolean;
 }
+
+export interface OrgManagerDTO {
+  personId?: string;
+  givenname?: string;
+  lastname?: string;
+  emailAddress?: string;
+}
+
+export interface UserEmploymentDTO {
+  orgId?: number;
+  orgName?: string;
+  topOrgId?: number;
+  isMainEmployment?: boolean;
+  manager?: OrgManagerDTO;
+}
+
+export interface FacilityInfoDTO {
+  orgId?: number;
+  orgName?: string;
+  parentOrgId?: number;
+  parentOrgName?: string;
+  manager?: OrgManagerDTO;
+  floor?: string;
+  hasSubUnits?: boolean;
+}
+
+export interface OrgSearchResultDTO {
+  orgId?: number;
+  orgName?: string;
+  parentId?: number;
+  isLeafLevel?: boolean;
+}
+
+export interface OrgSearchResponseDTO {
+  organizations?: OrgSearchResultDTO[];
+  persons?: any[];
+  responsibilities?: any[];
+}
+
+export interface OrgTreeNodeDTO {
+  orgId?: number;
+  orgName?: string;
+  parentId?: number;
+  level?: number;
+  isLeafLevel?: boolean;
+  organizations?: OrgTreeNodeDTO[];
+}
+
+export interface OrgLeafNodeDTO {
+  orgId: number;
+  orgName: string;
+  parentId?: number;
+}

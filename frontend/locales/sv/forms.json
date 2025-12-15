@@ -1,0 +1,24 @@
+{
+  "combobox_placeholder": "Sök/välj…",
+  "submit_button_default": "Lägg till",
+  "schema_load_error": "Kunde inte ladda schema: {{schemaName}}",
+  "schema_validation_error": "Kunde inte validera {{schemaName}}",
+  "facility_search": {
+    "section_title": "Mer information om platsen",
+    "add_label": "Lägg till plats där avvikelsen inträffat",
+    "card_header": "Plats där avvikelsen inträffat",
+    "label": "Plats",
+    "placeholder": "Sök plats",
+    "remove": "Ta bort",
+    "unit_manager": "Enhetschef",
+    "unit_label": "Enhet där avvikelsen inträffade",
+    "floor": "Våning/Avdelning",
+    "select_floor": "Välj...",
+    "no_manager": "Ingen enhetschef hittades. Kontrollera platsvalet eller kontakta administratör.",
+    "no_results": "Inga resultat hittades",
+    "no_subunits": "Inga underenheter",
+    "loading_subunits": "Laddar underenheter...",
+    "your_units": "Dina enheter",
+    "loading": "Laddar..."
+  }
+}

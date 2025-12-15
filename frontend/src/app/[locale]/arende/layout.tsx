@@ -1,18 +1,30 @@
 'use client';
 
 import { VisibleTabs } from '@components/tabs/tabs';
-import BaseErrandLayout from '@layouts/base-errand-layout/base-errand-layout.component';
-import Main from '@layouts/main/main.component';
-import { Tabs } from '@sk-web-gui/react';
+import { FormValidationProvider } from '@contexts/form-validation-context';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
+import BaseErrandLayout from '@layouts/base-errand-layout/base-errand-layout.component';
+import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
+import Main from '@layouts/main/main.component';
+import { Tabs } from '@sk-web-gui/react';
+
 import { default as NextLink } from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useRef } from 'react';
 import { FormProvider, Resolver, useForm } from 'react-hook-form';
-import * as yup from 'yup';
-import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
 import { useTranslation } from 'react-i18next';
-import { usePathname } from 'next/navigation';
+import * as yup from 'yup';
+
+// Extended form type with JSON schema form data (not yet in API)
+export interface ErrandFormDataItem {
+  schemaName: string;
+  data: string; // JSON string
+}
+
+export interface ErrandFormDTO extends ErrandDTO {
+  errandFormData?: ErrandFormDataItem[];
+}
 
 const FormSchema = yup
   .object({
@@ -34,8 +46,8 @@ const FormSchema = yup
 
 export default function ErrandLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
-  const pathName = usePathname()
-  const registerNewErrand = !!pathName.includes('/registrera')
+  const pathName = usePathname();
+  const registerNewErrand = !!pathName.includes('/registrera');
   const initialFocus = useRef<HTMLBodyElement>(null);
   const setInitalFocus = () => {
     setTimeout(() => {
@@ -45,6 +57,7 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
   };
 
   //TODO: Update default values for form
+  // const availableSchemas = getAvailableFormSchemas();
   const defaultErrand: ErrandDTO = {
     title: 'Empty errand',
     reporterUserId: 'edw25mol',
@@ -72,42 +85,48 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
         Hoppa till innehåll
       </NextLink>
       <FormProvider {...methods}>
-        <BaseErrandLayout registerNewErrand={registerNewErrand}>
-          <div className="grow shrink overflow-y-auto">
-            <div className="bg-transparent">
-              <div className="mb-xl">
-                <div className="mx-auto max-w-[108rem] flex flex-row justify-between pt-32 pb-12">
-                  <h1 className="text-h2-lg">{registerNewErrand ? t('filtering:new_errand') : `${t('errand-information:errand')} ${methods.getValues('errandNumber')}`}</h1>
-                  <ErrandButtonGroup />
+        <FormValidationProvider>
+          <BaseErrandLayout registerNewErrand={registerNewErrand}>
+            <div className="grow shrink overflow-y-auto">
+              <div className="bg-transparent">
+                <div className="mb-xl">
+                  <div className="mx-auto max-w-[108rem] flex flex-row justify-between pt-32 pb-12">
+                    <h1 className="text-h2-lg">
+                      {registerNewErrand ?
+                        t('filtering:new_errand')
+                      : `${t('errand-information:errand')} ${methods.getValues('errandNumber')}`}
+                    </h1>
+                    <ErrandButtonGroup />
+                  </div>
+                  <Main>
+                    <Tabs
+                      className="border-1 rounded-12 bg-background-content pt-22 pl-5 mx-auto max-w-[108rem]"
+                      tabslistClassName="border-0 -m-b-12 flex-wrap ml-10"
+                      panelsClassName="border-t-1"
+                      size="sm"
+                      // current={tabs.filter((tab) => tab.visible).findIndex((tab) => tab.path === pathname)}
+                    >
+                      {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
+                        return (
+                          <Tabs.Item key={tab.label}>
+                            <Tabs.Button className={'text-base'}>
+                              <NextLink href={tab.path} className="block w-full h-full">
+                                {tab.label}
+                              </NextLink>
+                            </Tabs.Button>
+                            <Tabs.Content>
+                              <div className="pt-xl pb-64 px-40">{children}</div>
+                            </Tabs.Content>
+                          </Tabs.Item>
+                        );
+                      })}
+                    </Tabs>
+                  </Main>
                 </div>
-                <Main>
-                  <Tabs
-                    className="border-1 rounded-12 bg-background-content pt-22 pl-5 mx-auto max-w-[108rem]"
-                    tabslistClassName="border-0 -m-b-12 flex-wrap ml-10"
-                    panelsClassName="border-t-1"
-                    size="sm"
-                    // current={tabs.filter((tab) => tab.visible).findIndex((tab) => tab.path === pathname)}
-                  >
-                    {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
-                      return (
-                        <Tabs.Item key={tab.label}>
-                          <Tabs.Button className={'text-base'}>
-                            <NextLink href={tab.path} className="block w-full h-full">
-                              {tab.label}
-                            </NextLink>
-                          </Tabs.Button>
-                          <Tabs.Content>
-                            <div className="pt-xl pb-64 px-40">{children}</div>
-                          </Tabs.Content>
-                        </Tabs.Item>
-                      );
-                    })}
-                  </Tabs>
-                </Main>
               </div>
             </div>
-          </div>
-        </BaseErrandLayout>
+          </BaseErrandLayout>
+        </FormValidationProvider>
       </FormProvider>
     </>
   );

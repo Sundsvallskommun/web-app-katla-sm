@@ -1198,10 +1198,12 @@ export interface MetadataResponse {
 }
 
 export interface PageErrand {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
+  first?: boolean;
+  last?: boolean;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1211,8 +1213,6 @@ export interface PageErrand {
   sort?: SortObject;
   /** @format int32 */
   numberOfElements?: number;
-  first?: boolean;
-  last?: boolean;
   empty?: boolean;
 }
 
@@ -1427,10 +1427,12 @@ export enum EventType {
 }
 
 export interface PageEvent {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
+  first?: boolean;
+  last?: boolean;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1440,8 +1442,6 @@ export interface PageEvent {
   sort?: SortObject;
   /** @format int32 */
   numberOfElements?: number;
-  first?: boolean;
-  last?: boolean;
   empty?: boolean;
 }
 
@@ -1601,10 +1601,12 @@ export interface Message {
 }
 
 export interface PageMessage {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
+  first?: boolean;
+  last?: boolean;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1614,8 +1616,6 @@ export interface PageMessage {
   sort?: SortObject;
   /** @format int32 */
   numberOfElements?: number;
-  first?: boolean;
-  last?: boolean;
   empty?: boolean;
 }
 

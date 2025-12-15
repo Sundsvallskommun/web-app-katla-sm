@@ -1,0 +1,118 @@
+{
+  "schema": {
+    "type": "object",
+    "title": "Plats och händelseförlopp",
+    "required": ["lexRiskAssessment", "facilityInfo", "eventDate", "eventDescription", "actionsTaken"],
+    "properties": {
+      "lexRiskAssessment": {
+        "type": "string",
+        "title": "Jag tycker att det finns risk för missförhållande",
+        "oneOf": [
+          { "const": "no", "title": "Nej" },
+          { "const": "yes", "title": "Ja" }
+        ]
+      },
+      "lexRiskDescription": {
+        "type": "string",
+        "title": "Beskriv varför du bedömer att det finns risk för missförhållande",
+        "minLength": 10
+      },
+      "facilityInfo": {
+        "type": "object",
+        "title": "Platsinformation"
+      },
+      "eventDate": {
+        "type": "string",
+        "format": "date",
+        "title": "Datum"
+      },
+      "eventTime": {
+        "type": "string",
+        "title": "Tid"
+      },
+      "eventDescription": {
+        "type": "string",
+        "title": "Händelseförlopp",
+        "minLength": 10
+      },
+      "actionsTaken": {
+        "type": "string",
+        "title": "Omedelbart vidtagna åtgärder",
+        "minLength": 10
+      },
+      "suggestedActions": {
+        "type": "string",
+        "title": "Förslag på åtgärder"
+      }
+    },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "lexRiskAssessment": { "const": "yes" }
+          }
+        },
+        "then": {
+          "required": ["lexRiskDescription"]
+        }
+      }
+    ]
+  },
+  "uiSchema": {
+    "ui:sections": [
+      {
+        "id": "general-info",
+        "title": "Uppgifter kring avvikelsen",
+        "icon": "clipboard-pen",
+        "fields": ["lexRiskAssessment", "lexRiskDescription", "facilityInfo", "eventDate", "eventTime"],
+        "defaultOpen": true
+      },
+      {
+        "id": "event-details",
+        "title": "Händelseförlopp och åtgärder",
+        "icon": "info",
+        "fields": ["eventDescription", "actionsTaken", "suggestedActions"],
+        "defaultOpen": true
+      }
+    ],
+    "ui:rows": [{ "fields": ["eventDate", "eventTime"] }],
+    "lexRiskAssessment": {
+      "ui:widget": "radio",
+      "ui:help": "Missförhållande betyder att en person kan ha farit illa eller riskerar att fara illa."
+    },
+    "lexRiskDescription": {
+      "ui:widget": "TexteditorWidget"
+    },
+    "facilityInfo": {
+      "ui:field": "FacilitySearchWidget"
+    },
+    "eventDate": {
+      "ui:widget": "date"
+    },
+    "eventTime": {
+      "ui:placeholder": "t.ex. ca 10:30, mellan 09-10"
+    },
+    "eventDescription": {
+      "ui:widget": "TexteditorWidget",
+      "ui:help": "Beskriv så objektivt som möjligt vad som hände."
+    },
+    "actionsTaken": {
+      "ui:widget": "TexteditorWidget",
+      "ui:help": "Vilka åtgärder vidtogs direkt efter händelsen?"
+    },
+    "suggestedActions": {
+      "ui:widget": "TexteditorWidget",
+      "ui:help": "Förslag på åtgärder från den som registrerar avvikelsen."
+    },
+    "ui:order": [
+      "lexRiskAssessment",
+      "lexRiskDescription",
+      "facilityInfo",
+      "eventDate",
+      "eventTime",
+      "eventDescription",
+      "actionsTaken",
+      "suggestedActions"
+    ]
+  }
+}
