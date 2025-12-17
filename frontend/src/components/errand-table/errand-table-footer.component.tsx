@@ -1,10 +1,10 @@
 import { Input, Pagination, Select } from '@sk-web-gui/react';
-import { useSorteStore } from 'src/stores/sort-store';
+import { useSortStore } from 'src/stores/sort-store';
 
 export const ErrandTableFooter: React.FC<{ totalPages: number }> = ({ totalPages }) => {
-  const { page, size, rowHeight, setRowHeight } = useSorteStore();
-  const setPage = useSorteStore((s) => s.setPage);
-  const setSize = useSorteStore((s) => s.setSize);
+  const { page, size, rowHeight, setRowHeight } = useSortStore();
+  const setPage = useSortStore((s) => s.setPage);
+  const setSize = useSortStore((s) => s.setSize);
 
   return (
     <>
@@ -35,15 +35,21 @@ export const ErrandTableFooter: React.FC<{ totalPages: number }> = ({ totalPages
           showConstantPages={true}
           fitContainer
           pages={totalPages}
-          activePage={page}
-          changePage={(p: number) => setPage(p)}
+          activePage={page + 1}
+          changePage={(p: number) => setPage(p - 1)}
         />
       </div>
       <div className="sk-table-bottom-section">
         <label className="sk-table-bottom-section-label" htmlFor="rowHeight">
           Radhöjd:
         </label>
-        <Select size="sm" id="rowHeight" variant="tertiary" onChange={(e) => setRowHeight(e.target.value)} value={rowHeight}>
+        <Select
+          size="sm"
+          id="rowHeight"
+          variant="tertiary"
+          onChange={(e) => setRowHeight(e.target.value)}
+          value={rowHeight}
+        >
           <Select.Option value="normal">Normal</Select.Option>
           <Select.Option value="dense">Tät</Select.Option>
         </Select>

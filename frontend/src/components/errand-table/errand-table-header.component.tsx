@@ -1,5 +1,5 @@
 import { SortMode, Table } from '@sk-web-gui/react';
-import { useSorteStore } from 'src/stores/sort-store';
+import { useSortStore } from 'src/stores/sort-store';
 
 export const ErrandTableHeader: React.FC = () => {
   const sortOrders: { [key: string]: 'ascending' | 'descending' } = {
@@ -7,7 +7,7 @@ export const ErrandTableHeader: React.FC = () => {
     desc: 'descending',
   };
 
-  const { sortColumn, sortOrder, setSort } = useSorteStore();
+  const { sortColumn, sortOrder, setSort } = useSortStore();
 
   const headers = [
     {
