@@ -1,0 +1,78 @@
+import { MUNICIPALITY_ID } from '@/config';
+import { ContactChannel, Stakeholder } from '@/data-contracts/supportmanagement/data-contracts';
+import { StakeholderDTO } from '@/responses/supportmanagement.response';
+import ApiService from '@/services/api.service';
+import { apiURL } from './util';
+import { RequestWithUser } from '@/interfaces/auth.interface';
+
+export async function mapStakeholderToStakeholderDTO(stakeholder: Stakeholder, req: RequestWithUser): Promise<StakeholderDTO> {
+
+  const apiService = new ApiService();
+  const citizenUrl = `${MUNICIPALITY_ID}/${stakeholder.externalId}/personnumber`;
+  const baseURL = apiURL('citizen');
+  const personNumber = await apiService.get<string>({ url: citizenUrl, baseURL }, req);
+
+
+  const { contactChannels = [], ...rest } = stakeholder;
+
+  const { emails, phoneNumbers } = contactChannels.reduce<{
+    emails: string[];
+    phoneNumbers: string[];
+  }>(
+    (acc, { type, value }) => {
+      if (!value) return acc;
+
+      if (type === 'email') acc.emails.push(value.toLocaleLowerCase());
+      if (type === 'phone') acc.phoneNumbers.push(value);
+
+      return acc;
+    },
+    { emails: [], phoneNumbers: [] },
+  );
+
+  return {
+    ...rest,
+    personNumber: addHyphenToPersonNumber(personNumber.data),
+    emails: emails.length ? emails : undefined,
+    phoneNumbers: phoneNumbers.length ? phoneNumbers : undefined,
+  } as StakeholderDTO;
+}
+
+export function mapStakeholderDTOToStakeholder(
+  stakeholder: StakeholderDTO
+): Stakeholder {
+  delete stakeholder.personNumber
+  const { emails, phoneNumbers, ...rest } = stakeholder;
+
+  const contactChannels: ContactChannel[] = [
+    ...(emails?.map((email) => ({
+      type: 'email',
+      value: email,
+    })) ?? []),
+
+    ...(phoneNumbers?.map((phone) => ({
+      type: 'phone',
+      value: phone,
+    })) ?? []),
+  ];
+
+  return {
+    ...rest,
+    contactChannels: contactChannels.length
+      ? contactChannels
+      : undefined,
+  } as Stakeholder;
+}
+
+export function addHyphenToPersonNumber(
+  personNumber: string
+): string {
+  if (!personNumber) return personNumber;
+
+  const digitsOnly = personNumber.replace(/\D/g, '');
+
+  if (digitsOnly.length !== 12) return personNumber;
+
+  return `${digitsOnly.slice(0, 8)}-${digitsOnly.slice(8)}`;
+}
+

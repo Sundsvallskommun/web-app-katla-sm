@@ -1,10 +1,10 @@
 import LucideIcon, { LucideIconProps } from '@sk-web-gui/lucide-icon';
 import { Label, LabelProps } from '@sk-web-gui/react';
 
-
 //TODO: Ajust enum values
 enum StatusLabelEnum {
   NEW = 'Inskickat',
+  DRAFT = 'Utkast',
   ONGOING = 'Pågående',
   PENDING = 'Komplettering',
   SUSPENDED = 'Parkerat',
@@ -13,13 +13,10 @@ enum StatusLabelEnum {
   AWAITING_INTERNAL_RESPONSE = 'Intern återkoppling',
 }
 
-
-export const StatusLabel: React.FC<{ status?: string; }> = ({
-  status
-}) => {
+export const StatusLabel: React.FC<{ status?: string }> = ({ status }) => {
   let color: LabelProps['color'],
     inverted: boolean = false,
-    icon: React.ComponentProps<LucideIconProps>["name"] | null = null;
+    icon: React.ComponentProps<LucideIconProps>['name'] | null = null;
   switch (status) {
     case 'SOLVED':
       color = 'primary';
@@ -31,6 +28,9 @@ export const StatusLabel: React.FC<{ status?: string; }> = ({
       break;
     case 'NEW':
       color = 'vattjom';
+      break;
+    case 'DRAFT':
+      color = 'tertiary';
       break;
     case 'PENDING':
       color = 'gronsta';
@@ -87,7 +87,10 @@ export const StatusLabel: React.FC<{ status?: string; }> = ({
 
   return (
     <Label rounded inverted={inverted} color={color} className={`max-h-full h-auto text-center whitespace-nowrap`}>
-      {icon ? <LucideIcon name={icon} size={16} /> : null} {StatusLabelEnum[status as keyof typeof StatusLabelEnum] }
+      {icon ?
+        <LucideIcon name={icon} size={16} />
+      : null}{' '}
+      {StatusLabelEnum[status as keyof typeof StatusLabelEnum]}
     </Label>
   );
 };
