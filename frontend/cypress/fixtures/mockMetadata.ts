@@ -52,6 +52,16 @@ export const mockMetadata: MetadataResponseDTO = {
             name: "REPORTER",
             displayName: "Rapportör",
             created: "2025-12-09T09:23:09.485+01:00"
+        },
+                {
+            name: "PRIMARY",
+            displayName: "Ärendeägare",
+            created: "2025-12-09T09:23:09.485+01:00"
+        },
+                {
+            name: "CONTACT",
+            displayName: "Kontaktperson",
+            created: "2025-12-09T09:23:09.485+01:00"
         }
     ]
 };
