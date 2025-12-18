@@ -2,21 +2,37 @@ import { StakeholderCard } from '@components/card/stakeholder-card.component';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { getStakeholderUsingPersonNumber } from '@services/citizen/citizen-service';
+import { getEmployeeStakeholderFromApi } from '@services/employee-service/employee-service';
 import LucideIcon from '@sk-web-gui/lucide-icon';
-import { Button, cx, FormControl, FormErrorMessage, FormLabel, Input, SearchField, Select } from '@sk-web-gui/react';
+import {
+  Button,
+  cx,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  RadioButton,
+  SearchField,
+  Select,
+} from '@sk-web-gui/react';
+import { emptyStakeholder, phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
 import { useEffect, useState } from 'react';
 import { FormProvider, Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { StakeholderFormModal } from './stakeholder-modal.component';
-import { emptyStakeholder, phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
 
 export const StakeholderList: React.FC<{
   roles: string[];
-}> = ({ roles }) => {
+  employeeSearch?: boolean;
+}> = ({ roles, employeeSearch = false }) => {
+  const [searchMode, setSearchMode] = useState<string>('PERSON');
+  const [query, setQuery] = useState<string>('');
   const [searchResult, setSearchResult] = useState<boolean>(false);
   const [emptyResult, setEmptyResult] = useState<boolean>(false);
   const [manualEntryOpen, setManualEntryOpen] = useState<boolean>(false);
   const { metadata } = useMetadataStore();
+  const { t } = useTranslation();
 
   const context = useFormContext<ErrandDTO>();
   const { stakeholders } = context.watch();
@@ -32,39 +48,62 @@ export const StakeholderList: React.FC<{
     resolver: yupResolver(stakeholderSchema) as unknown as Resolver<StakeholderDTO>,
   });
 
-  const { handleSubmit, register, watch, reset, trigger, formState } = method;
-  const { firstName, lastName, personNumber, address, city } = watch();
+  const { handleSubmit, register, watch, reset, trigger, setValue, formState } = method;
+  const { firstName, lastName, personNumber, address, city, title, department } = watch();
 
   //Used for resetting form when adding multiple stakeholders
-  useEffect(() =>{
+  useEffect(() => {
     reset();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[formState.isSubmitSuccessful])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.isSubmitSuccessful]);
 
   const hasPrimaryStakeholder = stakeholders?.some((s) => s.role?.includes('PRIMARY'));
   const hasPrimaryRole = roles.includes('PRIMARY');
   const showAddButton = !hasPrimaryRole || (hasPrimaryRole && !hasPrimaryStakeholder);
 
   const clearStakeholderForm = () => {
+    setQuery('');
     setSearchResult(false);
     setEmptyResult(false);
     reset(emptyStakeholder);
   };
 
   const onSearchHandler = async (query: string) => {
-    const isValid = await trigger('personNumber');
-    if (!isValid) {
-      return;
-    }
-    getStakeholderUsingPersonNumber(query).then((res) => {
-      if (res.status === 200) {
-        reset(res.data);
-        setEmptyResult(false);
-        setSearchResult(true);
-      } else {
-        setEmptyResult(true);
+    if (searchMode === 'PERSON') {
+      setValue('personNumber', query);
+      const isValid = await trigger('personNumber');
+      if (!isValid) {
+        return;
       }
-    });
+      getStakeholderUsingPersonNumber(query)
+        .then((res) => {
+          if (res.status === 200) {
+            reset(res.data);
+            setEmptyResult(false);
+            setSearchResult(true);
+          } else {
+            setEmptyResult(true);
+          }
+        })
+        .catch(() => {
+          setEmptyResult(true);
+        });
+    }
+    if (searchMode === 'EMPLOYEE') {
+      getEmployeeStakeholderFromApi(query)
+        .then((res) => {
+          if (res.status === 200) {
+            reset(res.data);
+            setEmptyResult(false);
+            setSearchResult(true);
+          } else {
+            setEmptyResult(true);
+          }
+        })
+        .catch(() => {
+          setEmptyResult(true);
+        });
+    }
   };
 
   const addStakeholderToErrand = (stakeholder: StakeholderDTO) => {
@@ -77,13 +116,39 @@ export const StakeholderList: React.FC<{
       <FormProvider {...method}>
         {showAddButton && (
           <FormControl className="w-full">
-            <FormLabel>Sök på personnummer</FormLabel>
+            {employeeSearch && (
+              <RadioButton.Group className="mb-18" inline>
+                <RadioButton
+                  data-cy="radiobutton-person"
+                  checked={searchMode === 'PERSON'}
+                  value={'PERSON'}
+                  onChange={(e) => {
+                    setSearchMode(e.target.value);
+                    clearStakeholderForm();
+                  }}
+                >
+                  Person
+                </RadioButton>
+                <RadioButton
+                  data-cy="radiobutton-employee"
+                  checked={searchMode === 'EMPLOYEE'}
+                  value={'EMPLOYEE'}
+                  onChange={(e) => {
+                    setSearchMode(e.target.value);
+                    clearStakeholderForm();
+                  }}
+                >
+                  Anställd
+                </RadioButton>
+              </RadioButton.Group>
+            )}
+            <FormLabel>{t(`errand-information:search.${searchMode}`)}</FormLabel>
             <SearchField
               data-cy="person-number-input"
               size="md"
               className="max-w-[52.5rem]"
-              value={personNumber ?? ''}
-              {...register('personNumber')}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               onSearch={onSearchHandler}
               onReset={() => {
                 clearStakeholderForm();
@@ -100,7 +165,7 @@ export const StakeholderList: React.FC<{
         )}
 
         {searchResult && (
-          <div className="border-1 rounded-12 bg-background-content w-max-[52.5rem] my-15">
+          <div data-cy="search-result" className="border-1 rounded-12 bg-background-content w-max-[52.5rem] my-15">
             <div className="px-16 py-8">
               <span className="text-[1.6rem] font-semibold py-10">
                 {firstName} {lastName}
@@ -108,12 +173,18 @@ export const StakeholderList: React.FC<{
 
               <div className="flex text-md mb-10">
                 <div className="flex flex-col">
-                  <span className={cx(!personNumber && 'italic text-text-secondary')}>
-                    {personNumber || 'Personnummer saknas'}
-                  </span>
-                  <span className={cx((!address || !city) && 'italic text-text-secondary')}>
-                    {`${address}, ${city}` || 'Adress saknas'}
-                  </span>
+                  {title ?
+                    <span>{title}</span>
+                  : <span className={cx(!personNumber && 'italic text-text-secondary')}>
+                      {personNumber || 'Personnummer saknas'}
+                    </span>
+                  }
+                  {department ?
+                    <span>{department}</span>
+                  : <span className={cx((!address || !city) && 'italic text-text-secondary')}>
+                      {`${address}, ${city}` || 'Adress saknas'}
+                    </span>
+                  }
                 </div>
               </div>
               <div className="flex flex-row py-10 gap-10 w-full">

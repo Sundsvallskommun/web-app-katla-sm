@@ -10,6 +10,8 @@ export const mockReporterStakeholder: StakeholderDTO = {
   emails: [Cypress.env('mockEmail')],
   phoneNumbers: [Cypress.env('mockCountryCodePhoneNumber')],
   role: 'REPORTER',
+  title: 'mockTitle',
+  department: 'mockDepartment'
 };
 
 export const mockStakeholder: StakeholderDTO = {

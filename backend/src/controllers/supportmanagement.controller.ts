@@ -28,20 +28,20 @@ export class SupportManagementController {
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands`;
     const baseURL = apiURL(this.apiBase);
 
-    const errandInformation = {
-      ...errand,
-      reporterUserId: req.user.username,
-      stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
-    };
-
     try {
+      const errandInformation = {
+        ...errand,
+        reporterUserId: req.user.username,
+        stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
+      };
+
       const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errandInformation }, req).catch(e => {
         logger.error('Error when initiating support errand');
         logger.error(e);
         throw e;
       });
 
-      const stakeholders = await Promise.all(res.data?.stakeholders?.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)) || []);
+      const stakeholders = await Promise.all(res.data?.stakeholders?.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)));
 
       const errandRes = {
         ...res.data,
@@ -50,6 +50,7 @@ export class SupportManagementController {
 
       return errandRes;
     } catch (error: any) {
+      console.log('Something went wrong when creating errand:', error);
       return {};
     }
   }

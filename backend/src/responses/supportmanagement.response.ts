@@ -7,7 +7,7 @@ import {
   Parameter,
   Priority,
   SortObject,
-  Stakeholder
+  Stakeholder,
 } from '@/data-contracts/supportmanagement/data-contracts';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
@@ -68,12 +68,18 @@ export class StakeholderDTO implements Partial<Stakeholder> {
   country?: string;
   @IsOptional()
   @IsArray()
-  @IsString({each: true })
+  @IsString({ each: true })
   emails?: string[];
   @IsOptional()
   @IsArray()
-  @IsString({each: true })
+  @IsString({ each: true })
   phoneNumbers?: string[];
+  @IsString()
+  @IsOptional()
+  title?: string;
+  @IsString()
+  @IsOptional()
+  department?: string;
   // /** Parameters for the stakeholder */
   // parameters?: Parameter[];
 }
@@ -98,7 +104,7 @@ export class ParameterDTO implements Parameter {
   group?: string;
   @IsOptional()
   @IsArray()
-  @IsString({each: true })
+  @IsString({ each: true })
   values?: string[];
 }
 

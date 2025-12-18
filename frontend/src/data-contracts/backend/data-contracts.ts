@@ -126,6 +126,8 @@ export interface StakeholderDTO {
   country?: string;
   emails?: string[];
   phoneNumbers?: string[];
+  title?: string;
+  department?: string;
 }
 
 export interface ClassificationDTO {

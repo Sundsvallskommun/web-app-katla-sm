@@ -44,7 +44,7 @@ export const stakeholderSchema = yup.object({
     .nullable()
     .notRequired()
     .matches(personNumberRegex, {
-      message: 'Personnummer måste vara YYYYMMDDXXXX eller YYYYMMDD-XXXX',
+      message: 'Personnummer måste vara ÅÅÅÅMMDDXXXX eller ÅÅÅÅMMDD-XXXX',
       excludeEmptyString: true,
     })
     .test('valid-date', 'Ogiltigt datum i personnummer', (value) => {
