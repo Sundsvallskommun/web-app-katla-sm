@@ -13,7 +13,7 @@ import {
   Input,
   RadioButton,
   SearchField,
-  Select,
+  Select
 } from '@sk-web-gui/react';
 import { emptyStakeholder, phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
 import { useEffect, useState } from 'react';
