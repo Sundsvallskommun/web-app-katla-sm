@@ -4,6 +4,7 @@ import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contract
 import { getEmployeeStakeholderFromApi } from '@services/employee-service/employee-service';
 import { useUserStore } from '@services/user-service/user-service';
 import { getReporterStakeholder, phoneNumberFormatter } from '@utils/stakeholder';
+import { usePathname } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -12,8 +13,9 @@ export const Reporter: React.FC = () => {
   const { watch, setValue } = useFormContext<ErrandDTO>();
   const { stakeholders } = watch();
   const user = useUserStore((s) => s.user);
+  const pathname = usePathname()
 
-  if (!getReporterStakeholder(stakeholders) && user.username !== '') {
+  if (pathname?.includes('registrera') && !getReporterStakeholder(stakeholders) && user.username !== '') {
     getEmployeeStakeholderFromApi(user.username).then((res) => {
       const stakeholder: StakeholderDTO = {
         ...res.data,
