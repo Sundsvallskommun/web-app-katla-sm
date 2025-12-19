@@ -1,6 +1,5 @@
 import {
   Classification,
-  ContactChannel,
   Errand,
   ExternalTag,
   PageableObject,
@@ -30,20 +29,11 @@ export class ErrandsQueryDTO {
   status?: string;
 }
 
- class ContactChannelDTO implements ContactChannel {
-  @IsOptional()
-  @IsString()
-  type?: string;
-  @IsOptional()
-  @IsString() 
-  value?: string;
-}
-
 export class StakeholderDTO implements Partial<Stakeholder> {
   @IsString()
   @IsOptional()
   externalId?: string;
-    @IsString()
+  @IsString()
   @IsOptional()
   personNumber?: string;
   @IsString()
@@ -76,13 +66,22 @@ export class StakeholderDTO implements Partial<Stakeholder> {
   @IsString()
   @IsOptional()
   country?: string;
-    @IsOptional()
+  @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ContactChannelDTO)
-    contactChannels?: ContactChannel[];
-    // /** Parameters for the stakeholder */
-    // parameters?: Parameter[];
+  @IsString({ each: true })
+  emails?: string[];
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  phoneNumbers?: string[];
+  @IsString()
+  @IsOptional()
+  title?: string;
+  @IsString()
+  @IsOptional()
+  department?: string;
+  // /** Parameters for the stakeholder */
+  // parameters?: Parameter[];
 }
 
 export class ClassificationDTO implements Classification {
@@ -103,9 +102,9 @@ export class ParameterDTO implements Parameter {
   @IsString()
   @IsOptional()
   group?: string;
-  @IsArray()
-  @IsString()
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   values?: string[];
 }
 
@@ -116,7 +115,7 @@ export class ExternalTagDTO implements ExternalTag {
   value: string;
 }
 
-class ErrandDTO implements Errand {
+export class ErrandDTO implements Errand {
   @IsString()
   @IsOptional()
   id?: string;

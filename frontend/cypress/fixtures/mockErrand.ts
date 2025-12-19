@@ -1,31 +1,12 @@
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
+import { mockReporterStakeholder } from './mockStakeholder';
 
 export const mockErrand: ErrandDTO = {
   id: '3f67229c-57aa-44b0-b5e0-79d2f8a8e38a',
   errandNumber: 'AIA-25120019',
   title: 'Empty errand',
   priority: 'MEDIUM',
-  stakeholders: [
-    {
-      externalId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
-      role: 'REPORTER',
-      city: '',
-      firstName: 'Test',
-      lastName: 'Testsson',
-      address: '',
-      zipCode: '',
-      contactChannels: [
-        {
-          type: 'PHONE',
-          value: Cypress.env('mockPhoneNumber'),
-        },
-        {
-          type: 'EMAIL',
-          value: Cypress.env('mockEmail'),
-        },
-      ],
-    },
-  ],
+  stakeholders: [mockReporterStakeholder],
   externalTags: [],
   parameters: [],
   classification: {

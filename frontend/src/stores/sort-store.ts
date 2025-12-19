@@ -24,7 +24,7 @@ const DEFAULTS = {
   rowHeight: 'normal',
 };
 
-export const useSorteStore = create<SortState>()(
+export const useSortStore = create<SortState>()(
   persist(
     (set, get) => ({
       sortColumn: DEFAULTS.sortColumn,

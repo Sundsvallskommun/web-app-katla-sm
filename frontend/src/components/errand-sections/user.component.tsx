@@ -9,7 +9,7 @@ export const User: React.FC = () => {
     <ErrandDisclosure header={t('errand-information:user.title')} lucideIconName="user">
       <div className="flex flex-col gap-[2.4rem] pb-[2.4rem]">
         <span className="text-dark-secondary">{t('errand-information:user.description')}</span>
-        <StakeholderList/>
+        <StakeholderList roles={['PRIMARY']}/>
       </div>
     </ErrandDisclosure>
   );

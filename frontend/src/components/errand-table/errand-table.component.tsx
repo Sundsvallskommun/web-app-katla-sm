@@ -6,14 +6,14 @@ import { Spinner, Table } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useFilterStore } from 'src/stores/filter-store';
-import { useSorteStore } from 'src/stores/sort-store';
+import { useSortStore } from 'src/stores/sort-store';
 import { ErrandTableFooter } from './errand-table-footer.component';
 import { ErrandTableHeader } from './errand-table-header.component';
 import { useTranslation } from 'react-i18next';
 
 export const ErrandTable: React.FC = () => {
   const { t } = useTranslation();
-  const { sortColumn, sortOrder, page, size, rowHeight } = useSorteStore();
+  const { sortColumn, sortOrder, page, size, rowHeight } = useSortStore();
   const { statuses } = useFilterStore();
 
   const [rows, setRows] = useState<ErrandDTO[]>([]);

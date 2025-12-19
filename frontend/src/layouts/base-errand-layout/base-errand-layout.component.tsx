@@ -17,7 +17,7 @@ interface BaseErrandLayoutProps {
 
 export default function BaseErrandLayout({ children, registerNewErrand }: BaseErrandLayoutProps) {
   const { metadata } = useMetadataStore();
-  const { user } =useUserStore()
+  const user = useUserStore((s) => s.user);
   const { watch } = useFormContext<ErrandDTO>();
   const { t } = useTranslation();
 
@@ -98,7 +98,8 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
                     <PopupMenu.Group>
                       <PopupMenu.Item>
                         <Link href={`${process.env.NEXT_PUBLIC_BASE_PATH}/registrera`}>
-                          <LucideIcon name="external-link" className="h-md" color="primary" variant="tertiary" /> {t('filtering:new_errand')}
+                          <LucideIcon name="external-link" className="h-md" color="primary" variant="tertiary" />{' '}
+                          {t('filtering:new_errand')}
                         </Link>
                       </PopupMenu.Item>
                     </PopupMenu.Group>

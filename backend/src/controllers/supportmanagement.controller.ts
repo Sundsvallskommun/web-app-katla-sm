@@ -7,9 +7,10 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import { NotificationDTO } from '@/responses/notification.response';
 import { MetadataResponseDTO } from '@/responses/supportmanagement-metadata.response';
-import { ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
+import { ErrandDTO, ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
 import ApiService from '@/services/api.service';
 import { logger } from '@/utils/logger';
+import { mapStakeholderDTOToStakeholder, mapStakeholderToStakeholderDTO } from '@/utils/stakeholder-mapping';
 import { apiURL } from '@/utils/util';
 import { Body, Controller, Get, Param, Patch, Post, QueryParams, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
@@ -23,21 +24,33 @@ export class SupportManagementController {
   @OpenAPI({ summary: 'Create new errand' })
   @UseBefore(authMiddleware)
   @ResponseSchema(PageErrandDTO)
-  async createErrand(@Req() req: RequestWithUser, @Body() errand: Errand): Promise<Errand> {
+  async createErrand(@Req() req: RequestWithUser, @Body() errand: ErrandDTO): Promise<ErrandDTO> {
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands`;
     const baseURL = apiURL(this.apiBase);
 
-    const errandInformation = {...errand, reporterUserId: req.user.username}
-
     try {
+      const errandInformation = {
+        ...errand,
+        reporterUserId: req.user.username,
+        stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
+      };
+
       const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errandInformation }, req).catch(e => {
         logger.error('Error when initiating support errand');
         logger.error(e);
         throw e;
       });
 
-      return res.data;
+      const stakeholders = await Promise.all(res.data?.stakeholders?.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)));
+
+      const errandRes = {
+        ...res.data,
+        stakeholders: stakeholders,
+      };
+
+      return errandRes;
     } catch (error: any) {
+      console.log('Something went wrong when creating errand:', error);
       return {};
     }
   }
@@ -47,10 +60,9 @@ export class SupportManagementController {
   @UseBefore(authMiddleware)
   @ResponseSchema(PageErrandDTO)
   async saveErrand(@Req() req: RequestWithUser, @Body() errand: Errand): Promise<Errand> {
-
-    if(!errand.id){
-      logger.error('No errand id')
-      return
+    if (!errand.id) {
+      logger.error('No errand id');
+      return;
     }
 
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${errand.id}`;
@@ -63,16 +75,28 @@ export class SupportManagementController {
     delete errand.touched;
     delete errand.modified;
 
+    const errandInformation = {
+      ...errand,
+      stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
+    };
+
     const baseURL = apiURL(this.apiBase);
 
     try {
-      const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errand }, req).catch(e => {
+      const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errandInformation }, req).catch(e => {
         logger.error('Error when initiating support errand');
         logger.error(e);
         throw e;
       });
 
-      return res.data;
+      const stakeholders = await Promise.all(res.data?.stakeholders?.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)) || []);
+
+      const errandRes = {
+        ...res.data,
+        stakeholders: stakeholders,
+      };
+
+      return errandRes;
     } catch (error: any) {
       return {};
     }
@@ -81,8 +105,8 @@ export class SupportManagementController {
   @Get('/supportmanagement/errand/:errandNumber')
   @OpenAPI({ summary: 'Read maching errands' })
   @UseBefore(authMiddleware)
-  @ResponseSchema(PageErrandDTO)
-  async getErrand(@Req() req: RequestWithUser, @Param('errandNumber') errandNumber: string): Promise<Errand> {
+  @ResponseSchema(ErrandDTO)
+  async getErrand(@Req() req: RequestWithUser, @Param('errandNumber') errandNumber: string): Promise<ErrandDTO> {
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands?filter=errandNumber:'${errandNumber}'`;
 
     try {
@@ -90,7 +114,16 @@ export class SupportManagementController {
 
       if (!res.data.content[0]) throw new HttpException(500, 'No data from API');
 
-      return res.data.content[0];
+      const stakeholders = await Promise.all(
+        res.data.content[0]?.stakeholders?.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)) || [],
+      );
+
+      const errandRes = {
+        ...res.data.content[0],
+        stakeholders: stakeholders,
+      };
+
+      return errandRes;
     } catch (error: any) {
       return {};
     }

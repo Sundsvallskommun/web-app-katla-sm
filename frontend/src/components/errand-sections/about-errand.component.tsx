@@ -36,7 +36,7 @@ export const AboutErrand: React.FC = () => {
                     </Select.Option>
                   ))}
               </Select>
-              <FormErrorMessage className="text-error">{errors.classification?.category?.message}</FormErrorMessage>
+              {errors.classification?.category && <FormErrorMessage className="text-error">{errors.classification?.category?.message}</FormErrorMessage>}
             </FormControl>
           </div>
           <div className="flex flex-col">
@@ -50,7 +50,7 @@ export const AboutErrand: React.FC = () => {
                   </Select.Option>
                 ))}
               </Select>
-              <FormErrorMessage className="text-error">{errors.classification?.type?.message}</FormErrorMessage>
+              {errors.classification?.type && <FormErrorMessage>{errors.classification?.type?.message}</FormErrorMessage>}
             </FormControl>
           </div>
         </div>
