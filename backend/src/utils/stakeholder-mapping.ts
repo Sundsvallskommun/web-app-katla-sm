@@ -9,7 +9,11 @@ export async function mapStakeholderToStakeholderDTO(stakeholder: Stakeholder, r
   const apiService = new ApiService();
   const citizenUrl = `${MUNICIPALITY_ID}/${stakeholder.externalId}/personnumber`;
   const baseURL = apiURL('citizen');
-  const personNumber = await apiService.get<string>({ url: citizenUrl, baseURL }, req);
+  let personNumber = '';
+
+  if (stakeholder.externalId) {
+    personNumber = (await apiService.get<string>({ url: citizenUrl, baseURL }, req)).data.toString();
+  } 
 
   const { contactChannels = [], parameters, ...rest } = stakeholder;
 
@@ -30,7 +34,7 @@ export async function mapStakeholderToStakeholderDTO(stakeholder: Stakeholder, r
 
   return {
     ...rest,
-    personNumber: addHyphenToPersonNumber(personNumber.data.toString()),
+    personNumber: addHyphenToPersonNumber(personNumber),
     title: parameters?.find(p => p.key === 'title')?.displayName ?? undefined,
     department: parameters?.find(p => p.key === 'department')?.displayName ?? undefined,
     emails: emails.length ? emails : undefined,
