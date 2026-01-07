@@ -20,6 +20,10 @@ export const APIS = [
     name: 'mdviewer',
     version: '1.0',
   },
+  {
+    name: 'jsonschema',
+    version: '1.0',
+  },
 ] as const;
 
 export const getApiBase = (name: string) => {

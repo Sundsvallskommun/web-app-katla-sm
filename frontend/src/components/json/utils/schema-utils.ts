@@ -3,12 +3,20 @@ import type { RJSFSchema, UiSchema } from '@rjsf/utils';
 import validatorAjv8 from '@rjsf/validator-ajv8';
 import type { TFunction } from 'i18next';
 
-// Cache för schemas så vi inte hämtar dem flera gånger
-const schemaCache = new Map<string, { schema: RJSFSchema; uiSchema?: UiSchema }>();
+// Cache schema to avoid repeated fetches
+const schemaCache = new Map<string, { schema: RJSFSchema; uiSchema?: UiSchema; schemaId?: string }>();
 
-/**
- * Get human-readable title for an enum value from schema
- */
+const CASETYPE_SCHEMAS: Record<string, string[]> = {
+  DEVIATION: ['avvikelse-plats-handelse'],
+};
+
+//TODO: temporary until casetypes are specified for all schemas
+const DEFAULT_SCHEMAS = ['avvikelse-plats-handelse'];
+
+export function getSchemasForCaseType(caseType: string): string[] {
+  return CASETYPE_SCHEMAS[caseType] ?? DEFAULT_SCHEMAS;
+}
+
 export function enumTitleOf(schema: RJSFSchema | null, field: string, value: string): string {
   if (!schema || !value) return value ?? '';
   const schemaRecord = schema as Record<string, unknown>;
@@ -18,9 +26,6 @@ export function enumTitleOf(schema: RJSFSchema | null, field: string, value: str
   return oneOf?.find((o) => o.const === value)?.title ?? value;
 }
 
-/**
- * Get human-readable titles for array of enum values from schema
- */
 export function enumTitlesOfArray(schema: RJSFSchema | null, field: string, values: string[] = []): string[] {
   if (!schema) return values ?? [];
   const schemaRecord = schema as Record<string, unknown>;
@@ -32,20 +37,14 @@ export function enumTitlesOfArray(schema: RJSFSchema | null, field: string, valu
   return (values ?? []).map((v) => oneOf.find((o) => o.const === v)?.title ?? v);
 }
 
-/**
- * Load a form schema from the backend API
- * Results are cached to avoid repeated fetches
- * @param schemaName - Name of the schema to load
- * @param t - Optional translation function for error messages
- */
 export async function loadFormSchema(
   schemaName: string,
   t?: TFunction
 ): Promise<{
   schema: RJSFSchema;
   uiSchema?: UiSchema;
+  schemaId?: string;
 }> {
-  // Returnera från cache om vi redan har hämtat schemat
   const cached = schemaCache.get(schemaName);
   if (cached) {
     return cached;
@@ -54,17 +53,20 @@ export async function loadFormSchema(
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
 
   try {
-    // Fetch schema and uiSchema from backend
-    const response = await fetch(`${apiUrl}/schemas/${schemaName}`, {
+    const response = await fetch(`${apiUrl}/schemas/latest/${schemaName}`, {
       credentials: 'include',
     });
     if (!response.ok) {
       throw new Error(`Failed to load schema: ${response.statusText}`);
     }
-    const { schema, uiSchema } = (await response.json()) as { schema: RJSFSchema; uiSchema?: UiSchema };
+    const { schema, uiSchema, schemaId } = (await response.json()) as {
+      schema: RJSFSchema;
+      uiSchema?: UiSchema;
+      schemaId?: string;
+    };
 
     // Save to cache
-    const result = { schema, uiSchema };
+    const result = { schema, uiSchema, schemaId };
     schemaCache.set(schemaName, result);
 
     return result;
@@ -75,48 +77,43 @@ export async function loadFormSchema(
   }
 }
 
-/**
- * Get list of available form schema names
- * Note: This is a static list. Update this when adding new schemas.
- */
-export function getAvailableFormSchemas(): string[] {
-  return [
-    // 'lex-bedomning',
-    'avvikelse-plats-handelse',
-    //'test-alla-komponenter',
-    // Add more schema names here as they are created
-  ];
-}
+export async function loadFormSchemaById(
+  schemaId: string,
+  t?: TFunction
+): Promise<{
+  schema: RJSFSchema;
+  uiSchema?: UiSchema;
+  schemaId: string;
+}> {
+  const cached = schemaCache.get(schemaId);
+  if (cached) {
+    return { ...cached, schemaId };
+  }
 
-/**
- * Get metadata about a form schema
- */
-export function getFormSchemaMetadata(schemaName: string): {
-  name: string;
-  title: string;
-  description: string;
-} {
-  // This can be extended to read from a metadata file
-  const metadata: Record<string, { title: string; description: string }> = {
-    'lex-bedomning': {
-      title: 'LEX-bedömning',
-      description: '',
-    },
-    'avvikelse-plats-handelse': {
-      title: 'Plats och händelseförlopp',
-      description: 'Information om var och när avvikelsen inträffade samt händelseförlopp',
-    },
-    'test-alla-komponenter': {
-      title: 'Testformulär - Alla komponenter',
-      description: 'Testformulär som visar alla tillgängliga widgets och valideringar',
-    },
-  };
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
 
-  return {
-    name: schemaName,
-    title: metadata[schemaName]?.title ?? schemaName,
-    description: metadata[schemaName]?.description ?? '',
-  };
+  try {
+    const response = await fetch(`${apiUrl}/schemas/${schemaId}`, {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to load schema: ${response.statusText}`);
+    }
+    const { schema, uiSchema } = (await response.json()) as {
+      schema: RJSFSchema;
+      uiSchema?: UiSchema;
+      schemaId: string;
+    };
+
+    const result = { schema, uiSchema, schemaId };
+    schemaCache.set(schemaId, result);
+
+    return result;
+  } catch (error) {
+    console.error(`Failed to load schema by ID: ${schemaId}`, error);
+    const errorMessage = t ? t('schema_load_error', { schemaName: schemaId }) : `Could not load schema: ${schemaId}`;
+    throw new Error(errorMessage);
+  }
 }
 
 /**
@@ -142,8 +139,8 @@ export async function validateErrandFormData(
       const { errors: validationErrors } = validatorAjv8.validateFormData(parsedData, schema);
 
       if (validationErrors.length > 0) {
-        const metadata = getFormSchemaMetadata(entry.schemaName);
-        errors.push(`${metadata.title}: ${validationErrors[0].message}`);
+        const schemaTitle = (schema as Record<string, unknown>).title ?? entry.schemaName;
+        errors.push(`${schemaTitle}: ${validationErrors[0].message}`);
       }
     } catch {
       const errorMessage =

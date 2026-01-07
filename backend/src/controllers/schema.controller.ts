@@ -1,66 +1,77 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
+import { JsonSchema, UiSchema } from '@/data-contracts/jsonschema/data-contracts';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
 import { apiURL } from '@/utils/util';
 import { Response } from 'express';
 import { Controller, Get, Param, Req, Res, UseBefore } from 'routing-controllers';
-import * as fs from 'fs';
-import * as path from 'path';
-
-interface TemplateResponse {
-  identifier: string;
-  version: string;
-  content: string;
-  name: string;
-}
 
 @Controller()
 export class SchemaController {
   private apiService = new ApiService();
-  private apiBase = getApiBase('templating');
+  private apiBase = getApiBase('jsonschema');
 
-  // Try to load schema from local file (for development/testing)
-  private tryLoadLocalSchema(schemaName: string): { schema: unknown; uiSchema: unknown } | null {
-    const localPath = path.join(__dirname, '..', '..', 'schemas', `${schemaName}.json`);
+  private async fetchUiSchema(schemaId: string, req: RequestWithUser): Promise<Record<string, unknown>> {
     try {
-      if (fs.existsSync(localPath)) {
-        const content = fs.readFileSync(localPath, 'utf-8');
-        const { schema, uiSchema } = JSON.parse(content);
-        console.log(`Loaded schema from local file: ${localPath}`);
-        return { schema, uiSchema: uiSchema ?? {} };
-      }
-    } catch (err) {
-      console.log(`Could not load local schema: ${err}`);
+      const uiRes = await this.apiService.get<UiSchema>(
+        {
+          baseURL: apiURL(this.apiBase),
+          url: `${MUNICIPALITY_ID}/schemas/${schemaId}/ui-schema`,
+        },
+        req,
+      );
+      return (uiRes.data.value as Record<string, unknown>) ?? {};
+    } catch {
+      console.log(`No UI schema found for ${schemaId}, using empty object`);
+      return {};
     }
-    return null;
   }
 
-  @Get('/schemas/:schemaName')
+  @Get('/schemas/:schemaId')
   @UseBefore(authMiddleware)
-  async getSchema(@Param('schemaName') schemaName: string, @Req() req: RequestWithUser, @Res() response: Response): Promise<Response> {
-    const baseURL = apiURL(this.apiBase);
-    const url = `${MUNICIPALITY_ID}/templates/${schemaName}`;
-
+  async getSchemaById(@Param('schemaId') schemaId: string, @Req() req: RequestWithUser, @Res() response: Response): Promise<Response> {
     try {
-      const res = await this.apiService.get<TemplateResponse>({ baseURL, url }, req);
+      const schemaRes = await this.apiService.get<JsonSchema>(
+        {
+          baseURL: apiURL(this.apiBase),
+          url: `${MUNICIPALITY_ID}/schemas/${schemaId}`,
+        },
+        req,
+      );
 
-      // Decode base64 content
-      console.log('Schema content (base64):', res.data.content);
-      const decoded = Buffer.from(res.data.content, 'base64').toString('utf-8');
-      const { schema, uiSchema } = JSON.parse(decoded);
+      const schema = schemaRes.data.value as Record<string, unknown>;
+      const uiSchema = await this.fetchUiSchema(schemaId, req);
 
-      return response.json({ schema, uiSchema: uiSchema ?? {} });
+      return response.json({ schema, uiSchema, schemaId });
     } catch (error) {
-      console.log('Templating service failed, trying local fallback...');
+      console.error('Error loading schema:', error);
+      return response.status(500).json({
+        error: 'Failed to load schema',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
 
-      // Try local fallback
-      const localSchema = this.tryLoadLocalSchema(schemaName);
-      if (localSchema) {
-        return response.json(localSchema);
-      }
+  @Get('/schemas/latest/:schemaName')
+  @UseBefore(authMiddleware)
+  async getLatestSchema(@Param('schemaName') schemaName: string, @Req() req: RequestWithUser, @Res() response: Response): Promise<Response> {
+    try {
+      const latestRes = await this.apiService.get<JsonSchema>(
+        {
+          baseURL: apiURL(this.apiBase),
+          url: `${MUNICIPALITY_ID}/schemas/${schemaName}/versions/latest`,
+        },
+        req,
+      );
 
+      const schemaId = latestRes.data.id;
+      const schema = latestRes.data.value as Record<string, unknown>;
+      const uiSchema = await this.fetchUiSchema(schemaId, req);
+
+      return response.json({ schema, uiSchema, schemaId });
+    } catch (error) {
       console.error('Error loading schema:', error);
       return response.status(500).json({
         error: 'Failed to load schema',

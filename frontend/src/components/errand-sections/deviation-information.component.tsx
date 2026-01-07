@@ -2,7 +2,7 @@
 
 import { useFormSchema } from '@components/json/hooks/use-form-schema';
 import SchemaForm from '@components/json/schema/schema-form.component';
-import { getAvailableFormSchemas } from '@components/json/utils/schema-utils';
+import { getSchemasForCaseType } from '@components/json/utils/schema-utils';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@app/[locale]/arende/layout';
 import { useCallback } from 'react';
@@ -49,11 +49,17 @@ function SchemaFormField({ schemaName, index }: SchemaFormFieldProps) {
 }
 
 export const DeviationInformation: React.FC = () => {
-  const availableSchemas = getAvailableFormSchemas();
+  const { watch } = useFormContext<ErrandFormDTO>();
+  const caseType = watch('classification.type');
+  const schemas = getSchemasForCaseType(caseType ?? '');
+
+  if (schemas.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-24">
-      {availableSchemas.map((schemaName, index) => (
+      {schemas.map((schemaName, index) => (
         <SchemaFormField key={schemaName} schemaName={schemaName} index={index} />
       ))}
     </div>
