@@ -6,11 +6,13 @@ import Filtering from '@components/filtering/filtering.component';
 import { CenterDiv } from '@layouts/center-div.component';
 import FilteringLayout from '@layouts/filtering-layout/filtering-layout.component';
 import Main from '@layouts/main/main.component';
+import { getMetadata } from '@services/errand-service/errand-service';
 import { useUserStore } from '@services/user-service/user-service';
 import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Button, Link } from '@sk-web-gui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useMetadataStore } from 'src/stores/metadata-store';
 import { useShallow } from 'zustand/react/shallow';
 
 const Oversikt: React.FC = () => {
@@ -18,6 +20,14 @@ const Oversikt: React.FC = () => {
   const { t } = useTranslation();
   console.log('user', user);
   const [show, setShow] = useState<boolean>(false);
+
+  const { setMetadata } = useMetadataStore();
+
+  useEffect(() => {
+    console.log('GETTING METADATA');
+    getMetadata().then((res) => setMetadata(res));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -53,9 +63,9 @@ const Oversikt: React.FC = () => {
       </FilteringLayout>
       <Main>
         <CenterDiv>
-        <div className='w-full max-w-screen-desktop-max'>
-          <ErrandTable />
-        </div>
+          <div className="w-full max-w-screen-desktop-max">
+            <ErrandTable />
+          </div>
         </CenterDiv>
       </Main>
     </>

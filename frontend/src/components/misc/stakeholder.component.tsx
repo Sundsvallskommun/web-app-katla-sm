@@ -1,20 +1,40 @@
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { getStakeholderUsingPersonNumber } from '@services/citizen/citizen-service';
+import { getEmployeeStakeholderFromApi } from '@services/employee-service/employee-service';
 import LucideIcon from '@sk-web-gui/lucide-icon';
-import { Button, cx, FormControl, FormErrorMessage, FormLabel, Input, SearchField, Select } from '@sk-web-gui/react';
-import { useState } from 'react';
-import { FormProvider, useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import {
+  Button,
+  cx,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  RadioButton,
+  SearchField,
+  Select
+} from '@sk-web-gui/react';
+import { emptyStakeholder, phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
+import { useEffect, useState } from 'react';
+import { FormProvider, Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { useMetadataStore } from 'src/stores/metadata-store';
 import { StakeholderFormModal } from './stakeholder-modal.component';
 
 export const StakeholderList: React.FC<{
-  roles?: string[];
-}> = () => {
+  roles: string[];
+  employeeSearch?: boolean;
+}> = ({ roles, employeeSearch = false }) => {
+  const [searchMode, setSearchMode] = useState<string>('PERSON');
+  const [query, setQuery] = useState<string>('');
   const [searchResult, setSearchResult] = useState<boolean>(false);
+  const [emptyResult, setEmptyResult] = useState<boolean>(false);
   const [manualEntryOpen, setManualEntryOpen] = useState<boolean>(false);
+  const { metadata } = useMetadataStore();
+  const { t } = useTranslation();
 
   const context = useFormContext<ErrandDTO>();
-
   const { stakeholders } = context.watch();
 
   const { append, remove } = useFieldArray({
@@ -23,61 +43,129 @@ export const StakeholderList: React.FC<{
   });
 
   const method = useForm<StakeholderDTO>({
-    // defaultValues: { ...emptyCasedataOwnerOrContact },
+    defaultValues: emptyStakeholder,
     mode: 'onSubmit',
-    // resolver: yupResolver(stakeholderSchema) as unknown as Resolver<CasedataOwnerOrContact>,
+    resolver: yupResolver(stakeholderSchema) as unknown as Resolver<StakeholderDTO>,
   });
 
-  const { handleSubmit, register, watch, setValue, getValues, reset } = method;
+  const { handleSubmit, register, watch, reset, trigger, setValue, formState } = method;
+  const { firstName, lastName, personNumber, address, city, title, department } = watch();
 
-  const { firstName, lastName, personNumber, address, city } = watch();
+  //Used for resetting form when adding multiple stakeholders
+  useEffect(() => {
+    reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.isSubmitSuccessful]);
 
-  const onSearchHandler = (query: string) => {
-    getStakeholderUsingPersonNumber(query).then((res) => {
-      reset(res);
-      setSearchResult(true);
-    });
+  const hasPrimaryStakeholder = stakeholders?.some((s) => s.role?.includes('PRIMARY'));
+  const hasPrimaryRole = roles.includes('PRIMARY');
+  const showAddButton = !hasPrimaryRole || (hasPrimaryRole && !hasPrimaryStakeholder);
+
+  const clearStakeholderForm = () => {
+    setQuery('');
+    setSearchResult(false);
+    setEmptyResult(false);
+    reset(emptyStakeholder);
+  };
+
+  const onSearchHandler = async (query: string) => {
+    if (searchMode === 'PERSON') {
+      setValue('personNumber', query);
+      const isValid = await trigger('personNumber');
+      if (!isValid) {
+        return;
+      }
+      getStakeholderUsingPersonNumber(query)
+        .then((res) => {
+          if (res.status === 200) {
+            reset(res.data);
+            setEmptyResult(false);
+            setSearchResult(true);
+          } else {
+            setEmptyResult(true);
+          }
+        })
+        .catch(() => {
+          setEmptyResult(true);
+        });
+    }
+    if (searchMode === 'EMPLOYEE') {
+      getEmployeeStakeholderFromApi(query)
+        .then((res) => {
+          if (res.status === 200) {
+            reset(res.data);
+            setEmptyResult(false);
+            setSearchResult(true);
+          } else {
+            setEmptyResult(true);
+          }
+        })
+        .catch(() => {
+          setEmptyResult(true);
+        });
+    }
   };
 
   const addStakeholderToErrand = (stakeholder: StakeholderDTO) => {
-    append({ ...stakeholder, externalIdType: 'PERSON' });
-
-    setSearchResult(false);
-  };
-
-  const updateContactChannel = (type: string, value: string) => {
-    const current = getValues().contactChannels ?? [];
-    const updated = [...current.filter((c) => c.type !== type), { type, value }];
-    setValue('contactChannels', updated, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  };
-
-  const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateContactChannel('PHONE', e.target.value);
-  };
-
-  const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateContactChannel('EMAIL', e.target.value);
+    append({ ...stakeholder, phoneNumbers: [phoneNumberFormatter(stakeholder?.phoneNumbers?.[0])] });
+    clearStakeholderForm();
   };
 
   return (
     <div>
       <FormProvider {...method}>
-        <FormControl className="w-full">
-          <FormLabel>Sök på personnummer</FormLabel>
-          <SearchField
-            size="md"
-            className="max-w-[52.5rem]"
-            value={personNumber ?? ''}
-            {...register('personNumber')}
-            onSearch={onSearchHandler}
-          ></SearchField>
-        </FormControl>
+        {showAddButton && (
+          <FormControl className="w-full">
+            {employeeSearch && (
+              <RadioButton.Group className="mb-18" inline>
+                <RadioButton
+                  data-cy="radiobutton-person"
+                  checked={searchMode === 'PERSON'}
+                  value={'PERSON'}
+                  onChange={(e) => {
+                    setSearchMode(e.target.value);
+                    clearStakeholderForm();
+                  }}
+                >
+                  Person
+                </RadioButton>
+                <RadioButton
+                  data-cy="radiobutton-employee"
+                  checked={searchMode === 'EMPLOYEE'}
+                  value={'EMPLOYEE'}
+                  onChange={(e) => {
+                    setSearchMode(e.target.value);
+                    clearStakeholderForm();
+                  }}
+                >
+                  Anställd
+                </RadioButton>
+              </RadioButton.Group>
+            )}
+            <FormLabel>{t(`errand-information:search.${searchMode}`)}</FormLabel>
+            <SearchField
+              data-cy="person-number-input"
+              size="md"
+              className="max-w-[52.5rem]"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onSearch={onSearchHandler}
+              onReset={() => {
+                clearStakeholderForm();
+              }}
+              readOnly={searchResult}
+            />
+            {formState.errors.personNumber && (
+              <FormErrorMessage data-cy="person-number-error">
+                {formState.errors.personNumber?.message}
+              </FormErrorMessage>
+            )}
+            {emptyResult && <FormErrorMessage data-cy="empty-person-error">Ingen person hittades</FormErrorMessage>}
+          </FormControl>
+        )}
 
         {searchResult && (
-          <div className="border-1 rounded-12 bg-background-content w-max-[52.5rem] my-15">
+          <div data-cy="search-result" className="border-1 rounded-12 bg-background-content w-max-[52.5rem] my-15">
             <div className="px-16 py-8">
               <span className="text-[1.6rem] font-semibold py-10">
                 {firstName} {lastName}
@@ -85,48 +173,57 @@ export const StakeholderList: React.FC<{
 
               <div className="flex text-md mb-10">
                 <div className="flex flex-col">
-                  <span className={cx(personNumber ? '' : 'italic text-text-secondary')}>
-                    {personNumber || 'Personnummer saknas'}
-                  </span>
-                  <span className={cx(address && city ? '' : 'italic text-text-secondary')}>
-                    {`${address}, ${city}` || 'Adress saknas'}
-                  </span>
+                  {title ?
+                    <span>{title}</span>
+                  : <span className={cx(!personNumber && 'italic text-text-secondary')}>
+                      {personNumber || 'Personnummer saknas'}
+                    </span>
+                  }
+                  {department ?
+                    <span>{department}</span>
+                  : <span className={cx((!address || !city) && 'italic text-text-secondary')}>
+                      {`${address}, ${city}` || 'Adress saknas'}
+                    </span>
+                  }
                 </div>
               </div>
               <div className="flex flex-row py-10 gap-10 w-full">
                 <FormControl className="w-full">
                   <FormLabel>E-postadress</FormLabel>
-                  <Input
-                    data-cy="stakeholder-email-input"
-                    placeholder="Ange e-postadress"
-                    onChange={handleEmailInput}
-                  />
-                  <FormErrorMessage className="text-error">{}</FormErrorMessage>
+                  <Input {...register('emails.0')} data-cy="stakeholder-email-input" placeholder="Ange e-postadress" />
+                  {formState.errors.emails?.[0]?.message && (
+                    <FormErrorMessage data-cy="email-input-error">
+                      {formState.errors.emails[0].message}
+                    </FormErrorMessage>
+                  )}
                 </FormControl>
                 <FormControl className="w-full">
                   <FormLabel>Telefonnummer</FormLabel>
                   <Input
+                    {...register('phoneNumbers.0')}
                     data-cy="stakeholder-mobilephone-input"
                     placeholder="Ange telefonnummer"
-                    onChange={handlePhoneInput}
                   />
-                  <FormErrorMessage className="text-error">{}</FormErrorMessage>
+                  {formState.errors.phoneNumbers?.[0]?.message && (
+                    <FormErrorMessage data-cy="phone-number-input-error">
+                      {formState.errors.phoneNumbers[0].message}
+                    </FormErrorMessage>
+                  )}
                 </FormControl>
               </div>
 
               <FormControl required className="w-[calc(50%-10px)]">
                 <FormLabel>Personens roll</FormLabel>
                 <Select data-cy="stakeholder-role-select" className="w-full" {...register('role')}>
-                  <Select.Option>Välj roll</Select.Option>
-                  {/* {roles
-                          .sort((a, b) => RoleDisplayNames[a].localeCompare(RoleDisplayNames[b]))
-                          .map((role) => (
-                            <Select.Option key={role} value={role}>
-                              {RoleDisplayNames[role]}
-                            </Select.Option>
-                          ))} */}
+                  {metadata?.roles?.map(
+                    (role) =>
+                      roles?.includes(role.name) && (
+                        <Select.Option key={role.name} value={role.name}>
+                          {role.displayName}
+                        </Select.Option>
+                      )
+                  )}
                 </Select>
-                <FormErrorMessage className="text-error"></FormErrorMessage>
               </FormControl>
               <div className="py-10">
                 <Button
@@ -145,34 +242,37 @@ export const StakeholderList: React.FC<{
       </FormProvider>
 
       {stakeholders?.map((stakeholder, index) => {
+        if (!roles.includes(stakeholder.role ?? '')) return null;
         return (
           <StakeholderCard
             index={index}
             key={index}
             stakeholder={stakeholder}
             isEditable
-            //   availableRoles={roles}
+            roles={roles}
             onRemove={() => remove(index)}
           />
         );
       })}
 
-      <Button
-        data-cy="add-manual-person-button"
-        variant="primary"
-        size="sm"
-        color="vattjom"
-        inverted={true}
-        className="mt-6 w-fit"
-        leftIcon={<LucideIcon name="pen" />}
-        onClick={() => {
-          setManualEntryOpen(true);
-        }}
-      >
-        Lägg till manuellt
-      </Button>
+      {showAddButton && (
+        <Button
+          data-cy="add-manual-person-button"
+          variant="primary"
+          size="sm"
+          color="vattjom"
+          inverted={true}
+          className="mt-6 w-fit"
+          leftIcon={<LucideIcon name="pen" />}
+          onClick={() => {
+            setManualEntryOpen(true);
+          }}
+        >
+          Lägg till manuellt
+        </Button>
+      )}
 
-      <StakeholderFormModal show={manualEntryOpen} onClose={() => setManualEntryOpen(false)} />
+      <StakeholderFormModal roles={roles} show={manualEntryOpen} onClose={() => setManualEntryOpen(false)} />
     </div>
   );
 };

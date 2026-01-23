@@ -6,6 +6,7 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import { StakeholderDTO } from '@/responses/supportmanagement.response';
 import ApiService from '@/services/api.service';
+import { addHyphenToPersonNumber } from '@/utils/stakeholder-mapping';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
@@ -33,14 +34,17 @@ export class CitizenController {
         lastName: res.data.lastname,
         address: res.data.addresses[0].address,
         zipCode: res.data.addresses[0].postalCode,
-        personNumber: personNumber,
+        personNumber: addHyphenToPersonNumber(personNumber),
         careOf: res.data.addresses[0].co,
         country: res.data.addresses[0].country,
       };
 
       return stakeholder;
     } catch (error: any) {
-      return {};
+      if (error.status === 404) {
+        return null;
+      }
+      return null;
     }
   }
 }

@@ -7,8 +7,6 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node dist/server.js",
     "dev": "cross-env NODE_ENV=development nodemon",
-    "prisma:migrate": "prisma migrate deploy",
-    "prisma:generate": "prisma generate",
     "generate:contracts": "cross-env NODE_ENV=development ts-node ./src/swagger-typescript-api.ts",
     "build": "tsc && tsc-alias",
     "build:swc": "swc src -d dist --source-maps --copy-files",
@@ -21,7 +19,6 @@
   },
   "dependencies": {
     "@node-saml/passport-saml": "^5.1.0",
-    "@prisma/client": "^5.12.1",
     "axios": "^1.7.9",
     "body-parser": "^1.20.3",
     "class-transformer": "^0.5.1",
@@ -78,7 +75,6 @@
     "node-config": "^0.0.2",
     "nodemon": "^3.1.9",
     "prettier": "^3.4.2",
-    "prisma": "^5.12.1",
     "supertest": "^7.0.0",
     "swagger-typescript-api": "^13.0.23",
     "ts-jest": "^29.2.5",

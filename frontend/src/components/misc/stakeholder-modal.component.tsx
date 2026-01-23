@@ -1,16 +1,20 @@
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, FormControl, FormErrorMessage, FormLabel, Input, Modal, Select } from '@sk-web-gui/react';
+import { phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
 import { useEffect } from 'react';
-import { useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import { Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import { useMetadataStore } from 'src/stores/metadata-store';
 
 export const StakeholderFormModal: React.FC<{
   index?: number;
   onClose: () => void;
   show: boolean;
-  //   roles: Role[];
+  roles: string[];
   initialValues?: StakeholderDTO;
   edit?: boolean;
-}> = ({ index, onClose, show, edit, initialValues }) => {
+}> = ({ index, onClose, show, roles, edit, initialValues }) => {
+  const { metadata } = useMetadataStore();
   const context = useFormContext<ErrandDTO>();
 
   const { update, append } = useFieldArray({
@@ -20,9 +24,10 @@ export const StakeholderFormModal: React.FC<{
 
   const method = useForm<StakeholderDTO>({
     mode: 'onSubmit',
+    resolver: yupResolver(stakeholderSchema) as unknown as Resolver<StakeholderDTO>,
   });
 
-  const { handleSubmit, register, setValue, reset, watch } = method;
+  const { handleSubmit, register, reset, formState } = method;
 
   useEffect(() => {
     reset(initialValues);
@@ -30,28 +35,18 @@ export const StakeholderFormModal: React.FC<{
   }, [onClose]);
 
   const onSave = (data: StakeholderDTO) => {
+    const stakeholder: StakeholderDTO = { ...data, phoneNumbers: [phoneNumberFormatter(data?.phoneNumbers?.[0])] };
     if (edit && index !== undefined) {
-      update(index, data);
+      update(index, stakeholder);
     } else {
-      append(data);
+      append(stakeholder);
     }
     onClose();
-  };
-
-  const contactChannels = watch(`contactChannels`) ?? [];
-  const existingEmail = contactChannels.find((c) => c.type === 'EMAIL')?.value ?? '';
-  const existingPhone = contactChannels.find((c) => c.type === 'PHONE')?.value ?? '';
-
-  const updateContactChannel = (type: string, value: string) => {
-    const current = contactChannels;
-    const updated = [...current.filter((c) => c.type !== type), { type, value }];
-    setValue(`contactChannels`, updated, { shouldDirty: true, shouldValidate: true });
   };
 
   return (
     <Modal
       data-cy="manual-person-modal"
-      className="w-full max-w-[48rem]"
       show={show}
       onClose={onClose}
       label={edit ? `Redigera person` : 'Lägg till person manuellt'}
@@ -59,57 +54,65 @@ export const StakeholderFormModal: React.FC<{
       <Modal.Content>
         <FormControl>
           <FormLabel>Personnummer</FormLabel>
-          <Input {...register(`personNumber`)} readOnly={true} />
+          <Input data-cy="modal-personNumber-input" {...register(`personNumber`)} readOnly />
         </FormControl>
         <div className="flex gap-8">
           <FormControl required>
             <FormLabel>Förnamn</FormLabel>
-            <Input {...register(`firstName`)} />
-            <FormErrorMessage className="text-error">{}</FormErrorMessage>
+            <Input data-cy="modal-firstName-input" {...register(`firstName`)} />
+            {formState.errors.firstName && (
+              <FormErrorMessage data-cy="firstName-input-error">{formState.errors.firstName.message}</FormErrorMessage>
+            )}
           </FormControl>
           <FormControl required>
             <FormLabel>Efternamn</FormLabel>
-            <Input {...register(`lastName`)} />
-            <FormErrorMessage className="text-error">{}</FormErrorMessage>
+            <Input data-cy="modal-lastName-input" {...register(`lastName`)} />
+            {formState.errors.lastName && (
+              <FormErrorMessage data-cy="lastName-input-error">{formState.errors.lastName.message}</FormErrorMessage>
+            )}
           </FormControl>
         </div>
 
         <div className="flex gap-8">
           <FormControl>
             <FormLabel>E-postadress</FormLabel>
-            <Input value={existingEmail} onChange={(e) => updateContactChannel('EMAIL', e.target.value)} />
-            <FormErrorMessage className="text-error">{}</FormErrorMessage>
+            <Input data-cy="modal-email-input" {...register('emails.0')} />
+            {formState.errors.emails?.[0]?.message && (
+              <FormErrorMessage data-cy="modal-email-input-error">
+                {formState.errors.emails[0].message}
+              </FormErrorMessage>
+            )}
           </FormControl>
           <FormControl>
             <FormLabel>Telefonnummer</FormLabel>
-            <Input value={existingPhone} onChange={(e) => updateContactChannel('PHONE', e.target.value)} />
-
-            <FormErrorMessage className="text-error">{}</FormErrorMessage>
+            <Input data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
+            {formState.errors.phoneNumbers?.[0]?.message && (
+              <FormErrorMessage data-cy="modal-phone-input-error" className="max-w-[22.9rem] truncate">
+                {formState.errors.phoneNumbers[0].message}
+              </FormErrorMessage>
+            )}
           </FormControl>
         </div>
 
         <div className="flex gap-8">
-          <FormControl readOnly={true} required={true}>
+          <FormControl>
             <FormLabel>Adress</FormLabel>
-            <Input {...register(`address`)} />
-            <FormErrorMessage className="text-error">{}</FormErrorMessage>
+            <Input data-cy="modal-address-input" {...register(`address`)} />
           </FormControl>
           <FormControl>
             <FormLabel>C/o adress</FormLabel>
-            <Input {...register(`careOf`)} />
+            <Input data-cy="modal-careOf-input" {...register(`careOf`)} />
           </FormControl>
         </div>
 
         <div className="flex gap-8">
-          <FormControl readOnly={true} required={true}>
+          <FormControl>
             <FormLabel>Postnummer</FormLabel>
-            <Input {...register(`zipCode`)} />
-            <FormErrorMessage className="text-error">{}</FormErrorMessage>
+            <Input data-cy="modal-zipCode-input" {...register(`zipCode`)} />
           </FormControl>
-          <FormControl readOnly={true} required={true}>
+          <FormControl>
             <FormLabel>Ort</FormLabel>
-            <Input {...register(`city`)} />
-            <FormErrorMessage className="text-error">{}</FormErrorMessage>
+            <Input data-cy="modal-city-input" {...register(`city`)} />
           </FormControl>
         </div>
 
@@ -117,14 +120,15 @@ export const StakeholderFormModal: React.FC<{
           <FormControl required>
             <FormLabel>Roll</FormLabel>
             <Select data-cy="modal-stakeholder-role-select" {...register(`role`)}>
-              <Select.Option>Välj roll</Select.Option>
-              {/* {roles.map((role) => (
-                <Select.Option key={role} value={role}>
-                  {RoleDisplayNames[role]}
-                </Select.Option>
-              ))} */}
+              {metadata?.roles?.map(
+                (role) =>
+                  roles?.includes(role.name) && (
+                    <Select.Option key={role.name} value={role.name}>
+                      {role.displayName}
+                    </Select.Option>
+                  )
+              )}
             </Select>
-            <FormErrorMessage className="text-error">{}</FormErrorMessage>
           </FormControl>
         </div>
       </Modal.Content>

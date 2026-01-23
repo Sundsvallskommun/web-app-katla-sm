@@ -80,10 +80,11 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
           {t('errand-information:cancel')}
         </Button>
       )}
-      <Button variant="primary" onClick={() => onSaveDraft()}>
+      <Button data-cy="save-draft-errand" variant="primary" onClick={() => onSaveDraft()}>
         {t('errand-information:save_draft')}
       </Button>
       <Button
+        data-cy="register-errand"
         variant="primary"
         color="vattjom"
         onClick={async () => {

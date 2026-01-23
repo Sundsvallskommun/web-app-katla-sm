@@ -16,7 +16,7 @@ interface MetadataState {
 
   setCategories: (categories: CategoryDTO[]) => void;
   setExternalIdTypes: (types: ExternalIdTypeDTO[]) => void;
-  setLabels: (labels: LabelsDTO[]) => void;
+  setLabels: (labels: LabelsDTO) => void;
   setStatuses: (statuses: StatusDTO[]) => void;
   setRoles: (roles: RoleDTO[]) => void;
   setContactReasons: (reasons: ContactReasonDTO[]) => void;

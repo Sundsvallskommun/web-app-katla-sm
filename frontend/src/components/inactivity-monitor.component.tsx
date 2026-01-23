@@ -20,7 +20,6 @@ const INACTIVITY_WARNING_TIME = TEST_MODE ? 0 : parseInt(INACTIVITY_WARNING_TIME
 const WARNING_COUNTDOWN_TIME = TEST_MODE ? 3600000 : parseInt(INACTIVITY_COUNTDOWN_TIMEOUT || '0', 10);
 
 export const InactivityMonitor: React.FC = () => {
-  const { t } = useTranslation('session');
   const router = useRouter();
   const pathname = usePathname();
 
@@ -90,6 +89,9 @@ export const InactivityMonitor: React.FC = () => {
   if (!INACTIVITY_ENABLED) {
     return null;
   }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('session');
 
   return (
     <Dialog show={showWarning} onClose={handleStayLoggedIn}>

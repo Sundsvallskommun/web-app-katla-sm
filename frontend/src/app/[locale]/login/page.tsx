@@ -88,7 +88,9 @@ const Login: React.FC = () => {
             <CenterDiv className="py-24 px-8">
               {isLoggedOut ?
                 <div className="flex flex-col items-center gap-[4rem] w-full">
-                  <h1 className="text-center text-[4rem] font-bold leading-[5.6rem] m-0">{t('login:logged_out_title')}</h1>
+                  <h1 className="text-center text-[4rem] font-bold leading-[5.6rem] m-0">
+                    {t('login:logged_out_title')}
+                  </h1>
                   <Button variant="primary" color="vattjom" size="lg" onClick={() => router.push('/login')}>
                     {t('login:login_again_button')}
                   </Button>
@@ -98,7 +100,7 @@ const Login: React.FC = () => {
                   <Divider className="w-full" />
                   <div className="flex flex-row desktop:flex-col gap-56 w-full desktop:w-fit px-80 pb-[10.4rem] pt-80 items-center">
                     <span>{t('login:login_problem')}</span>
-                    <Button variant="primary" size="lg" onClick={() => onLogin()}>
+                    <Button data-cy="login-button" variant="primary" size="lg" onClick={() => onLogin()}>
                       {capitalize(t('common:login'))}
                     </Button>
                   </div>

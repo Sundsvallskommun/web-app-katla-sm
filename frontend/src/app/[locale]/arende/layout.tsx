@@ -78,7 +78,7 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
   const defaultErrand: ErrandFormDTO = {
     title: 'Empty errand',
     priority: 'MEDIUM',
-    status: 'NEW',
+    status: 'DRAFT',
     channel: 'ESERVICE_KATLA',
     resolution: 'INFORMED',
   };

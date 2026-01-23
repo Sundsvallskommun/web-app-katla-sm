@@ -6,14 +6,12 @@ import NextLink from 'next/link';
 import { useTranslation } from 'react-i18next';
 
 export default function OversiktLayout({ children }: { children: React.ReactNode }) {
-      const { t } = useTranslation();
+  const { t } = useTranslation();
   return (
     <EmptyLayout>
       <div className="flex">
         <OverviewSidebar />
-        <div className="flex-grow">
-          {children}
-        </div>
+        <div className="flex-grow">{children}</div>
       </div>
       <CookieConsent
         title={t('layout:cookies.title', { app: process.env.NEXT_PUBLIC_APP_NAME })}

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useErrandCountStore } from 'src/stores/errand-count-store';
 import { useFilterStore } from 'src/stores/filter-store';
+import { useSortStore } from 'src/stores/sort-store';
 
 //TODO: Set correct statuses
 
@@ -32,6 +33,7 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
     setDraftErrandCount,
     setClosedErrandCount,
   } = useErrandCountStore();
+  const {reset} = useSortStore()
 
   useEffect(() => {
     if (!activeStatus) {
@@ -84,6 +86,8 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
             onClick={() => {
               setActiveStatus(button.label);
               setStatuses(button.statuses);
+              reset();
+
             }}
             aria-label={`status-button-${button.label}`}
             variant={isActive ? 'primary' : 'ghost'}
