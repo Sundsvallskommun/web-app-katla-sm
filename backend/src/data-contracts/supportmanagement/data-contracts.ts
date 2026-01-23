@@ -392,7 +392,7 @@ export interface Errand {
    * Priority model
    * @uniqueItems true
    */
-  priority?: Stakeholder[];
+  priority?: Priority;
   stakeholders?: Stakeholder[];
   /** @uniqueItems true */
   externalTags?: ExternalTag[];
