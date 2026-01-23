@@ -1,7 +1,7 @@
 'use client';
 import type { ObjectFieldTemplateProps, RJSFSchema, UiSchema } from '@rjsf/utils';
 import LucideIcon from '@sk-web-gui/lucide-icon';
-import { Checkbox, Disclosure, Divider } from '@sk-web-gui/react';
+import { Checkbox, Disclosure, Divider, Label } from '@sk-web-gui/react';
 import React, { useState } from 'react';
 
 interface ConditionalRule {
@@ -118,23 +118,28 @@ function SectionDisclosure({ section, children }: SectionDisclosureProps) {
   };
 
   return (
-    <Disclosure
-      header={section.title}
-      icon={
-        section.icon ? <LucideIcon name={section.icon as React.ComponentProps<typeof LucideIcon>['name']} /> : undefined
-      }
-      open={open}
-      onToggleOpen={setOpen}
-      variant="alt"
-      className="w-full"
-      label={doneMark ? 'Komplett' : ''}
-      labelColor="gronsta"
-    >
-      {children}
-      <Divider className="mt-16" />
-      <Checkbox className="mt-16" onClick={handleDoneMarkChange} checked={doneMark}>
-        Markera avsnittet som komplett
-      </Checkbox>
+    <Disclosure variant="alt" className="w-full" open={open} onToggleOpen={setOpen}>
+      <Disclosure.Header>
+        {section.icon && (
+          <Disclosure.Icon
+            icon={<LucideIcon name={section.icon as React.ComponentProps<typeof LucideIcon>['name']} />}
+          />
+        )}
+        <Disclosure.Title>{section.title}</Disclosure.Title>
+        {doneMark && (
+          <Label inverted rounded color="gronsta">
+            Komplett
+          </Label>
+        )}
+        <Disclosure.Button />
+      </Disclosure.Header>
+      <Disclosure.Content>
+        {children}
+        <Divider className="mt-16" />
+        <Checkbox className="mt-16" onClick={handleDoneMarkChange} checked={doneMark}>
+          Markera avsnittet som komplett
+        </Checkbox>
+      </Disclosure.Content>
     </Disclosure>
   );
 }
