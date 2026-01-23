@@ -4,6 +4,7 @@
   "register": "Skicka in ärendet",
   "no_errands": "Det finns inga ärenden att visa",
   "errand": "Ärende: ",
+  "draft": "Utkast: ",
   "save_message": {
     "draft": "Utkast sparades",
     "register": "Ärendet skickades in",

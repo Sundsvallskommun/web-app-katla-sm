@@ -37,7 +37,7 @@ export const userMenuGroups = [
               type="button"
               className="usermenu-item w-full text-left inline-flex items-center gap-2"
               onClick={() => {
-                window.location.assign(`${process.env.NEXT_PUBLIC_BASEPATH}/logout`);
+                window.location.assign(`${process.env.NEXT_PUBLIC_BASE_PATH}/logout`);
               }}
             >
               <LucideIcon name="log-out" />

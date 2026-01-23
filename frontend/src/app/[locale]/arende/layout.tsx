@@ -1,5 +1,6 @@
 'use client';
 
+import LoaderFullScreen from '@components/loader/loader-fullscreen';
 import { VisibleTabs } from '@components/tabs/tabs';
 import { FormValidationProvider } from '@contexts/form-validation-context';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
@@ -7,13 +8,14 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import BaseErrandLayout from '@layouts/base-errand-layout/base-errand-layout.component';
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
 import Main from '@layouts/main/main.component';
+import { getMetadata } from '@services/errand-service/errand-service';
 import { Tabs } from '@sk-web-gui/react';
-
 import { default as NextLink } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormProvider, Resolver, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useMetadataStore } from 'src/stores/metadata-store';
 import * as yup from 'yup';
 
 // Extended form type with JSON schema form data (not yet in API)
@@ -37,10 +39,6 @@ const FormSchema = yup
         type: yup.string().notOneOf(['Välj ett alternativ', ''], 'Välj ett alternativ').required('Välj ett alternativ'),
       })
       .required(),
-
-    // description: yup.string().notRequired(),
-    // parameters: yup.array().of(yup.mixed()).notRequired(),
-    // channel: yup.string().notRequired(),
   })
   .required();
 
@@ -49,6 +47,27 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
   const pathName = usePathname();
   const registerNewErrand = !!pathName.includes('/registrera');
   const initialFocus = useRef<HTMLBodyElement>(null);
+  const { metadata, setMetadata } = useMetadataStore();
+  const [isLoading, setIsLoading] = useState(!metadata?.categories?.length);
+  const [metadataError, setMetadataError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!metadata?.categories?.length) {
+      setIsLoading(true);
+      setMetadataError(null);
+      getMetadata()
+        .then((res) => {
+          setMetadata(res);
+        })
+        .catch(() => {
+          setMetadataError('Kunde inte ladda metadata. Försök ladda om sidan.');
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [metadata?.categories?.length, setMetadata]);
+
   const setInitalFocus = () => {
     setTimeout(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -56,22 +75,53 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
     });
   };
 
-  //TODO: Update default values for form
-  // const availableSchemas = getAvailableFormSchemas();
-  const defaultErrand: ErrandDTO = {
+  const defaultErrand: ErrandFormDTO = {
     title: 'Empty errand',
-    reporterUserId: 'edw25mol',
     priority: 'MEDIUM',
     status: 'NEW',
-    channel: 'PHONE',
+    channel: 'ESERVICE_KATLA',
     resolution: 'INFORMED',
   };
 
-  const methods = useForm<ErrandDTO>({
-    resolver: yupResolver(FormSchema) as unknown as Resolver<ErrandDTO>,
+  const methods = useForm<ErrandFormDTO>({
+    resolver: yupResolver(FormSchema) as unknown as Resolver<ErrandFormDTO>,
     defaultValues: defaultErrand,
     mode: 'onSubmit',
   });
+
+  const errandStatus = methods.watch('status');
+  const errandNumber = methods.watch('errandNumber');
+  const isDraft = errandStatus === 'DRAFT';
+
+  const getHeaderTitle = () => {
+    if (registerNewErrand) {
+      return t('filtering:new_errand');
+    }
+    if (isDraft) {
+      return `${t('errand-information:draft')} ${errandNumber}`;
+    }
+    return `${t('errand-information:errand')} ${errandNumber}`;
+  };
+
+  if (isLoading) {
+    return <LoaderFullScreen />;
+  }
+
+  if (metadataError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <p className="text-error text-lg mb-4">{metadataError}</p>
+          <button
+            className="px-4 py-2 bg-primary text-white rounded"
+            onClick={() => window.location.reload()}
+          >
+            Ladda om sidan
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -91,12 +141,8 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
               <div className="bg-transparent">
                 <div className="mb-xl">
                   <div className="mx-auto max-w-[108rem] flex flex-row justify-between pt-32 pb-12">
-                    <h1 className="text-h2-lg">
-                      {registerNewErrand ?
-                        t('filtering:new_errand')
-                      : `${t('errand-information:errand')} ${methods.getValues('errandNumber')}`}
-                    </h1>
-                    <ErrandButtonGroup />
+                    <h1 className="text-h2-lg">{getHeaderTitle()}</h1>
+                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
                   </div>
                   <Main>
                     <Tabs
@@ -104,7 +150,6 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
                       tabslistClassName="border-0 -m-b-12 flex-wrap ml-10"
                       panelsClassName="border-t-1"
                       size="sm"
-                      // current={tabs.filter((tab) => tab.visible).findIndex((tab) => tab.path === pathname)}
                     >
                       {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
                         return (
