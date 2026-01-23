@@ -209,19 +209,6 @@ export interface FacilityInfoDTO {
   hasSubUnits?: boolean;
 }
 
-export interface OrgSearchResultDTO {
-  orgId?: number;
-  orgName?: string;
-  parentId?: number;
-  isLeafLevel?: boolean;
-}
-
-export interface OrgSearchResponseDTO {
-  organizations?: OrgSearchResultDTO[];
-  persons?: any[];
-  responsibilities?: any[];
-}
-
 export interface OrgTreeNodeDTO {
   orgId?: number;
   orgName?: string;

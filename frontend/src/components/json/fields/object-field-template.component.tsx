@@ -167,7 +167,7 @@ function renderFields(
       if (visibleRowFields.length === 0) return null;
 
       return (
-        <div key={rowKey} className={`flex ${row.gap || 'gap-16'}`}>
+        <div key={rowKey} className={`flex ${row.gap || 'gap-32'}`}>
           {visibleRowFields.map((f) => {
             const prop = properties.find((p) => p.name === f);
             return prop ?
@@ -226,7 +226,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   if (sections.length === 0) {
     const renderedRows = new Set<string>();
     return (
-      <div className="flex flex-col gap-16">
+      <div className="flex flex-col gap-32">
         {renderFields(order, properties, visibleFields, rows, rowFieldNames, renderedRows)}
       </div>
     );
@@ -242,7 +242,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   const renderedRows = new Set<string>();
 
   return (
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col gap-32">
       {/* Render sections */}
       {sections.map((section) => {
         // Get visible fields for this section in order
@@ -253,7 +253,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
 
         return (
           <SectionDisclosure key={section.id} section={section}>
-            <div className="flex flex-col gap-16 py-16">
+            <div className="flex flex-col gap-32 py-16">
               {renderFields(sectionFieldsInOrder, properties, visibleFields, rows, rowFieldNames, renderedRows)}
             </div>
           </SectionDisclosure>
@@ -262,7 +262,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
 
       {/* Render fields not in any section */}
       {unsectionedFields.length > 0 && (
-        <div className="flex flex-col gap-16">
+        <div className="flex flex-col gap-32">
           {renderFields(unsectionedFields, properties, visibleFields, rows, rowFieldNames, renderedRows)}
         </div>
       )}

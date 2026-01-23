@@ -17,7 +17,7 @@ export const APIS = [
     version: '3.0',
   },
   {
-    name: 'mdviewer',
+    name: 'company',
     version: '1.0',
   },
   {

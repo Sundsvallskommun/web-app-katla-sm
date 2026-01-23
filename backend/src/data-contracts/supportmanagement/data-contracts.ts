@@ -15,9 +15,9 @@ export interface Problem {
   /** @format uri */
   type?: string;
   parameters?: Record<string, any>;
+  status?: StatusType;
   title?: string;
   detail?: string;
-  status?: StatusType;
 }
 
 export interface StatusType {
@@ -86,9 +86,9 @@ export interface ThrowableProblem {
   /** @format uri */
   type?: string;
   parameters?: Record<string, any>;
+  status?: StatusType;
   title?: string;
   detail?: string;
-  status?: StatusType;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -137,8 +137,10 @@ export interface NamespaceConfig {
    * @format date-time
    */
   modified?: string;
-  /** If set to true access control will be enabled */
+  /** If set to true access control will be enabled. If no value is set it defaults to false. */
   accessControl?: boolean;
+  /** If set to true notification will be sent to the stakeholder when stakeholder with reporter role recieves an internal message. If no value is set it defaults to false. */
+  notifyReporter?: boolean;
 }
 
 /** Label model */
@@ -157,6 +159,7 @@ export interface Label {
   /**
    * Resource name
    * @minLength 1
+   * @pattern [A-Z0-9_]+
    */
   resourceName: string;
   labels?: Label[];
@@ -855,40 +858,40 @@ export interface MetadataResponse {
 }
 
 export interface PageErrand {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   /** @format int32 */
   size?: number;
   content?: Errand[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
   first?: boolean;
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
   /** @format int64 */
   offset?: number;
+  sort?: SortObject;
+  unpaged?: boolean;
   paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  sort?: SortObject;
-  unpaged?: boolean;
 }
 
 export interface SortObject {
   empty?: boolean;
-  sorted?: boolean;
   unsorted?: boolean;
+  sorted?: boolean;
 }
 
 /** Revision model */
@@ -1026,21 +1029,21 @@ export enum EventType {
 }
 
 export interface PageEvent {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   /** @format int32 */
   size?: number;
   content?: Event[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
   first?: boolean;
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1131,21 +1134,21 @@ export interface Message {
 }
 
 export interface PageMessage {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   /** @format int32 */
   size?: number;
   content?: Message[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
   first?: boolean;
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 

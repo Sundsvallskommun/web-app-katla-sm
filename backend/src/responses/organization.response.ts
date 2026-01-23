@@ -1,40 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-export class OrgSearchResultDTO {
-  @IsNumber()
-  @IsOptional()
-  orgId?: number;
-
-  @IsString()
-  @IsOptional()
-  orgName?: string;
-
-  @IsNumber()
-  @IsOptional()
-  parentId?: number;
-
-  @IsBoolean()
-  @IsOptional()
-  isLeafLevel?: boolean;
-}
-
-export class OrgSearchResponseDTO {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => OrgSearchResultDTO)
-  @IsOptional()
-  organizations?: OrgSearchResultDTO[];
-
-  @IsArray()
-  @IsOptional()
-  persons?: unknown[];
-
-  @IsArray()
-  @IsOptional()
-  responsibilities?: unknown[];
-}
-
 export class OrgTreeNodeDTO {
   @IsNumber()
   @IsOptional()

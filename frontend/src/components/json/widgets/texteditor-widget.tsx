@@ -5,7 +5,7 @@ import { getCommonProps, getWidgetOptions } from './types';
 
 const TextEditor = dynamic(() => import('@sk-web-gui/text-editor'), { ssr: false });
 
-const DEFAULT_CLASS = 'w-full h-[22rem] mb-40';
+const DEFAULT_CLASS = 'w-full h-[22rem]';
 
 export function TexteditorWidget(props: WidgetProps) {
   const { value, className, onChange } = getCommonProps(props, DEFAULT_CLASS);
