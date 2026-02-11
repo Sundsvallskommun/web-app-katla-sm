@@ -1,4 +1,8 @@
-import { validateErrandFormData } from '@components/json/utils/schema-utils';
+import {
+  errandFormDataToJsonParameters,
+  jsonParametersToErrandFormData,
+  validateErrandFormData,
+} from '@components/json/utils/schema-utils';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@app/[locale]/arende/layout';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
@@ -30,16 +34,26 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   const isDraft = errandStatus === 'DRAFT';
   const showButtons = isNewErrand || isDraft;
 
+  const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
+    const { errandFormData, ...errandWithoutFormData } = values;
+    return {
+      ...errandWithoutFormData,
+      status,
+      jsonParameters: errandFormDataToJsonParameters(errandFormData),
+    };
+  };
+
   const onSaveDraft = async () => {
     const isValid = await trigger(['classification.category', 'classification.type']);
     if (!isValid) return;
 
-    const errandData = { ...getValues(), status: 'DRAFT' };
+    const errandData = prepareErrandForApi(getValues(), 'DRAFT');
 
     try {
       const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
+      const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
       toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
-      reset(errand);
+      reset({ ...errand, errandFormData });
 
       if (isNewErrand) {
         router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`);
@@ -52,12 +66,13 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   const onRegister = async (logout?: boolean) => {
     setIsOpen(false);
 
-    const errandData = { ...getValues(), status: 'NEW' };
+    const errandData = prepareErrandForApi(getValues(), 'NEW');
 
     try {
       const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
+      const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
       toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.register') });
-      reset(errand);
+      reset({ ...errand, errandFormData });
 
       if (logout) {
         router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/logout`);

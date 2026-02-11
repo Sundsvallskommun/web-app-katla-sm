@@ -21,6 +21,7 @@ import * as yup from 'yup';
 // Extended form type with JSON schema form data (not yet in API)
 export interface ErrandFormDataItem {
   schemaName: string;
+  schemaId?: string;
   data: string; // JSON string
 }
 
@@ -160,7 +161,9 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
                               </NextLink>
                             </Tabs.Button>
                             <Tabs.Content>
-                              <div className="pt-xl pb-64 px-40">{children}</div>
+                              <div className={`pt-xl pb-64 px-40 ${!isDraft ? 'pointer-events-none opacity-80' : ''}`}>
+                                {children}
+                              </div>
                             </Tabs.Content>
                           </Tabs.Item>
                         );

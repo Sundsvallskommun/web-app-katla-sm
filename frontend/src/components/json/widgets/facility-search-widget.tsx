@@ -157,41 +157,41 @@ export function FacilitySearchWidget(props: FieldProps) {
                 <p className="text-[1.6rem] font-semibold">{facilityInfo.orgName}</p>
               </div>
 
-              {!disabled && !readonly && (
-                <div className="flex gap-8 items-center">
-                  {isConfirmed ?
-                    <>
-                      <span className="flex items-center gap-4 text-gronsta-surface-primary">
-                        <LucideIcon name="check" size={16} />
-                        {t('facility_search.confirmed', 'Bekräftat')}
-                      </span>
+              <div className="flex gap-8 items-center">
+                {disabled || readonly || isConfirmed ?
+                  <>
+                    <span className="flex items-center gap-4 text-gronsta-surface-primary">
+                      <LucideIcon name="check" size={16} />
+                      {t('facility_search.confirmed', 'Bekräftat')}
+                    </span>
+                    {!disabled && !readonly && (
                       <Button type="button" variant="tertiary" size="sm" onClick={() => setIsConfirmed(false)}>
                         {t('facility_search.edit', 'Ändra')}
                       </Button>
-                    </>
-                  : <>
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="sm"
-                        leftIcon={<LucideIcon name="check" size={16} />}
-                        onClick={() => setIsConfirmed(true)}
-                      >
-                        {t('facility_search.confirm', 'Bekräfta')}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        leftIcon={<LucideIcon name="x" size={16} />}
-                        onClick={handleRemove}
-                      >
-                        {t('facility_search.remove', 'Ta bort')}
-                      </Button>
-                    </>
-                  }
-                </div>
-              )}
+                    )}
+                  </>
+                : <>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<LucideIcon name="check" size={16} />}
+                      onClick={() => setIsConfirmed(true)}
+                    >
+                      {t('facility_search.confirm', 'Bekräfta')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      leftIcon={<LucideIcon name="x" size={16} />}
+                      onClick={handleRemove}
+                    >
+                      {t('facility_search.remove', 'Ta bort')}
+                    </Button>
+                  </>
+                }
+              </div>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import type { ErrandFormDataItem } from '@app/[locale]/arende/layout';
+import type { JsonParameterDTO } from '@data-contracts/backend/data-contracts';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
 import validatorAjv8 from '@rjsf/validator-ajv8';
 import type { TFunction } from 'i18next';
@@ -12,6 +13,10 @@ const CASETYPE_SCHEMAS: Record<string, string[]> = {
 
 //TODO: temporary until casetypes are specified for all schemas
 const DEFAULT_SCHEMAS = ['avvikelse-plats-handelse'];
+
+export function getSchemaIdFromCache(schemaName: string): string | undefined {
+  return schemaCache.get(schemaName)?.schemaId;
+}
 
 export function getSchemasForCaseType(caseType: string): string[] {
   return CASETYPE_SCHEMAS[caseType] ?? DEFAULT_SCHEMAS;
@@ -150,4 +155,32 @@ export async function validateErrandFormData(
   }
 
   return errors;
+}
+
+export function errandFormDataToJsonParameters(
+  formData: ErrandFormDataItem[] | undefined
+): JsonParameterDTO[] {
+  if (!formData) return [];
+  return formData
+    .map((entry) => {
+      const schemaId = entry.schemaId || getSchemaIdFromCache(entry.schemaName);
+      if (!schemaId) return null;
+      return {
+        key: entry.schemaName,
+        value: JSON.parse(entry.data || '{}'),
+        schemaId,
+      };
+    })
+    .filter((entry): entry is JsonParameterDTO => entry !== null);
+}
+
+export function jsonParametersToErrandFormData(
+  jsonParameters: JsonParameterDTO[] | undefined
+): ErrandFormDataItem[] {
+  if (!jsonParameters) return [];
+  return jsonParameters.map((param) => ({
+    schemaName: param.key,
+    schemaId: param.schemaId,
+    data: JSON.stringify(param.value ?? {}),
+  }));
 }

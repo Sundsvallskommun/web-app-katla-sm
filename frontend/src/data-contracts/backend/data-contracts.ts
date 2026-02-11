@@ -147,6 +147,12 @@ export interface ExternalTagDTO {
   value: string;
 }
 
+export interface JsonParameterDTO {
+  key: string;
+  value: any;
+  schemaId: string;
+}
+
 export interface ErrandDTO {
   id?: string;
   errandNumber?: string;
@@ -155,6 +161,7 @@ export interface ErrandDTO {
   stakeholders?: StakeholderDTO[];
   externalTags?: ExternalTagDTO[];
   parameters?: ParameterDTO[];
+  jsonParameters?: JsonParameterDTO[];
   classification?: ClassificationDTO;
   status?: string;
   resolution?: string;

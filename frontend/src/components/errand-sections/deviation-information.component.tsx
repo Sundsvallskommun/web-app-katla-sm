@@ -17,6 +17,8 @@ function SchemaFormField({ schemaName, index }: SchemaFormFieldProps) {
   const { watch, setValue } = useFormContext<ErrandFormDTO>();
   const { showValidation } = useFormValidation();
   const { schema, uiSchema, loading, error } = useFormSchema(schemaName);
+  const status = watch('status');
+  const isDraft = status === 'DRAFT';
 
   const rawData = watch(`errandFormData.${index}.data`) ?? '{}';
   const formData = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
@@ -44,6 +46,7 @@ function SchemaFormField({ schemaName, index }: SchemaFormFieldProps) {
       onChange={handleChange}
       hideSubmitButton
       showValidation={showValidation}
+      disabled={!isDraft}
     />
   );
 }

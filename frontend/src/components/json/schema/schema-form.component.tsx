@@ -78,6 +78,7 @@ interface SchemaFormProps {
   onSubmit?: (payload: Record<string, unknown>, e: IChangeEvent) => void;
   hideSubmitButton?: boolean;
   showValidation?: boolean;
+  disabled?: boolean;
 }
 
 export default function SchemaForm({
@@ -88,6 +89,7 @@ export default function SchemaForm({
   onSubmit,
   hideSubmitButton = false,
   showValidation,
+  disabled = false,
 }: SchemaFormProps) {
   const { t } = useTranslation('validation');
   const [localData, setLocalData] = useState<Record<string, unknown>>({});
@@ -145,6 +147,7 @@ export default function SchemaForm({
       noHtml5Validate
       showErrorList={false}
       liveValidate={shouldValidate}
+      disabled={disabled}
     />
   );
 }
