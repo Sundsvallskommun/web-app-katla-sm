@@ -47,7 +47,7 @@ export function FacilitySearchWidget(props: FieldProps) {
   );
 
   useEffect(() => {
-    if (employmentsLoadedRef.current) return;
+    if (disabled || readonly || employmentsLoadedRef.current) return;
 
     const loadEmployments = async () => {
       try {
@@ -68,7 +68,7 @@ export function FacilitySearchWidget(props: FieldProps) {
     };
 
     loadEmployments();
-  }, [formData?.orgId, selectFacility]);
+  }, [disabled, readonly, formData?.orgId, selectFacility]);
 
   const handleRemove = useCallback(async () => {
     onChange(undefined);

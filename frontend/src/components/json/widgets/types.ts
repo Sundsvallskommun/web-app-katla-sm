@@ -55,5 +55,17 @@ export function getCommonProps(props: WidgetProps, defaultClassName: string): Co
  * Used for validating text length without counting HTML markup.
  */
 export function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '').trim();
+  if (typeof DOMParser !== 'undefined') {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return (doc.body.textContent || '').trim();
+  }
+  // Fallback for SSR: iterative parser instead of regex to avoid ReDoS
+  let result = '';
+  let inTag = false;
+  for (let i = 0; i < html.length; i++) {
+    if (html[i] === '<') inTag = true;
+    else if (html[i] === '>') inTag = false;
+    else if (!inTag) result += html[i];
+  }
+  return result.trim();
 }
