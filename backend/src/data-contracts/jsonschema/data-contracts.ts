@@ -34,9 +34,9 @@ export interface Problem {
 }
 
 export interface StatusType {
+  reasonPhrase?: string;
   /** @format int32 */
   statusCode?: number;
-  reasonPhrase?: string;
 }
 
 export interface ConstraintViolationProblem {
@@ -189,24 +189,24 @@ export interface PageJsonSchema {
   content?: JsonSchema[];
   /** @format int32 */
   number?: number;
+  pageable?: PageableObject;
   first?: boolean;
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   sort?: SortObject;
-  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
   /** @format int64 */
   offset?: number;
-  sort?: SortObject;
   paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+  sort?: SortObject;
   unpaged?: boolean;
 }
 

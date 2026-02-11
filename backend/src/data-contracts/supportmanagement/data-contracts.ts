@@ -388,16 +388,15 @@ export interface Errand {
   errandNumber?: string;
   /** Title for the errand */
   title?: string;
-  /**
-   * Priority model
-   * @uniqueItems true
-   */
+  /** Priority model */
   priority?: Priority;
   stakeholders?: Stakeholder[];
   /** @uniqueItems true */
   externalTags?: ExternalTag[];
   /** Parameters for the errand */
   parameters?: Parameter[];
+  /** JSON parameters for the errand */
+  jsonParameters?: JsonParameter[];
   /** Classification model */
   classification?: Classification;
   /** Status for the errand */
@@ -474,6 +473,27 @@ export interface ExternalTag {
   key?: string;
   /** Value for external tag */
   value?: string;
+}
+
+export type JsonNode = any;
+
+/** JSON Parameter model */
+export interface JsonParameter {
+  /**
+   * Parameter key/name
+   * @minLength 1
+   */
+  key: string;
+  /**
+   * JSON structure value
+   * @example {"firstName":"Joe","lastName":"Doe"}
+   */
+  value: JsonNode;
+  /**
+   * ID referencing a schema in the json-schema service
+   * @minLength 1
+   */
+  schemaId: string;
 }
 
 export interface Notification {
@@ -858,10 +878,10 @@ export interface MetadataResponse {
 }
 
 export interface PageErrand {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
   /** @format int32 */
   size?: number;
   content?: Errand[];
@@ -1029,10 +1049,10 @@ export enum EventType {
 }
 
 export interface PageEvent {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
   /** @format int32 */
   size?: number;
   content?: Event[];
@@ -1134,10 +1154,10 @@ export interface Message {
 }
 
 export interface PageMessage {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
   /** @format int32 */
   size?: number;
   content?: Message[];
