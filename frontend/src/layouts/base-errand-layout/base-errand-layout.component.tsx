@@ -29,7 +29,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
   const SingleErrandTitle = () => (
     <div className="flex items-center gap-24 py-10">
       <a
-        href={`${process.env.NEXT_PUBLIC_BASE_PATH}`}
+        href={`${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
         title={`Katla - ${process.env.NEXT_PUBLIC_APP_NAME}. Gå till startsidan.`}
       >
         <Logo variant="symbol" className="h-40" />
@@ -40,7 +40,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
         : <>
             <StatusLabel status={status} />
             <span className="text-large ml-8 font-bold">
-              {metadata?.categories?.find((t) => t.name === category)?.types?.find((t) => t.name === type)
+              {metadata?.labels?.labelStructure?.find((l) => l.classification === category)?.labels?.find((l) => l.classification === type)
                 ?.displayName ?? type}
             </span>
             <span className="ml-8 text-small">{errandNumber}</span>

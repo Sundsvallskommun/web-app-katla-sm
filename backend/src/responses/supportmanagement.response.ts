@@ -115,6 +115,14 @@ export class ExternalTagDTO implements ExternalTag {
   value: string;
 }
 
+export class JsonParameterDTO {
+  @IsString()
+  key: string;
+  value: any;
+  @IsString()
+  schemaId: string;
+}
+
 export class ErrandDTO implements Errand {
   @IsString()
   @IsOptional()
@@ -143,6 +151,11 @@ export class ErrandDTO implements Errand {
   @ValidateNested({ each: true })
   @Type(() => ParameterDTO)
   parameters?: Parameter[];
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => JsonParameterDTO)
+  jsonParameters?: JsonParameterDTO[];
   @IsOptional()
   @ValidateNested()
   @Type(() => ClassificationDTO)

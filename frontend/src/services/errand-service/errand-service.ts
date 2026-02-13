@@ -55,6 +55,10 @@ export const createErrand = async (errand: ErrandDTO): Promise<ErrandDTO> => {
   return apiService.post<ErrandDTO>('supportmanagement/errand/create', errand).then((res) => res.data);
 };
 
+export const updateErrand = async (id: string, errand: Partial<ErrandDTO>): Promise<ErrandDTO> => {
+  return apiService.patch<ErrandDTO>(`supportmanagement/errand/${id}`, errand).then((res) => res.data);
+};
+
 export const saveErrand = async (errand: ErrandDTO): Promise<ErrandDTO> => {
   return apiService.patch<ErrandDTO>('supportmanagement/errand/save', errand).then((res) => res.data);
 };

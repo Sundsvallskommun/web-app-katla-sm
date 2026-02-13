@@ -1,5 +1,11 @@
-import { ErrandDTO } from '@data-contracts/backend/data-contracts';
-import { createErrand, saveErrand } from '@services/errand-service/errand-service';
+import {
+  errandFormDataToJsonParameters,
+  jsonParametersToErrandFormData,
+  validateErrandFormData,
+} from '@components/json/utils/schema-utils';
+import { useFormValidation } from '@contexts/form-validation-context';
+import { ErrandFormDTO } from '@app/[locale]/arende/layout';
+import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
@@ -8,70 +14,112 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { CenterDiv } from './center-div.component';
 
-//TODO: Adjust dialog text
+interface ErrandButtonGroupProps {
+  isNewErrand: boolean;
+}
 
-export const ErrandButtonGroup: React.FC = () => {
+export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErrand }) => {
   const { t } = useTranslation();
+  const { t: tForms } = useTranslation('forms');
   const toastMessage = useSnackbar();
   const router = useRouter();
-  const context = useFormContext<ErrandDTO>();
-  const { handleSubmit, getValues, setValue, trigger, reset } = context;
+  const context = useFormContext<ErrandFormDTO>();
+  const { getValues, trigger, reset, watch } = context;
+  const { setShowValidation } = useFormValidation();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const errandStatus = watch('status');
+  const errandId = watch('id');
+
+  const isDraft = errandStatus === 'DRAFT';
+  const showButtons = isNewErrand || isDraft;
+
+  const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
+    const { errandFormData, ...errandWithoutFormData } = values;
+    return {
+      ...errandWithoutFormData,
+      status,
+      jsonParameters: errandFormDataToJsonParameters(errandFormData),
+    };
+  };
 
   const onSaveDraft = async () => {
     const isValid = await trigger(['classification.category', 'classification.type']);
     if (!isValid) return;
-    const values = getValues();
-    const apiCall = values.id ? saveErrand : createErrand;
 
-    const errand = await apiCall(values)
-      .then((res) => {
-        toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
-        return res;
-      })
-      .catch((res) => {
-        toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
-        return res;
-      });
+    const errandData = prepareErrandForApi(getValues(), 'DRAFT');
 
-    reset(errand);
+    try {
+      const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
+      const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
+      toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
+      reset({ ...errand, errandFormData });
 
-    router.push(`/arende/${errand.errandNumber}/grundinformation`);
-    setIsOpen(false);
+      if (isNewErrand) {
+        router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`);
+      }
+    } catch {
+      toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
+    }
   };
 
   const onRegister = async (logout?: boolean) => {
-    setValue('status', 'NEW');
-    const values = getValues();
-    const apiCall = values.id ? saveErrand : createErrand;
-
-    const errand = await apiCall(values)
-      .then((res) => {
-        return res;
-      })
-      .catch((res) => {
-        toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
-        return res;
-      });
-    reset(errand);
-
-    if (logout) {
-      router.push('/logout');
-    } else {
-      router.push(`/arende/${errand.errandNumber}/grundinformation`);
-    }
     setIsOpen(false);
+
+    const errandData = prepareErrandForApi(getValues(), 'NEW');
+
+    try {
+      const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
+      const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
+      toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.register') });
+      reset({ ...errand, errandFormData });
+
+      if (logout) {
+        router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/logout`);
+      } else {
+        router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`);
+      }
+    } catch {
+      toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
+    }
   };
+
+  if (!showButtons) {
+    return null;
+  }
 
   return (
     <div className="flex flex-row gap-[1.8rem]">
-      <Button variant="secondary" onClick={() => window.close()}>
-        {t('errand-information:cancel')}
-      </Button>
+      {isNewErrand && (
+        <Button variant="secondary" onClick={() => window.close()}>
+          {t('errand-information:cancel')}
+        </Button>
+      )}
       <Button data-cy="save-draft-errand" variant="primary" onClick={() => onSaveDraft()}>
         {t('errand-information:save_draft')}
       </Button>
-      <Button data-cy="register-errand" variant="primary" color="vattjom" onClick={handleSubmit(() => setIsOpen(true))}>
+      <Button
+        data-cy="register-errand"
+        variant="primary"
+        color="vattjom"
+        onClick={async () => {
+          // Aktivera validering för JSON-formulär
+          setShowValidation(true);
+
+          // Validera classification först
+          const isClassificationValid = await trigger(['classification.category', 'classification.type']);
+
+          // Validera errandFormData
+          const values = getValues();
+          const formDataErrors = await validateErrandFormData(values.errandFormData, tForms);
+
+          if (!isClassificationValid || formDataErrors.length > 0) {
+            return;
+          }
+
+          setIsOpen(true);
+        }}
+      >
         {t('errand-information:register')}
       </Button>
       <Dialog show={isOpen}>

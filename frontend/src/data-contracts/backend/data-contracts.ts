@@ -147,6 +147,12 @@ export interface ExternalTagDTO {
   value: string;
 }
 
+export interface JsonParameterDTO {
+  key: string;
+  value: any;
+  schemaId: string;
+}
+
 export interface ErrandDTO {
   id?: string;
   errandNumber?: string;
@@ -155,6 +161,7 @@ export interface ErrandDTO {
   stakeholders?: StakeholderDTO[];
   externalTags?: ExternalTagDTO[];
   parameters?: ParameterDTO[];
+  jsonParameters?: JsonParameterDTO[];
   classification?: ClassificationDTO;
   status?: string;
   resolution?: string;
@@ -199,4 +206,44 @@ export interface PageErrandDTO {
   first?: boolean;
   last?: boolean;
   empty?: boolean;
+}
+
+export interface OrgManagerDTO {
+  personId?: string;
+  givenname?: string;
+  lastname?: string;
+  emailAddress?: string;
+}
+
+export interface UserEmploymentDTO {
+  orgId?: number;
+  orgName?: string;
+  topOrgId?: number;
+  isMainEmployment?: boolean;
+  manager?: OrgManagerDTO;
+}
+
+export interface FacilityInfoDTO {
+  orgId?: number;
+  orgName?: string;
+  parentOrgId?: number;
+  parentOrgName?: string;
+  manager?: OrgManagerDTO;
+  floor?: string;
+  hasSubUnits?: boolean;
+}
+
+export interface OrgTreeNodeDTO {
+  orgId?: number;
+  orgName?: string;
+  parentId?: number;
+  level?: number;
+  isLeafLevel?: boolean;
+  organizations?: OrgTreeNodeDTO[];
+}
+
+export interface OrgLeafNodeDTO {
+  orgId: number;
+  orgName: string;
+  parentId?: number;
 }

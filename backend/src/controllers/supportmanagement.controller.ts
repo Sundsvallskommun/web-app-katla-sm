@@ -98,7 +98,30 @@ export class SupportManagementController {
 
       return errandRes;
     } catch (error: any) {
-      return {};
+      throw new HttpException(500, 'Failed to create errand');
+    }
+  }
+
+  @Patch('/supportmanagement/errand/:id')
+  @OpenAPI({ summary: 'Update errand' })
+  @UseBefore(authMiddleware)
+  @ResponseSchema(PageErrandDTO)
+  async updateErrand(@Req() req: RequestWithUser, @Param('id') id: string, @Body() errand: Partial<Errand>): Promise<Errand> {
+    const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${id}`;
+    const baseURL = apiURL(this.apiBase);
+    // Strip read-only fields that the API does not accept on update
+    const { id: _id, errandNumber, created, modified, touched, reporterUserId, activeNotifications, ...errandData } = errand;
+
+    try {
+      const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errandData }, req).catch(e => {
+        logger.error('Error when updating support errand');
+        logger.error(e);
+        throw e;
+      });
+
+      return res.data;
+    } catch (error: any) {
+      throw new HttpException(500, 'Failed to update errand');
     }
   }
 
