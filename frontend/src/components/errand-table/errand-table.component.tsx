@@ -7,13 +7,13 @@ import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFilterStore } from 'src/stores/filter-store';
-import { useSorteStore } from 'src/stores/sort-store';
+import { useSortStore } from 'src/stores/sort-store';
 import { ErrandTableFooter } from './errand-table-footer.component';
 import { ErrandTableHeader } from './errand-table-header.component';
 
 export const ErrandTable: React.FC = () => {
   const { t } = useTranslation();
-  const { sortColumn, sortOrder, page, size, rowHeight } = useSorteStore();
+  const { sortColumn, sortOrder, page, size, rowHeight } = useSortStore();
   const { statuses } = useFilterStore();
 
   const [rows, setRows] = useState<ErrandDTO[]>([]);
@@ -39,7 +39,7 @@ export const ErrandTable: React.FC = () => {
   if (rows.length === 0) return <CenterDiv className="mt-[20rem]">{t('errand-information:no_errands')}</CenterDiv>;
 
   return (
-    <Table dense={rowHeight === 'dense'}>
+    <Table data-cy="errand-table" dense={rowHeight === 'dense'} className='px-40'>
       <ErrandTableHeader />
 
       {rows.map((errand, index) => (

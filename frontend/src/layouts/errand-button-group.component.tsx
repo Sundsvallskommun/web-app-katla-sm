@@ -43,6 +43,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
     } catch {
       toastMessage({ position: 'bottom', status: 'error', message: t('errand-information:save_message.error') });
     }
+    setIsOpen(false);
   };
 
   const onRegister = async (logout?: boolean) => {
@@ -76,10 +77,10 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
           {t('errand-information:cancel')}
         </Button>
       )}
-      <Button variant="primary" onClick={() => onSaveDraft()}>
+      <Button data-cy="save-draft-errand" variant="primary" onClick={() => onSaveDraft()}>
         {t('errand-information:save_draft')}
       </Button>
-      <Button variant="primary" color="vattjom" onClick={handleSubmit(() => setIsOpen(true))}>
+      <Button data-cy="register-errand" variant="primary" color="vattjom" onClick={handleSubmit(() => setIsOpen(true))}>
         {t('errand-information:register')}
       </Button>
       <Dialog show={isOpen}>
@@ -88,7 +89,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
             <LucideIcon size={32} name="inbox" color="vattjom" className="mb-[1.6rem]" />
             <h3 className="text-h3-md">{t('errand-information:register')}</h3>
             <span className="text-dark-secondary text-md mb-30">
-              När du skickar in ett ärende. Lorem ipsum dolor sit amet consectuer
+              När du skickar in ett ärende. Lorem ipsum dolor sit amet consecteur
             </span>
             <span className="text-dark-secondary text-md">Vill du skicka in ärendet?</span>
           </CenterDiv>

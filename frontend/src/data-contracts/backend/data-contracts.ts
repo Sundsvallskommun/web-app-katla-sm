@@ -21,6 +21,25 @@ export interface UserApiResponse {
   message: string;
 }
 
+export interface NotificationDTO {
+  id?: string;
+  created?: string;
+  modified?: string;
+  ownerFullName?: string;
+  ownerId?: string;
+  createdBy?: string;
+  createdByFullName?: string;
+  type?: string;
+  subtype?: string;
+  description?: string;
+  content?: string;
+  expires?: string;
+  globalAcknowledged?: boolean;
+  acknowledged?: boolean;
+  errandId?: string;
+  errandNumber?: string;
+}
+
 export interface TypeDTO {
   name: string;
   displayName?: string;
@@ -79,7 +98,7 @@ export interface ContactReasonDTO {
 export interface MetadataResponseDTO {
   categories?: CategoryDTO[];
   externalIdTypes?: ExternalIdTypeDTO[];
-  labels?: LabelsDTO[];
+  labels?: LabelsDTO;
   statuses?: StatusDTO[];
   roles?: RoleDTO[];
   contactReasons?: ContactReasonDTO[];
@@ -90,11 +109,6 @@ export interface ErrandsQueryDTO {
   size?: number;
   sort?: string;
   status?: string;
-}
-
-export interface ContactChannelDTO {
-  type?: string;
-  value?: string;
 }
 
 export interface StakeholderDTO {
@@ -110,7 +124,10 @@ export interface StakeholderDTO {
   careOf?: string;
   zipCode?: string;
   country?: string;
-  contactChannels?: ContactChannelDTO[];
+  emails?: string[];
+  phoneNumbers?: string[];
+  title?: string;
+  department?: string;
 }
 
 export interface ClassificationDTO {
@@ -122,7 +139,7 @@ export interface ParameterDTO {
   key: string;
   displayName?: string;
   group?: string;
-  values?: any[];
+  values?: string[];
 }
 
 export interface ExternalTagDTO {

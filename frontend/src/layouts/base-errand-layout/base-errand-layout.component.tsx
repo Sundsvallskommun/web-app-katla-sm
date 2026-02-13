@@ -17,7 +17,7 @@ interface BaseErrandLayoutProps {
 
 export default function BaseErrandLayout({ children, registerNewErrand }: BaseErrandLayoutProps) {
   const { metadata } = useMetadataStore();
-  const { user } = useUserStore();
+  const user = useUserStore((s) => s.user);
   const { watch } = useFormContext<ErrandDTO>();
   const { t } = useTranslation();
 

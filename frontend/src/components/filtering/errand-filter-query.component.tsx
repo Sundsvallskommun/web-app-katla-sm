@@ -11,7 +11,7 @@ export const ErrandFilterQuery: React.FC = () => {
       data-cy="query-filter"
       showSearchButton={true}
       className="flex-grow max-w-full"
-      placeholder={t('filtering:type_to_search')}
+      placeholder={t('filtering:search')}
       onChange={() => {}}
     />
   );
