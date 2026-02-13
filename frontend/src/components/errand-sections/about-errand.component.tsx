@@ -16,7 +16,8 @@ export const AboutErrand: React.FC = () => {
   } = context;
 
   const selectedCategory = watch('classification.category');
-  const typesList = metadata?.categories?.find((c) => c.name === selectedCategory)?.types || [];
+  const labelsList = metadata?.labels?.labelStructure || [];
+  const typesList = labelsList.find((l) => l.resourceName === selectedCategory)?.labels || [];
 
   return (
     <ErrandDisclosure header={t('errand-information:about.title')} lucideIconName="info">
@@ -28,11 +29,11 @@ export const AboutErrand: React.FC = () => {
               <FormLabel>{t('errand-information:about.first_level_categorization')}</FormLabel>
               <Select data-cy="category-input" className="w-[44.4rem]" {...register('classification.category')}>
                 <Select.Option>{t('errand-information:about.choose_one_option')}</Select.Option>
-                {metadata?.categories
-                  ?.sort((a, b) => (a.displayName ?? '').localeCompare(b.displayName ?? ''))
-                  .map((category) => (
-                    <Select.Option value={category.name} key={`category-${category.name}`}>
-                      {category.displayName}
+                {labelsList
+                  .sort((a, b) => (a.displayName ?? '').localeCompare(b.displayName ?? ''))
+                  .map((label) => (
+                    <Select.Option value={label.resourceName} key={`category-${label.resourceName}`}>
+                      {label.displayName}
                     </Select.Option>
                   ))}
               </Select>
@@ -44,9 +45,9 @@ export const AboutErrand: React.FC = () => {
               <FormLabel>{t('errand-information:about.second_level_categorization')}</FormLabel>
               <Select data-cy="type-input" className="w-[44.4rem]" {...register('classification.type')}>
                 <Select.Option>{t('errand-information:about.choose_one_option')}</Select.Option>
-                {typesList.map((type) => (
-                  <Select.Option value={type.name} key={`type-${type.name}`}>
-                    {type.displayName}
+                {typesList.map((label) => (
+                  <Select.Option value={label.resourceName} key={`type-${label.resourceName}`}>
+                    {label.displayName}
                   </Select.Option>
                 ))}
               </Select>
