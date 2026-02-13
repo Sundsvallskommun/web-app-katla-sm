@@ -31,6 +31,7 @@ export const StatusLabel: React.FC<{ status?: string }> = ({ status }) => {
       break;
     case 'DRAFT':
       color = 'tertiary';
+      icon = 'square-pen';
       break;
     case 'PENDING':
       color = 'gronsta';

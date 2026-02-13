@@ -29,7 +29,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
   const SingleErrandTitle = () => (
     <div className="flex items-center gap-24 py-10">
       <a
-        href={`${process.env.NEXT_PUBLIC_BASE_PATH}`}
+        href={`${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
         title={`Katla - ${process.env.NEXT_PUBLIC_APP_NAME}. Gå till startsidan.`}
       >
         <Logo variant="symbol" className="h-40" />
