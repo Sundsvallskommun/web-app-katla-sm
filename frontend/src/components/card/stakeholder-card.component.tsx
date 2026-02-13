@@ -4,6 +4,7 @@ import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Button } from '@sk-web-gui/react';
 import { getStakeholderRoleDisplayName } from '@utils/stakeholder';
 import { useState } from 'react';
+import { appConfig } from 'src/config/appconfig';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
 export const StakeholderCard: React.FC<{
@@ -32,32 +33,34 @@ export const StakeholderCard: React.FC<{
             {stakeholder.firstName} {stakeholder.lastName}
           </p>
 
-          <div className="flex text-md mb-10 flex-row gap-15">
-            <div className="flex flex-col">
-              {stakeholder.title && (
-                <div data-cy="stakeholder-title" className="mr-10">
-                  {stakeholder.title}
-                </div>
-              )}
-              {stakeholder.personNumber && !stakeholder.title && (
-                <div data-cy="stakeholder-personNumber" className="mr-10">
-                  {stakeholder.personNumber}
-                </div>
-              )}
-              {stakeholder.department ?
-                <div data-cy="stakeholder-department" className="">
-                  {stakeholder.department}
-                </div>
-              : <div data-cy="stakeholder-address">
-                  {stakeholder.address} {stakeholder.city}
-                </div>
-              }
+          {!(roles?.includes('PRIMARY') && appConfig.features.reducedStakeholderInfo) && (
+            <div className="flex text-md mb-10 flex-row gap-15">
+              <div className="flex flex-col">
+                {stakeholder.title && (
+                  <div data-cy="stakeholder-title" className="mr-10">
+                    {stakeholder.title}
+                  </div>
+                )}
+                {stakeholder.personNumber && !stakeholder.title && (
+                  <div data-cy="stakeholder-personNumber" className="mr-10">
+                    {stakeholder.personNumber}
+                  </div>
+                )}
+                {stakeholder.department ?
+                  <div data-cy="stakeholder-department" className="">
+                    {stakeholder.department}
+                  </div>
+                : <div data-cy="stakeholder-address">
+                    {stakeholder.address} {stakeholder.city}
+                  </div>
+                }
+              </div>
+              <div className="flex flex-col">
+                <div data-cy="stakeholder-email">{stakeholder.emails?.[0] ?? 'Epostadress saknas'}</div>
+                <div data-cy="stakeholder-phonenumber">{stakeholder.phoneNumbers?.[0] ?? 'Telefonnummber saknas'}</div>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <div data-cy="stakeholder-email">{stakeholder.emails?.[0] ?? 'Epostadress saknas'}</div>
-              <div data-cy="stakeholder-phonenumber">{stakeholder.phoneNumbers?.[0] ?? 'Telefonnummber saknas'}</div>
-            </div>
-          </div>
+          )}
 
           {isEditable && (
             <div className="flex flex-col sm:flex-row gap-[1rem] mb-10">

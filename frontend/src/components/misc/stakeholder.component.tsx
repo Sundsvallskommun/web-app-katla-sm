@@ -13,7 +13,7 @@ import {
   Input,
   RadioButton,
   SearchField,
-  Select
+  Select,
 } from '@sk-web-gui/react';
 import { emptyStakeholder, phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
 import { useEffect, useState } from 'react';
@@ -21,6 +21,7 @@ import { FormProvider, Resolver, useFieldArray, useForm, useFormContext } from '
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { StakeholderFormModal } from './stakeholder-modal.component';
+import { appConfig } from 'src/config/appconfig';
 
 export const StakeholderList: React.FC<{
   roles: string[];
@@ -187,30 +188,36 @@ export const StakeholderList: React.FC<{
                   }
                 </div>
               </div>
-              <div className="flex flex-row py-10 gap-10 w-full">
-                <FormControl className="w-full">
-                  <FormLabel>E-postadress</FormLabel>
-                  <Input {...register('emails.0')} data-cy="stakeholder-email-input" placeholder="Ange e-postadress" />
-                  {formState.errors.emails?.[0]?.message && (
-                    <FormErrorMessage data-cy="email-input-error">
-                      {formState.errors.emails[0].message}
-                    </FormErrorMessage>
-                  )}
-                </FormControl>
-                <FormControl className="w-full">
-                  <FormLabel>Telefonnummer</FormLabel>
-                  <Input
-                    {...register('phoneNumbers.0')}
-                    data-cy="stakeholder-mobilephone-input"
-                    placeholder="Ange telefonnummer"
-                  />
-                  {formState.errors.phoneNumbers?.[0]?.message && (
-                    <FormErrorMessage data-cy="phone-number-input-error">
-                      {formState.errors.phoneNumbers[0].message}
-                    </FormErrorMessage>
-                  )}
-                </FormControl>
-              </div>
+              {!(roles?.includes('PRIMARY') && appConfig.features.reducedStakeholderInfo) && (
+                <div className="flex flex-row py-10 gap-10 w-full">
+                  <FormControl className="w-full">
+                    <FormLabel>E-postadress</FormLabel>
+                    <Input
+                      {...register('emails.0')}
+                      data-cy="stakeholder-email-input"
+                      placeholder="Ange e-postadress"
+                    />
+                    {formState.errors.emails?.[0]?.message && (
+                      <FormErrorMessage data-cy="email-input-error">
+                        {formState.errors.emails[0].message}
+                      </FormErrorMessage>
+                    )}
+                  </FormControl>
+                  <FormControl className="w-full">
+                    <FormLabel>Telefonnummer</FormLabel>
+                    <Input
+                      {...register('phoneNumbers.0')}
+                      data-cy="stakeholder-mobilephone-input"
+                      placeholder="Ange telefonnummer"
+                    />
+                    {formState.errors.phoneNumbers?.[0]?.message && (
+                      <FormErrorMessage data-cy="phone-number-input-error">
+                        {formState.errors.phoneNumbers[0].message}
+                      </FormErrorMessage>
+                    )}
+                  </FormControl>
+                </div>
+              )}
 
               <FormControl required className="w-[calc(50%-10px)]">
                 <FormLabel>Personens roll</FormLabel>
