@@ -2,6 +2,7 @@
 
 import LoaderFullScreen from '@components/loader/loader-fullscreen';
 import { VisibleTabs } from '@components/tabs/tabs';
+import { FormValidationProvider } from '@contexts/form-validation-context';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
 import BaseErrandLayout from '@layouts/base-errand-layout/base-errand-layout.component';
@@ -17,6 +18,17 @@ import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import * as yup from 'yup';
 
+// Extended form type with JSON schema form data (not yet in API)
+export interface ErrandFormDataItem {
+  schemaName: string;
+  schemaId?: string;
+  data: string; // JSON string
+}
+
+export interface ErrandFormDTO extends ErrandDTO {
+  errandFormData?: ErrandFormDataItem[];
+}
+
 const FormSchema = yup
   .object({
     classification: yup
@@ -28,10 +40,6 @@ const FormSchema = yup
         type: yup.string().notOneOf(['Välj ett alternativ', ''], 'Välj ett alternativ').required('Välj ett alternativ'),
       })
       .required(),
-
-    // description: yup.string().notRequired(),
-    // parameters: yup.array().of(yup.mixed()).notRequired(),
-    // channel: yup.string().notRequired(),
   })
   .required();
 
@@ -68,8 +76,7 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
     });
   };
 
-  //TODO: Update default values for form
-  const defaultErrand: ErrandDTO = {
+  const defaultErrand: ErrandFormDTO = {
     title: 'Empty errand',
     priority: 'MEDIUM',
     status: 'DRAFT',
@@ -77,8 +84,8 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
     resolution: 'INFORMED',
   };
 
-  const methods = useForm<ErrandDTO>({
-    resolver: yupResolver(FormSchema) as unknown as Resolver<ErrandDTO>,
+  const methods = useForm<ErrandFormDTO>({
+    resolver: yupResolver(FormSchema) as unknown as Resolver<ErrandFormDTO>,
     defaultValues: defaultErrand,
     mode: 'onSubmit',
   });
@@ -129,42 +136,45 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
         Hoppa till innehåll
       </NextLink>
       <FormProvider {...methods}>
-        <BaseErrandLayout registerNewErrand={registerNewErrand}>
-          <div className="grow shrink overflow-y-auto">
-            <div className="bg-transparent">
-              <div className="mb-xl">
-                <div className="mx-auto max-w-[108rem] flex flex-row justify-between pt-32 pb-12">
-                  <h1 className="text-h2-lg">{getHeaderTitle()}</h1>
-                  <ErrandButtonGroup isNewErrand={registerNewErrand} />
+        <FormValidationProvider>
+          <BaseErrandLayout registerNewErrand={registerNewErrand}>
+            <div className="grow shrink overflow-y-auto">
+              <div className="bg-transparent">
+                <div className="mb-xl">
+                  <div className="mx-auto max-w-[108rem] flex flex-row justify-between pt-32 pb-12">
+                    <h1 className="text-h2-lg">{getHeaderTitle()}</h1>
+                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                  </div>
+                  <Main>
+                    <Tabs
+                      className="border-1 rounded-12 bg-background-content pt-22 pl-5 mx-auto max-w-[108rem]"
+                      tabslistClassName="border-0 -m-b-12 flex-wrap ml-10"
+                      panelsClassName="border-t-1"
+                      size="sm"
+                    >
+                      {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
+                        return (
+                          <Tabs.Item key={tab.label}>
+                            <Tabs.Button className={'text-base'}>
+                              <NextLink href={tab.path} className="block w-full h-full">
+                                {tab.label}
+                              </NextLink>
+                            </Tabs.Button>
+                            <Tabs.Content>
+                              <div className={`pt-xl pb-64 px-40 ${!isDraft ? 'pointer-events-none opacity-80' : ''}`}>
+                                {children}
+                              </div>
+                            </Tabs.Content>
+                          </Tabs.Item>
+                        );
+                      })}
+                    </Tabs>
+                  </Main>
                 </div>
-                <Main>
-                  <Tabs
-                    className="border-1 rounded-12 bg-background-content pt-22 pl-5 mx-auto max-w-[108rem]"
-                    tabslistClassName="border-0 -m-b-12 flex-wrap ml-10"
-                    panelsClassName="border-t-1"
-                    size="sm"
-                    // current={tabs.filter((tab) => tab.visible).findIndex((tab) => tab.path === pathname)}
-                  >
-                    {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
-                      return (
-                        <Tabs.Item key={tab.label}>
-                          <Tabs.Button className={'text-base'}>
-                            <NextLink href={tab.path} className="block w-full h-full">
-                              {tab.label}
-                            </NextLink>
-                          </Tabs.Button>
-                          <Tabs.Content>
-                            <div className="pt-xl pb-64 px-40">{children}</div>
-                          </Tabs.Content>
-                        </Tabs.Item>
-                      );
-                    })}
-                  </Tabs>
-                </Main>
               </div>
             </div>
-          </div>
-        </BaseErrandLayout>
+          </BaseErrandLayout>
+        </FormValidationProvider>
       </FormProvider>
     </>
   );

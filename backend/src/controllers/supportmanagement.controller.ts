@@ -27,11 +27,11 @@ export class SupportManagementController {
   async createErrand(@Req() req: RequestWithUser, @Body() errand: ErrandDTO): Promise<ErrandDTO> {
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands`;
     const baseURL = apiURL(this.apiBase);
-    const errandData = { ...errand, reporterUserId: req.user?.username };
 
     try {
       const errandInformation = {
-        ...errandData,
+        ...errand,
+        reporterUserId: req.user?.username,
         stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
       };
 

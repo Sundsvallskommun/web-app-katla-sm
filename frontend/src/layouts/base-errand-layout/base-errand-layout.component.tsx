@@ -40,7 +40,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
         : <>
             <StatusLabel status={status} />
             <span className="text-large ml-8 font-bold">
-              {metadata?.categories?.find((t) => t.name === category)?.types?.find((t) => t.name === type)
+              {metadata?.labels?.labelStructure?.find((l) => l.classification === category)?.labels?.find((l) => l.classification === type)
                 ?.displayName ?? type}
             </span>
             <span className="ml-8 text-small">{errandNumber}</span>
