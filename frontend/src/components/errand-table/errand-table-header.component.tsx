@@ -19,7 +19,7 @@ export const ErrandTableHeader: React.FC = () => {
     },
     {
       label: 'Ärendetyp',
-      property: 'title',
+      property: 'classification.type',
       sortable: true,
       screenReaderOnly: false,
       sticky: false,
