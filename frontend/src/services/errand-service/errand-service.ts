@@ -7,6 +7,8 @@ export interface ErrandQuery {
   sortColumn?: string;
   sortOrder?: 'asc' | 'desc';
   statuses?: string[];
+  categories?: string[];
+  queries?: string[];
 }
 
 export const getErrandUsingErrandNumber = async (errandNumber: string): Promise<ErrandDTO> => {
@@ -20,10 +22,18 @@ export const getErrands = async (q?: ErrandQuery): Promise<PageErrandDTO> => {
     params.status = q.statuses.join(',');
   }
 
+  if (q?.categories && q.categories.length > 0) {
+    params.type = q.categories.join(',');
+  }
+
+  if (q?.queries && q.queries.length > 0) {
+    params.search = q.queries.join(',');
+  }
+
   if (q?.page !== undefined) params.page = q.page;
   if (q?.size !== undefined) params.size = q.size;
   if (q?.sortColumn) {
-    params.sort = `${q.sortColumn}%2C${q.sortOrder ?? 'desc'}`;
+    params.sort = `${q.sortColumn},${q.sortOrder ?? 'desc'}`;
   }
 
   return apiService

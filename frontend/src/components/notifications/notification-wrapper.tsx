@@ -39,18 +39,21 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
         <>
           <div
             className={cx(
-              open ? 'left-[32rem] w-[calc(100vw-32rem)]' : 'left-[5.6rem] w-[calc(100vw-5.6rem)]',
-              'sk-modal-wrapper'
+              'sk-modal-wrapper',
+              'max-md:inset-0',
+              open ? 'md:left-[32rem] md:w-[calc(100vw-32rem)]' : 'md:left-[5.6rem] md:w-[calc(100vw-5.6rem)]'
             )}
           ></div>
           <section
             className={cx(
-              open ? 'left-[32rem]' : 'left-[5.6rem]',
-              `border-1 border-t-0 absolute  bottom-0 top-0 bg-background-content transition-all ease-in-out duration-150 overflow-auto z-[20] shadow-100`,
-              show ? 'w-full md:min-w-[50rem] md:w-[50vw] lg:w-[38vw] ' : 'w-0 px-0'
+              'border-1 border-t-0 bg-background-content transition-all ease-in-out duration-150 overflow-auto z-[20] shadow-100',
+              'max-md:fixed max-md:inset-0 max-md:z-50',
+              'md:absolute md:bottom-0 md:top-0',
+              open ? 'md:left-[32rem]' : 'md:left-[5.6rem]',
+              show ? 'w-full md:min-w-[50rem] md:w-[50vw] lg:w-[38vw]' : 'w-0 px-0'
             )}
           >
-            <Header className="h-[64px] flex justify-between" wrapperClasses="py-4 px-40">
+            <Header className="h-[64px] flex justify-between" wrapperClasses="py-4 px-16 md:px-40">
               <div className="text-h4-sm flex items-center gap-12">
                 <LucideIcon name="mail" /> Notiser
               </div>

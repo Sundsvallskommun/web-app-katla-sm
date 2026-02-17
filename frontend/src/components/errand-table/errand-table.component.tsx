@@ -39,7 +39,7 @@ export const ErrandTable: React.FC = () => {
   if (rows.length === 0) return <CenterDiv className="mt-[20rem]">{t('errand-information:no_errands')}</CenterDiv>;
 
   return (
-    <Table data-cy="errand-table" dense={rowHeight === 'dense'} className='px-40'>
+    <Table data-cy="errand-table" dense={rowHeight === 'dense'} className='px-16 md:px-40 overflow-x-auto'>
       <ErrandTableHeader />
 
       {rows.map((errand, index) => (

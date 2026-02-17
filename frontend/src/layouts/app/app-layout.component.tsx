@@ -3,12 +3,13 @@
 import LoaderFullScreen from '@components/loader/loader-fullscreen';
 import { useUserStore } from '@services/user-service/user-service';
 import { GuiProvider } from '@sk-web-gui/react';
+import { defaultTheme } from '@sk-web-gui/theme';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
 import dayjs from 'dayjs';
 import 'dayjs/locale/sv';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import utc from 'dayjs/plugin/utc';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 dayjs.extend(utc);
@@ -41,6 +42,17 @@ const AppLayout = ({ children }: ClientApplicationProps) => {
   const getMe = useUserStore((state) => state.getMe);
   const [mounted, setMounted] = useState(false);
 
+  const theme = useMemo(
+    () => ({
+      ...defaultTheme,
+      screens: {
+        ...defaultTheme.screens,
+        'medium-device-max': '800px',
+      },
+    }),
+    []
+  );
+
   useEffect(() => {
     getMe();
     setMounted(true);
@@ -51,7 +63,7 @@ const AppLayout = ({ children }: ClientApplicationProps) => {
   }
 
   return (
-    <GuiProvider colorScheme={colorScheme}>
+    <GuiProvider theme={theme} colorScheme={colorScheme}>
       {children}
       {/* <InactivityMonitor /> */}
     </GuiProvider>

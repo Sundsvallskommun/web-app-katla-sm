@@ -89,7 +89,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   }
 
   return (
-    <div className="flex flex-row gap-[1.8rem]">
+    <div className="flex flex-col md:flex-row gap-[1.8rem]">
       {isNewErrand && (
         <Button variant="secondary" onClick={() => window.close()}>
           {t('errand-information:cancel')}
