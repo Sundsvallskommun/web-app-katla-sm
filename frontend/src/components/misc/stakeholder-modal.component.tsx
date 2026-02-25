@@ -50,76 +50,79 @@ export const StakeholderFormModal: React.FC<{
       show={show}
       onClose={onClose}
       label={edit ? `Redigera person` : 'Lägg till person manuellt'}
+      className="w-full max-w-[calc(100vw-3.2rem)] md:max-w-[72rem] max-h-[calc(100dvh-3.2rem)]"
     >
-      <Modal.Content>
-        <FormControl>
-          <FormLabel>Personnummer</FormLabel>
-          <Input data-cy="modal-personNumber-input" {...register(`personNumber`)} readOnly />
-        </FormControl>
-        <div className="flex gap-8">
-          <FormControl required>
+      <Modal.Content className="max-h-[70vh] overflow-y-auto overflow-x-hidden px-2">
+        {edit && (
+          <FormControl className="w-full min-w-0">
+            <FormLabel>Personnummer</FormLabel>
+            <Input className="w-full" data-cy="modal-personNumber-input" {...register(`personNumber`)} readOnly />
+          </FormControl>
+        )}
+        <div className="flex flex-col md:flex-row gap-8">
+          <FormControl required className="w-full min-w-0">
             <FormLabel>Förnamn</FormLabel>
-            <Input data-cy="modal-firstName-input" {...register(`firstName`)} />
+            <Input className="w-full" data-cy="modal-firstName-input" {...register(`firstName`)} />
             {formState.errors.firstName && (
               <FormErrorMessage data-cy="firstName-input-error">{formState.errors.firstName.message}</FormErrorMessage>
             )}
           </FormControl>
-          <FormControl required>
+          <FormControl required className="w-full min-w-0">
             <FormLabel>Efternamn</FormLabel>
-            <Input data-cy="modal-lastName-input" {...register(`lastName`)} />
+            <Input className="w-full" data-cy="modal-lastName-input" {...register(`lastName`)} />
             {formState.errors.lastName && (
               <FormErrorMessage data-cy="lastName-input-error">{formState.errors.lastName.message}</FormErrorMessage>
             )}
           </FormControl>
         </div>
 
-        <div className="flex gap-8">
-          <FormControl>
+        <div className="flex flex-col md:flex-row gap-8">
+          <FormControl className="w-full min-w-0">
             <FormLabel>E-postadress</FormLabel>
-            <Input data-cy="modal-email-input" {...register('emails.0')} />
+            <Input className="w-full" data-cy="modal-email-input" {...register('emails.0')} />
             {formState.errors.emails?.[0]?.message && (
               <FormErrorMessage data-cy="modal-email-input-error">
                 {formState.errors.emails[0].message}
               </FormErrorMessage>
             )}
           </FormControl>
-          <FormControl>
+          <FormControl className="w-full min-w-0">
             <FormLabel>Telefonnummer</FormLabel>
-            <Input data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
+            <Input className="w-full" data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
             {formState.errors.phoneNumbers?.[0]?.message && (
-              <FormErrorMessage data-cy="modal-phone-input-error" className="max-w-[22.9rem] truncate">
+              <FormErrorMessage data-cy="modal-phone-input-error" className="break-words">
                 {formState.errors.phoneNumbers[0].message}
               </FormErrorMessage>
             )}
           </FormControl>
         </div>
 
-        <div className="flex gap-8">
-          <FormControl>
+        <div className="flex flex-col md:flex-row gap-8">
+          <FormControl className="w-full min-w-0">
             <FormLabel>Adress</FormLabel>
-            <Input data-cy="modal-address-input" {...register(`address`)} />
+            <Input className="w-full" data-cy="modal-address-input" {...register(`address`)} />
           </FormControl>
-          <FormControl>
+          <FormControl className="w-full min-w-0">
             <FormLabel>C/o adress</FormLabel>
-            <Input data-cy="modal-careOf-input" {...register(`careOf`)} />
+            <Input className="w-full" data-cy="modal-careOf-input" {...register(`careOf`)} />
           </FormControl>
         </div>
 
-        <div className="flex gap-8">
-          <FormControl>
+        <div className="flex flex-col md:flex-row gap-8">
+          <FormControl className="w-full min-w-0">
             <FormLabel>Postnummer</FormLabel>
-            <Input data-cy="modal-zipCode-input" {...register(`zipCode`)} />
+            <Input className="w-full" data-cy="modal-zipCode-input" {...register(`zipCode`)} />
           </FormControl>
-          <FormControl>
+          <FormControl className="w-full min-w-0">
             <FormLabel>Ort</FormLabel>
-            <Input data-cy="modal-city-input" {...register(`city`)} />
+            <Input className="w-full" data-cy="modal-city-input" {...register(`city`)} />
           </FormControl>
         </div>
 
         <div className="flex flex-col">
-          <FormControl required>
+          <FormControl required className="w-full">
             <FormLabel>Roll</FormLabel>
-            <Select data-cy="modal-stakeholder-role-select" {...register(`role`)}>
+            <Select data-cy="modal-stakeholder-role-select" className="w-full" {...register(`role`)}>
               {metadata?.roles?.map(
                 (role) =>
                   roles?.includes(role.name) && (
@@ -133,11 +136,16 @@ export const StakeholderFormModal: React.FC<{
         </div>
       </Modal.Content>
 
-      <Modal.Footer>
-        <Button data-cy="modal-cancel-person-button" variant="secondary" onClick={onClose}>
+      <Modal.Footer className="sticky bottom-0 z-10 bg-background-content pt-8 pb-[calc(env(safe-area-inset-bottom)+0.4rem)] flex flex-col-reverse sm:flex-row sm:justify-end w-full">
+        <Button data-cy="modal-cancel-person-button" variant="secondary" className="w-full sm:w-auto" onClick={onClose}>
           Avbryt
         </Button>
-        <Button data-cy="modal-add-person-button" variant="primary" onClick={handleSubmit(onSave)}>
+        <Button
+          data-cy="modal-add-person-button"
+          variant="primary"
+          className="w-full sm:w-auto"
+          onClick={handleSubmit(onSave)}
+        >
           {edit ? 'Ändra uppgifter' : 'Lägg till'}
         </Button>
       </Modal.Footer>

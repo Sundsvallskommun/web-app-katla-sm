@@ -2,6 +2,14 @@ import '@styles/tailwind.scss';
 import { ReactNode } from 'react';
 import AppLayout from '@layouts/app/app-layout.component';
 import i18nConfig from './i18nConfig';
+import type { Viewport } from 'next';
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 interface RootLayoutProps {
   children: ReactNode;

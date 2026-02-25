@@ -141,14 +141,16 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
             <div className="grow shrink overflow-y-auto">
               <div className="bg-transparent">
                 <div className="mb-xl">
-                  <div className="mx-auto max-w-[108rem] flex flex-row justify-between pt-32 pb-12">
-                    <h1 className="text-h2-lg">{getHeaderTitle()}</h1>
-                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                  <div className="mx-auto w-full max-w-[108rem] flex flex-col md:flex-row justify-between pt-16 pb-8 md:pt-32 md:pb-12 px-16 md:px-0 gap-12">
+                    <h1 className="text-h2-sm md:text-h2-lg">{getHeaderTitle()}</h1>
+                    <div className="hidden md:block">
+                      <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                    </div>
                   </div>
                   <Main>
                     <Tabs
-                      className="border-1 rounded-12 bg-background-content pt-22 pl-5 mx-auto max-w-[108rem]"
-                      tabslistClassName="border-0 -m-b-12 flex-wrap ml-10"
+                      className="border-1 rounded-12 bg-background-content pt-22 pl-5 mx-auto w-full max-w-[108rem]"
+                      tabslistClassName="border-0 -m-b-12 flex-wrap ml-10 overflow-x-auto"
                       panelsClassName="border-t-1"
                       size="sm"
                     >
@@ -161,8 +163,11 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
                               </NextLink>
                             </Tabs.Button>
                             <Tabs.Content>
-                              <div className={`pt-xl pb-64 px-40 ${!isDraft ? 'pointer-events-none opacity-80' : ''}`}>
+                              <div className={`pt-xl pb-64 px-16 md:px-40 ${!isDraft ? 'pointer-events-none opacity-80' : ''}`}>
                                 {children}
+                                <div className="block md:hidden mt-24">
+                                  <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                                </div>
                               </div>
                             </Tabs.Content>
                           </Tabs.Item>

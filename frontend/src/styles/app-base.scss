@@ -21,3 +21,13 @@ body {
 .main-container {
   flex: 1 0 auto;
 }
+
+/* WCAG 2.5.8 Target Size — minimum 44x44px touch targets on mobile */
+@media (max-width: 800px) {
+  button,
+  a,
+  [role='button'] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

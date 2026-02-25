@@ -23,11 +23,11 @@ export const AboutErrand: React.FC = () => {
     <ErrandDisclosure header={t('errand-information:about.title')} lucideIconName="info">
       <div className="flex flex-col gap-[2.4rem] pb-[2.4rem]">
         <span className="text-dark-secondary">{t('errand-information:about.description')}</span>
-        <div className="flex flex-row gap-[2.4rem]">
-          <div className="flex flex-col">
-            <FormControl required id="classification.category">
+        <div className="flex flex-col md:flex-row gap-[2.4rem]">
+          <div className="flex flex-col w-full md:w-[44.4rem]">
+            <FormControl required id="classification.category" className="w-full">
               <FormLabel>{t('errand-information:about.first_level_categorization')}</FormLabel>
-              <Select data-cy="category-input" className="w-[44.4rem]" {...register('classification.category')}>
+              <Select data-cy="category-input" className="w-full" {...register('classification.category')}>
                 <Select.Option>{t('errand-information:about.choose_one_option')}</Select.Option>
                 {labelsList
                   .sort((a, b) => (a.displayName ?? '').localeCompare(b.displayName ?? ''))
@@ -40,10 +40,10 @@ export const AboutErrand: React.FC = () => {
               {errors.classification?.category && <FormErrorMessage className="text-error">{errors.classification?.category?.message}</FormErrorMessage>}
             </FormControl>
           </div>
-          <div className="flex flex-col">
-            <FormControl required id="classification.type">
+          <div className="flex flex-col w-full md:w-[44.4rem]">
+            <FormControl required id="classification.type" className="w-full">
               <FormLabel>{t('errand-information:about.second_level_categorization')}</FormLabel>
-              <Select data-cy="type-input" className="w-[44.4rem]" {...register('classification.type')}>
+              <Select data-cy="type-input" className="w-full" {...register('classification.type')}>
                 <Select.Option>{t('errand-information:about.choose_one_option')}</Select.Option>
                 {typesList.map((label) => (
                   <Select.Option value={label.resourceName} key={`type-${label.resourceName}`}>
