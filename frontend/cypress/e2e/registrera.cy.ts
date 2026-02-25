@@ -18,7 +18,7 @@ describe('Register new errand page', () => {
 
   it('Add stakeholders using personnumber and register draft errand', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
-    cy.intercept('GET', '**/supportmanagement/errand/**', mockErrand).as('getCreatedErrand');
+
     cy.get('main').should('be.visible');
 
     //Om ärendet
@@ -26,12 +26,12 @@ describe('Register new errand page', () => {
       .should('exist')
       .should('be.enabled')
       .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.categories?.[0]?.displayName || '');
+      .select(mockMetadata?.labels?.labelStructure?.[0]?.displayName || '');
     cy.get('[data-cy="type-input"]')
       .should('exist')
       .should('be.enabled')
       .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.categories?.[0]?.types?.[0]?.displayName || '');
+      .select(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.displayName || '');
 
     //Brukare
     cy.get('.sk-disclosure-header-title')
@@ -59,16 +59,15 @@ describe('Register new errand page', () => {
     cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
-      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.categories?.[0]?.name);
-      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.categories?.[0]?.types?.[0]?.name);
+      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
+      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
       expect(intercept.request.body.stakeholders?.length).to.equal(4);
     });
-    cy.wait('@getCreatedErrand');
   });
 
   it('Manually add stakeholders and register draft errand', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
-    cy.intercept('GET', '**/supportmanagement/errand/**', mockErrand).as('getCreatedErrand');
+
     cy.get('main').should('be.visible');
 
     //Om ärendet
@@ -76,12 +75,12 @@ describe('Register new errand page', () => {
       .should('exist')
       .should('be.enabled')
       .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.categories?.[0]?.displayName || '');
+      .select(mockMetadata?.labels?.labelStructure?.[0]?.displayName || '');
     cy.get('[data-cy="type-input"]')
       .should('exist')
       .should('be.enabled')
       .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.categories?.[0]?.types?.[0]?.displayName || '');
+      .select(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.displayName || '');
 
     //Brukare
     cy.get('.sk-disclosure-header-title')
@@ -148,16 +147,15 @@ describe('Register new errand page', () => {
     cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
-      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.categories?.[0]?.name);
-      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.categories?.[0]?.types?.[0]?.name);
+      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
+      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
       expect(intercept.request.body.stakeholders?.length).to.equal(3);
     });
-    cy.wait('@getCreatedErrand');
   });
 
   it('Manually edit stakeholder and remove stakeholder', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
-    cy.intercept('GET', '**/supportmanagement/errand/**', mockErrand).as('getCreatedErrand');
+
     cy.get('main').should('be.visible');
 
     //Om ärendet
@@ -165,12 +163,12 @@ describe('Register new errand page', () => {
       .should('exist')
       .should('be.enabled')
       .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.categories?.[0]?.displayName || '');
+      .select(mockMetadata?.labels?.labelStructure?.[0]?.displayName || '');
     cy.get('[data-cy="type-input"]')
       .should('exist')
       .should('be.enabled')
       .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.categories?.[0]?.types?.[0]?.displayName || '');
+      .select(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.displayName || '');
 
     //Brukare
     cy.get('.sk-disclosure-header-title')
@@ -254,16 +252,15 @@ describe('Register new errand page', () => {
     cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
-      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.categories?.[0]?.name);
-      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.categories?.[0]?.types?.[0]?.name);
+      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
+      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
       expect(intercept.request.body.stakeholders?.length).to.equal(2);
     });
-    cy.wait('@getCreatedErrand');
   });
 
   it('Manually edit employee stakeholder and remove stakeholder', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
-    cy.intercept('GET', '**/supportmanagement/errand/**', mockErrand).as('getCreatedErrand');
+
     cy.get('main').should('be.visible');
 
     //Om ärendet
@@ -271,12 +268,12 @@ describe('Register new errand page', () => {
       .should('exist')
       .should('be.enabled')
       .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.categories?.[0]?.displayName || '');
+      .select(mockMetadata?.labels?.labelStructure?.[0]?.displayName || '');
     cy.get('[data-cy="type-input"]')
       .should('exist')
       .should('be.enabled')
       .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.categories?.[0]?.types?.[0]?.displayName || '');
+      .select(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.displayName || '');
 
     //Övriga parter
     cy.get('.sk-disclosure-header-title')
@@ -360,11 +357,10 @@ describe('Register new errand page', () => {
     cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
-      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.categories?.[0]?.name);
-      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.categories?.[0]?.types?.[0]?.name);
+      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
+      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
       expect(intercept.request.body.stakeholders?.length).to.equal(2);
     });
-    cy.wait('@getCreatedErrand');
   });
 
   it('Reporter information should be displayed', () => {

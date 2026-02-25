@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFilterStore } from 'src/stores/filter-store';
+import { useMetadataStore } from 'src/stores/metadata-store';
 import { useSortStore } from 'src/stores/sort-store';
 import { ErrandTableFooter } from './errand-table-footer.component';
 import { ErrandTableHeader } from './errand-table-header.component';
@@ -15,6 +16,12 @@ export const ErrandTable: React.FC = () => {
   const { t } = useTranslation();
   const { sortColumn, sortOrder, page, size, rowHeight } = useSortStore();
   const { statuses } = useFilterStore();
+  const { metadata } = useMetadataStore();
+
+  const getTypeDisplayName = (errand: ErrandDTO) => {
+    const category = metadata?.categories?.find((c) => c.name === errand.classification?.category);
+    return category?.types?.find((t) => t.name === errand.classification?.type)?.displayName ?? errand.classification?.type;
+  };
 
   const [rows, setRows] = useState<ErrandDTO[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -63,7 +70,7 @@ export const ErrandTable: React.FC = () => {
             <StatusLabel status={errand?.status} />
           </Table.Column>
           <Table.Column>{errand.errandNumber}</Table.Column>
-          <Table.Column>{errand.title}</Table.Column>
+          <Table.Column>{getTypeDisplayName(errand)}</Table.Column>
           <Table.Column>{dayjs(errand.touched).format('YYYY-MM-DD HH:mm')}</Table.Column>
         </Table.Row>
       ))}
