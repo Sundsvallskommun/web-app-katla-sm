@@ -4,6 +4,7 @@ import { Button, FormControl, FormErrorMessage, FormLabel, Input, Modal, Select 
 import { phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
 import { useEffect } from 'react';
 import { Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import { appConfig } from 'src/config/appconfig';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
 export const StakeholderFormModal: React.FC<{
@@ -73,48 +74,52 @@ export const StakeholderFormModal: React.FC<{
           </FormControl>
         </div>
 
-        <div className="flex gap-8">
-          <FormControl>
-            <FormLabel>E-postadress</FormLabel>
-            <Input data-cy="modal-email-input" {...register('emails.0')} />
-            {formState.errors.emails?.[0]?.message && (
-              <FormErrorMessage data-cy="modal-email-input-error">
-                {formState.errors.emails[0].message}
-              </FormErrorMessage>
-            )}
-          </FormControl>
-          <FormControl>
-            <FormLabel>Telefonnummer</FormLabel>
-            <Input data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
-            {formState.errors.phoneNumbers?.[0]?.message && (
-              <FormErrorMessage data-cy="modal-phone-input-error" className="max-w-[22.9rem] truncate">
-                {formState.errors.phoneNumbers[0].message}
-              </FormErrorMessage>
-            )}
-          </FormControl>
-        </div>
+        {!(roles?.includes('PRIMARY') && appConfig.features.reducedStakeholderInfo) && (
+          <>
+            <div className="flex gap-8">
+              <FormControl>
+                <FormLabel>E-postadress</FormLabel>
+                <Input data-cy="modal-email-input" {...register('emails.0')} />
+                {formState.errors.emails?.[0]?.message && (
+                  <FormErrorMessage data-cy="modal-email-input-error">
+                    {formState.errors.emails[0].message}
+                  </FormErrorMessage>
+                )}
+              </FormControl>
+              <FormControl>
+                <FormLabel>Telefonnummer</FormLabel>
+                <Input data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
+                {formState.errors.phoneNumbers?.[0]?.message && (
+                  <FormErrorMessage data-cy="modal-phone-input-error" className="max-w-[22.9rem] truncate">
+                    {formState.errors.phoneNumbers[0].message}
+                  </FormErrorMessage>
+                )}
+              </FormControl>
+            </div>
 
-        <div className="flex gap-8">
-          <FormControl>
-            <FormLabel>Adress</FormLabel>
-            <Input data-cy="modal-address-input" {...register(`address`)} />
-          </FormControl>
-          <FormControl>
-            <FormLabel>C/o adress</FormLabel>
-            <Input data-cy="modal-careOf-input" {...register(`careOf`)} />
-          </FormControl>
-        </div>
+            <div className="flex gap-8">
+              <FormControl>
+                <FormLabel>Adress</FormLabel>
+                <Input data-cy="modal-address-input" {...register(`address`)} />
+              </FormControl>
+              <FormControl>
+                <FormLabel>C/o adress</FormLabel>
+                <Input data-cy="modal-careOf-input" {...register(`careOf`)} />
+              </FormControl>
+            </div>
 
-        <div className="flex gap-8">
-          <FormControl>
-            <FormLabel>Postnummer</FormLabel>
-            <Input data-cy="modal-zipCode-input" {...register(`zipCode`)} />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Ort</FormLabel>
-            <Input data-cy="modal-city-input" {...register(`city`)} />
-          </FormControl>
-        </div>
+            <div className="flex gap-8">
+              <FormControl>
+                <FormLabel>Postnummer</FormLabel>
+                <Input data-cy="modal-zipCode-input" {...register(`zipCode`)} />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Ort</FormLabel>
+                <Input data-cy="modal-city-input" {...register(`city`)} />
+              </FormControl>
+            </div>
+          </>
+        )}
 
         <div className="flex flex-col">
           <FormControl required>
