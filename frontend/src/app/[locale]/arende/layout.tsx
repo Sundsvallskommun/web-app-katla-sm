@@ -166,7 +166,11 @@ export default function ErrandLayout({ children }: { children: React.ReactNode }
                               <div className={`pt-xl pb-64 px-16 md:px-40 ${!isDraft ? 'pointer-events-none opacity-80' : ''}`}>
                                 {children}
                                 <div className="block md:hidden mt-24">
-                                  <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                                  <ErrandButtonGroup
+                                    isNewErrand={registerNewErrand}
+                                    saveDraftDataCy="save-draft-errand-mobile"
+                                    registerDataCy="register-errand-mobile"
+                                  />
                                 </div>
                               </div>
                             </Tabs.Content>

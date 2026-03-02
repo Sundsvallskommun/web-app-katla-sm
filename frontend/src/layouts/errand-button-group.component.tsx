@@ -16,9 +16,15 @@ import { CenterDiv } from './center-div.component';
 
 interface ErrandButtonGroupProps {
   isNewErrand: boolean;
+  saveDraftDataCy?: string;
+  registerDataCy?: string;
 }
 
-export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErrand }) => {
+export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({
+  isNewErrand,
+  saveDraftDataCy = 'save-draft-errand',
+  registerDataCy = 'register-errand',
+}) => {
   const { t } = useTranslation();
   const { t: tForms } = useTranslation('forms');
   const toastMessage = useSnackbar();
@@ -95,11 +101,11 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
           {t('errand-information:cancel')}
         </Button>
       )}
-      <Button data-cy="save-draft-errand" variant="primary" onClick={() => onSaveDraft()}>
+      <Button data-cy={saveDraftDataCy} variant="primary" onClick={() => onSaveDraft()}>
         {t('errand-information:save_draft')}
       </Button>
       <Button
-        data-cy="register-errand"
+        data-cy={registerDataCy}
         variant="primary"
         color="vattjom"
         onClick={async () => {

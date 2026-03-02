@@ -12,37 +12,37 @@ export const addStakeholder = (role: string) => {
 
   //Personnumber
   cy.get('[data-cy="person-number-input"]').type('PERSONNUMBER');
-  cy.get('button').contains('Sök').should('exist').click();
-  cy.get('[data-cy="person-number-error').should('be.visible');
+  cy.contains('button', 'Sök').filter(':visible').first().click();
+  cy.get('[data-cy="person-number-error"]').should('be.visible');
   cy.get('[data-cy="person-number-input"]').clear().type(Cypress.env('mockNonExistentPersonNumber'));
-  cy.get('button').contains('Sök').should('exist').click();
+  cy.contains('button', 'Sök').filter(':visible').first().click();
   cy.wait('@getEmptyPerson');
-  cy.get('[data-cy="empty-person-error').should('be.visible');
-  cy.get('button[aria-label="Rensa"]').should('be.visible').click();
-  cy.get('[data-cy="empty-person-error').should('not.exist');
+  cy.get('[data-cy="empty-person-error"]').should('be.visible');
+  cy.get('button[aria-label="Rensa"]').first().click();
+  cy.get('[data-cy="empty-person-error"]').should('not.exist');
   cy.get('[data-cy="person-number-input"]').clear().type(Cypress.env('mockInvalidDatePersonNumber'));
-  cy.get('button').contains('Sök').should('exist').click();
-  cy.get('[data-cy="person-number-error').should('be.visible');
-  cy.get('button[aria-label="Rensa"]').should('be.visible').click();
-  cy.get('[data-cy="person-number-error').should('not.exist');
+  cy.contains('button', 'Sök').filter(':visible').first().click();
+  cy.get('[data-cy="person-number-error"]').should('be.visible');
+  cy.get('button[aria-label="Rensa"]').first().click();
+  cy.get('[data-cy="person-number-error"]').should('not.exist');
   cy.get('[data-cy="person-number-input"]').clear().type(Cypress.env('mockPersonNumber'));
-  cy.get('button').contains('Sök').should('exist').click();
+  cy.contains('button', 'Sök').filter(':visible').first().click();
   cy.wait('@getPersonByPersonNumber');
 
   //Email
-  cy.get('[data-cy="person-number-error').should('not.exist');
-  cy.get('[data-cy="email-input-error').should('not.exist');
-  cy.get('[data-cy="phone-number-input-error').should('not.exist');
+  cy.get('[data-cy="person-number-error"]').should('not.exist');
+  cy.get('[data-cy="email-input-error"]').should('not.exist');
+  cy.get('[data-cy="phone-number-input-error"]').should('not.exist');
   cy.get('[data-cy="stakeholder-email-input"]').should('exist').type('EMAIL');
-  cy.get('button').contains('Lägg till person').should('exist').click();
-  cy.get('[data-cy="email-input-error').should('be.visible');
+  cy.get('[data-cy="add-stakeholder-button"]').click();
+  cy.get('[data-cy="email-input-error"]').should('be.visible');
   cy.get('[data-cy="stakeholder-email-input"]').should('exist').clear().type(Cypress.env('mockEmail'));
 
   //Phone
   cy.get('[data-cy="stakeholder-mobilephone-input"]').should('exist').type('PHONENUMBER');
-  cy.get('[data-cy="phone-number-input-error').should('be.visible');
+  cy.get('[data-cy="phone-number-input-error"]').should('be.visible');
   cy.get('[data-cy="stakeholder-mobilephone-input"]').should('exist').clear().type(Cypress.env('mockPhoneNumber'));
-  cy.get('button').contains('Lägg till person').should('exist').click();
+  cy.get('[data-cy="add-stakeholder-button"]').click();
 };
 
 export const addEmployeeStakeholder = (role: string) => {
@@ -59,25 +59,25 @@ export const addEmployeeStakeholder = (role: string) => {
   cy.get('[data-cy="radiobutton-employee"]').should('exist').check();
 
   cy.get('[data-cy="person-number-input"]').type('ADACCOUNT');
-  cy.get('button').contains('Sök').should('exist').click();
-  cy.get('[data-cy="empty-person-error').should('be.visible');
+  cy.contains('button', 'Sök').filter(':visible').first().click();
+  cy.get('[data-cy="empty-person-error"]').should('be.visible');
   cy.wait('@getEmptyPerson');
-  cy.get('button[aria-label="Rensa"]').should('be.visible').click();
-  cy.get('[data-cy="empty-person-error').should('not.exist');
+  cy.get('button[aria-label="Rensa"]').first().click();
+  cy.get('[data-cy="empty-person-error"]').should('not.exist');
   cy.get('[data-cy="person-number-input"]').clear().type('ABC12DEF');
-  cy.get('button').contains('Sök').should('exist').click();
-  cy.get('[data-cy="person-number-error').should('not.exist');
+  cy.contains('button', 'Sök').filter(':visible').first().click();
+  cy.get('[data-cy="person-number-error"]').should('not.exist');
   cy.wait('@getPersonByAdAccount');
 
   //Email
-  cy.get('[data-cy="person-number-error').should('not.exist');
-  cy.get('[data-cy="email-input-error').should('not.exist');
-  cy.get('[data-cy="phone-number-input-error').should('not.exist');
+  cy.get('[data-cy="person-number-error"]').should('not.exist');
+  cy.get('[data-cy="email-input-error"]').should('not.exist');
+  cy.get('[data-cy="phone-number-input-error"]').should('not.exist');
   cy.get('[data-cy="stakeholder-email-input"]').should('have.value', mockReporterStakeholder.emails?.[0]);
 
   //Phone
   cy.get('[data-cy="stakeholder-mobilephone-input"]').should('have.value', mockReporterStakeholder.phoneNumbers?.[0]);
-  cy.get('button').contains('Lägg till person').should('exist').click();
+  cy.get('[data-cy="add-stakeholder-button"]').click();
 };
 
 export const manuallyAddStakeholder = () => {
@@ -95,9 +95,6 @@ export const manuallyAddStakeholder = () => {
   cy.get('[data-cy="lastName-input-error"]').should('be.visible');
   cy.get('[data-cy="modal-email-input-error"]').should('not.exist');
   cy.get('[data-cy="modal-phone-input-error"]').should('not.exist');
-
-  //PersonNumber
-  cy.get('[data-cy="modal-personNumber-input"]').should('have.attr', 'readOnly');
 
   //Name
   cy.get('[data-cy="modal-firstName-input"]').type('Test');

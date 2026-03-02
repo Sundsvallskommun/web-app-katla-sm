@@ -1,5 +1,8 @@
+import { config as dotenvConfig } from 'dotenv';
 import { defineConfig } from 'cypress';
 import codeCoverageTask from '@cypress/code-coverage/task';
+
+dotenvConfig();
 
 export default defineConfig({
   retries: 2,

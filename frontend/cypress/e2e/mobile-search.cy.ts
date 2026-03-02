@@ -34,9 +34,10 @@ describe('Mobile search and filter', () => {
       cy.get('input[placeholder="Skriv för att söka"]').type('balder{enter}');
       cy.contains('Sökord: balder').should('exist');
 
+      cy.intercept('GET', /supportmanagement\/errands.*search=/, mockErrands).as('getSearchErrands');
       applyFilters();
 
-      cy.wait('@getErrands').its('request.url').should('include', 'search=balder');
+      cy.wait('@getSearchErrands').its('request.url').should('include', 'search=balder');
     });
 
     it('sends multiple search terms to the API', () => {
@@ -47,9 +48,10 @@ describe('Mobile search and filter', () => {
       cy.get('input[placeholder="Skriv för att söka"]').type('beta{enter}');
       cy.contains('Sökord: beta').should('exist');
 
+      cy.intercept('GET', /supportmanagement\/errands.*search=/, mockErrands).as('getSearchErrands');
       applyFilters();
 
-      cy.wait('@getErrands').its('request.url').then((url) => {
+      cy.wait('@getSearchErrands').its('request.url').then((url) => {
         const params = new URLSearchParams(url.split('?')[1]);
         const search = params.get('search');
         expect(search).to.include('alfa');
@@ -70,7 +72,7 @@ describe('Mobile search and filter', () => {
       cy.contains('Sökord: borttagbar').should('exist');
 
       // Click the chip to remove it
-      cy.contains('Sökord: borttagbar').closest('.sk-chip').click();
+      cy.contains('button', 'Sökord: borttagbar').click();
       cy.contains('Sökord: borttagbar').should('not.exist');
 
       applyFilters();
@@ -84,7 +86,7 @@ describe('Mobile search and filter', () => {
       cy.get('input[placeholder="Skriv för att söka"]').type('samma{enter}');
 
       // Should only show one chip
-      cy.get('.sk-chip').filter(':contains("Sökord: samma")').should('have.length', 1);
+      cy.get('button').filter(':contains("Sökord: samma")').should('have.length', 1);
     });
   });
 
@@ -95,12 +97,13 @@ describe('Mobile search and filter', () => {
       // Open category dropdown
       cy.contains('button', 'Ärendetyp').click();
 
-      // Select a type (displayName from mockMetadata)
-      cy.contains('typtest').click();
+      // Select a type (displayName from mockMetadata) within the popup menu
+      cy.get('[role="dialog"][data-open="true"]').contains('typtest').click();
 
+      cy.intercept('GET', /supportmanagement\/errands.*type=/, mockErrands).as('getCategoryErrands');
       applyFilters();
 
-      cy.wait('@getErrands').its('request.url').should('include', 'type=TYPETEST');
+      cy.wait('@getCategoryErrands').its('request.url').should('include', 'type=TYPETEST');
     });
   });
 
@@ -113,11 +116,12 @@ describe('Mobile search and filter', () => {
 
       // Select category
       cy.contains('button', 'Ärendetyp').click();
-      cy.contains('typtest').click();
+      cy.get('[role="dialog"][data-open="true"]').contains('typtest').click();
 
+      cy.intercept('GET', /supportmanagement\/errands.*search=/, mockErrands).as('getCombinedErrands');
       applyFilters();
 
-      cy.wait('@getErrands').its('request.url').then((url) => {
+      cy.wait('@getCombinedErrands').its('request.url').then((url) => {
         expect(url).to.include('search=combined');
         expect(url).to.include('type=TYPETEST');
       });
@@ -128,14 +132,17 @@ describe('Mobile search and filter', () => {
     it('shows errands when search returns results', () => {
       openSearch();
       cy.get('input[placeholder="Skriv för att söka"]').type('existing{enter}');
+
+      cy.intercept('GET', /supportmanagement\/errands.*search=/, mockErrands).as('getSearchErrands');
       applyFilters();
 
-      cy.wait('@getErrands');
-      cy.contains('AIA-25120019').should('exist');
+      cy.wait('@getSearchErrands');
+      cy.contains('Registrerat').should('exist');
+      cy.contains('2025-12-10').should('exist');
     });
 
     it('shows empty state when search returns no results', () => {
-      // Override intercept to return empty results for next call
+      // Override intercept to return empty results
       cy.intercept('GET', '**/supportmanagement/errands*', mockEmptyErrands).as('getEmptyErrands');
 
       openSearch();
@@ -143,7 +150,7 @@ describe('Mobile search and filter', () => {
       applyFilters();
 
       cy.wait('@getEmptyErrands');
-      cy.contains('Inga ärenden').should('exist');
+      cy.contains('Det finns inga ärenden att visa').should('exist');
     });
   });
 });
