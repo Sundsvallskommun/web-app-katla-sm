@@ -20,7 +20,7 @@ export const StakeholderCard: React.FC<{
     <>
       <div
         data-cy="stakeholder-card"
-        className="border-1 rounded-12 bg-background-content w-full max-w-[52.5rem] my-15"
+        className="border-1 rounded-12 bg-background-content w-full max-w-[52.5rem] my-15 overflow-hidden"
       >
         <div className="rounded-t-12 bg-vattjom-background-200 h-[4rem] flex items-center mb-[1.5rem]">
           <strong data-cy="stakeholder-role" className="px-[1rem]">
@@ -28,34 +28,38 @@ export const StakeholderCard: React.FC<{
           </strong>
         </div>
         <div className="px-[1rem]">
-          <p data-cy="stakeholder-name" className="text-[1.6rem] font-semibold">
+          <p data-cy="stakeholder-name" className="text-[1.6rem] font-semibold break-words">
             {stakeholder.firstName} {stakeholder.lastName}
           </p>
 
-          <div className="flex text-md mb-10 flex-row gap-15">
-            <div className="flex flex-col">
+          <div className="flex flex-col md:flex-row text-md mb-10 gap-12">
+            <div className="flex flex-col min-w-0">
               {stakeholder.title && (
-                <div data-cy="stakeholder-title" className="mr-10">
+                <div data-cy="stakeholder-title" className="break-words">
                   {stakeholder.title}
                 </div>
               )}
               {stakeholder.personNumber && !stakeholder.title && (
-                <div data-cy="stakeholder-personNumber" className="mr-10">
+                <div data-cy="stakeholder-personNumber" className="break-words">
                   {stakeholder.personNumber}
                 </div>
               )}
               {stakeholder.department ?
-                <div data-cy="stakeholder-department" className="">
+                <div data-cy="stakeholder-department" className="break-words">
                   {stakeholder.department}
                 </div>
-              : <div data-cy="stakeholder-address">
+              : <div data-cy="stakeholder-address" className="break-words">
                   {stakeholder.address} {stakeholder.city}
                 </div>
               }
             </div>
-            <div className="flex flex-col">
-              <div data-cy="stakeholder-email">{stakeholder.emails?.[0] ?? 'Epostadress saknas'}</div>
-              <div data-cy="stakeholder-phonenumber">{stakeholder.phoneNumbers?.[0] ?? 'Telefonnummber saknas'}</div>
+            <div className="flex flex-col min-w-0">
+              <div data-cy="stakeholder-email" className="break-all">
+                {stakeholder.emails?.[0] ?? 'Epostadress saknas'}
+              </div>
+              <div data-cy="stakeholder-phonenumber" className="break-all">
+                {stakeholder.phoneNumbers?.[0] ?? 'Telefonnummber saknas'}
+              </div>
             </div>
           </div>
 

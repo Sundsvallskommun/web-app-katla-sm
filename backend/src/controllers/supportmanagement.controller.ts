@@ -166,20 +166,37 @@ export class SupportManagementController {
 
     const filterParts: string[] = [];
 
+    const filterKeyMap: Record<string, string> = {
+      type: 'typeTag',
+    };
+    const skipKeys = ['page', 'size', 'sort', 'search'];
+
     for (const key of Object.keys(query)) {
-      if (['page', 'size', 'sort'].includes(key)) continue;
+      if (skipKeys.includes(key)) continue;
       const value = query[key];
 
       if (value !== undefined && value !== '') {
-        filterParts.push(`${key}:'${value}'`);
+        const filterKey = filterKeyMap[key] ?? key;
+        filterParts.push(`${filterKey}:'${value}'`);
+      }
+    }
+
+    if (query.search) {
+      const searchTerms = query.search.split(',').map(s => s.trim()).filter(Boolean);
+      for (const term of searchTerms) {
+        const sanitized = term.replace(/[^a-zA-ZåäöÅÄÖ0-9\s\-]/g, '');
+        filterParts.push(
+          `(title~'*${sanitized}*' or description~'*${sanitized}*' or errandNumber~'*${sanitized}*')`,
+        );
       }
     }
 
     if (filterParts.length > 0) {
-      params.append('filter', filterParts.join(','));
+      params.append('filter', filterParts.join(' and '));
     }
 
     const finalUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+    logger.info(`[getErrands] finalUrl: ${finalUrl.replace(/search=[^&]*/g, 'search=[REDACTED]')}`);
 
     try {
       const res = await this.apiService.get<ApiResponse<PageErrand>>({ url: finalUrl }, req);
@@ -214,7 +231,7 @@ export class SupportManagementController {
     }
 
     if (filterParts.length > 0) {
-      params.append('filter', filterParts.join(','));
+      params.append('filter', filterParts.join(' and '));
     }
 
     const finalUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;

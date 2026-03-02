@@ -27,23 +27,23 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
   const status = watch('status');
 
   const SingleErrandTitle = () => (
-    <div className="flex items-center gap-24 py-10">
+    <div className="flex items-center gap-12 md:gap-24 py-10">
       <a
         href={`${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
         title={`Katla - ${process.env.NEXT_PUBLIC_APP_NAME}. Gå till startsidan.`}
       >
-        <Logo variant="symbol" className="h-40" />
+        <Logo variant="symbol" className="h-32 md:h-40" />
       </a>
       <span className="text-large">
         {registerNewErrand ?
           <strong className="text-large ml-8 font-bold">{t('filtering:new_errand')}</strong>
         : <>
             <StatusLabel status={status} />
-            <span className="text-large ml-8 font-bold">
+            <span className="text-large ml-8 font-bold hidden md:inline">
               {metadata?.labels?.labelStructure?.find((l) => l.classification === category)?.labels?.find((l) => l.classification === type)
                 ?.displayName ?? type}
             </span>
-            <span className="ml-8 text-small">{errandNumber}</span>
+            <span className="ml-8 text-small hidden md:inline">{errandNumber}</span>
           </>
         }
       </span>

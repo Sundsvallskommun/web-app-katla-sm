@@ -7,18 +7,25 @@ import {
   manuallyAddStakeholder,
   manuallyEditStakeholder,
 } from 'cypress/utils/stakeholder';
-import { useMetadataStore } from 'src/stores/metadata-store';
+
+const assertNavigatedToCreatedErrand = () => {
+  cy.location('pathname', { timeout: 10000 }).should(
+    'match',
+    new RegExp(`/arende/${mockErrand.errandNumber}/grundinformation$`)
+  );
+};
 
 describe('Register new errand page', () => {
   beforeEach(() => {
     cy.intercept('GET', '**/employee/personal/*', mockReporterStakeholder).as('getReporterStakeholder');
-    useMetadataStore.setState({ metadata: mockMetadata });
+    cy.intercept('GET', '**/supportmanagement/metadata', mockMetadata).as('getMetadata');
+    cy.intercept('GET', '**/schemas/**', { statusCode: 200, body: {} }).as('getSchemas');
     cy.visit('/arende/registrera');
+    cy.wait('@getMetadata');
   });
 
   it('Add stakeholders using personnumber and register draft errand', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
-
     cy.get('main').should('be.visible');
 
     //Om ärendet
@@ -56,18 +63,18 @@ describe('Register new errand page', () => {
           cy.get('[data-cy="add-manual-person-button"]').should('exist');
         });
       });
-    cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="save-draft-errand"]').should('have.length', 1).should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
       expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
       expect(intercept.request.body.stakeholders?.length).to.equal(4);
     });
+    assertNavigatedToCreatedErrand();
   });
 
   it('Manually add stakeholders and register draft errand', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
-
     cy.get('main').should('be.visible');
 
     //Om ärendet
@@ -144,18 +151,18 @@ describe('Register new errand page', () => {
         cy.get('[data-cy="add-manual-person-button"]').should('exist');
       });
 
-    cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="save-draft-errand"]').should('have.length', 1).should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
       expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
       expect(intercept.request.body.stakeholders?.length).to.equal(3);
     });
+    assertNavigatedToCreatedErrand();
   });
 
   it('Manually edit stakeholder and remove stakeholder', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
-
     cy.get('main').should('be.visible');
 
     //Om ärendet
@@ -249,18 +256,18 @@ describe('Register new errand page', () => {
           .should('contain.text', Cypress.env('mockCountryCodePhoneNumber'));
       });
 
-    cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="save-draft-errand"]').should('have.length', 1).should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
       expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
       expect(intercept.request.body.stakeholders?.length).to.equal(2);
     });
+    assertNavigatedToCreatedErrand();
   });
 
   it('Manually edit employee stakeholder and remove stakeholder', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
-
     cy.get('main').should('be.visible');
 
     //Om ärendet
@@ -354,13 +361,14 @@ describe('Register new errand page', () => {
           .should('contain.text', Cypress.env('mockCountryCodePhoneNumber'));
       });
 
-    cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="save-draft-errand"]').should('have.length', 1).should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
       expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
       expect(intercept.request.body.stakeholders?.length).to.equal(2);
     });
+    assertNavigatedToCreatedErrand();
   });
 
   it('Reporter information should be displayed', () => {

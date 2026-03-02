@@ -27,6 +27,12 @@ export class ErrandsQueryDTO {
   @IsOptional()
   @IsString()
   status?: string;
+  @IsOptional()
+  @IsString()
+  type?: string;
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
 
 export class StakeholderDTO implements Partial<Stakeholder> {

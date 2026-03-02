@@ -152,43 +152,53 @@ export function FacilitySearchWidget(props: FieldProps) {
             <strong className="px-[1rem]">{t('facility_search.card_header', 'Plats där avvikelsen inträffat')}</strong>
           </div>
           <div className="p-[1rem]">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-12">
+              <div className="flex-1 min-w-0">
                 <p className="text-[1.6rem] font-semibold">{facilityInfo.orgName}</p>
               </div>
 
-              <div className="flex gap-8 items-center">
+              <div className="w-full md:w-auto">
                 {disabled || readonly || isConfirmed ?
-                  <>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-8 w-full md:w-auto">
                     <span className="flex items-center gap-4 text-gronsta-surface-primary">
                       <LucideIcon name="check" size={16} />
                       {t('facility_search.confirmed', 'Bekräftat')}
                     </span>
                     {!disabled && !readonly && (
-                      <Button type="button" variant="tertiary" size="sm" onClick={() => setIsConfirmed(false)}>
+                      <Button
+                        type="button"
+                        variant="tertiary"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        onClick={() => setIsConfirmed(false)}
+                      >
                         {t('facility_search.edit', 'Ändra')}
                       </Button>
                     )}
-                  </>
+                  </div>
                 : <>
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      leftIcon={<LucideIcon name="check" size={16} />}
-                      onClick={() => setIsConfirmed(true)}
-                    >
-                      {t('facility_search.confirm', 'Bekräfta')}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      leftIcon={<LucideIcon name="x" size={16} />}
-                      onClick={handleRemove}
-                    >
-                      {t('facility_search.remove', 'Ta bort')}
-                    </Button>
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap md:flex-nowrap gap-8 w-full md:w-auto">
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        leftIcon={<LucideIcon name="check" size={16} />}
+                        onClick={() => setIsConfirmed(true)}
+                      >
+                        {t('facility_search.confirm', 'Bekräfta')}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        leftIcon={<LucideIcon name="x" size={16} />}
+                        onClick={handleRemove}
+                      >
+                        {t('facility_search.remove', 'Ta bort')}
+                      </Button>
+                    </div>
                   </>
                 }
               </div>
