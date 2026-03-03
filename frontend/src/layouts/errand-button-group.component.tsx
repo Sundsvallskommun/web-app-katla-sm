@@ -6,7 +6,7 @@ import {
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@app/[locale]/arende/layout';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Inbox } from 'lucide-react';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -33,6 +33,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
 
   const isDraft = errandStatus === 'DRAFT';
   const showButtons = isNewErrand || isDraft;
+  const draftEnabled = process.env.NEXT_PUBLIC_DRAFT_ERRAND === 'true';
 
   const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
     const { errandFormData, ...errandWithoutFormData } = values;
@@ -91,13 +92,15 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   return (
     <div className="flex flex-row gap-[1.8rem]">
       {isNewErrand && (
-        <Button variant="secondary" onClick={() => window.close()}>
+        <Button variant="secondary" onClick={() => router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`)}>
           {t('errand-information:cancel')}
         </Button>
       )}
-      <Button data-cy="save-draft-errand" variant="primary" onClick={() => onSaveDraft()}>
-        {t('errand-information:save_draft')}
-      </Button>
+      {draftEnabled && (
+        <Button data-cy="save-draft-errand" variant="primary" onClick={() => onSaveDraft()}>
+          {t('errand-information:save_draft')}
+        </Button>
+      )}
       <Button
         data-cy="register-errand"
         variant="primary"
@@ -125,7 +128,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       <Dialog show={isOpen}>
         <Dialog.Content className="-mt-20">
           <CenterDiv>
-            <LucideIcon size={32} name="inbox" color="vattjom" className="mb-[1.6rem]" />
+            <Inbox size={32} className="mb-[1.6rem] text-vattjom-surface-primary" />
             <h3 className="text-h3-md">{t('errand-information:register')}</h3>
             <span className="text-dark-secondary text-md mb-30">
               När du skickar in ett ärende. Lorem ipsum dolor sit amet consectuer
