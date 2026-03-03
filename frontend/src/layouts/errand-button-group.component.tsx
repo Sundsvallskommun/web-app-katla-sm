@@ -141,10 +141,10 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
           <Button variant="secondary" onClick={() => setIsOpen(false)}>
             Nej
           </Button>
-          <Button variant="primary" onClick={() => onRegister()}>
+          <Button data-cy="sumbit-button" variant="primary" onClick={() => onRegister()}>
             Skicka in
           </Button>
-          <Button variant="primary" color="vattjom" onClick={() => onRegister(true)}>
+          <Button data-cy="sumbit-logout-button" variant="primary" color="vattjom" onClick={() => onRegister(true)}>
             Skicka in och logga ut
           </Button>
         </Dialog.Buttons>

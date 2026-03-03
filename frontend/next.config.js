@@ -18,11 +18,7 @@ envalid.cleanEnv(process.env, {
   HEALTH_PASSWORD: authDependent(),
 });
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
-
-module.exports = withBundleAnalyzer({
+module.exports = {
   output: 'standalone',
   images: {
     remotePatterns: process.env.DOMAIN_NAME ? [{ protocol: 'https', hostname: process.env.DOMAIN_NAME }] : [],
@@ -48,4 +44,4 @@ module.exports = withBundleAnalyzer({
       },
     ];
   },
-});
+};

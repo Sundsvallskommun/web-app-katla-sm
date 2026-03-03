@@ -56,7 +56,9 @@ describe('Register new errand page', () => {
           cy.get('[data-cy="add-manual-person-button"]').should('exist');
         });
       });
-    cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="register-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="sumbit-logout-button"]').should('exist').should('be.enabled');
+    cy.get('[data-cy="sumbit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
@@ -65,7 +67,7 @@ describe('Register new errand page', () => {
     });
   });
 
-  it('Manually add stakeholders and register draft errand', () => {
+  it('Manually add stakeholders and register errand', () => {
     cy.intercept('POST', '**/supportmanagement/errand/create', mockErrand).as('createDraftErrand');
 
     cy.get('main').should('be.visible');
@@ -144,7 +146,9 @@ describe('Register new errand page', () => {
         cy.get('[data-cy="add-manual-person-button"]').should('exist');
       });
 
-    cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="register-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="sumbit-logout-button"]').should('exist').should('be.enabled');
+    cy.get('[data-cy="sumbit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
@@ -249,7 +253,9 @@ describe('Register new errand page', () => {
           .should('contain.text', Cypress.env('mockCountryCodePhoneNumber'));
       });
 
-    cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="register-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="sumbit-logout-button"]').should('exist').should('be.enabled');
+    cy.get('[data-cy="sumbit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
@@ -354,7 +360,9 @@ describe('Register new errand page', () => {
           .should('contain.text', Cypress.env('mockCountryCodePhoneNumber'));
       });
 
-    cy.get('[data-cy="save-draft-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="register-errand"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="sumbit-logout-button"]').should('exist').should('be.enabled');
+    cy.get('[data-cy="sumbit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
