@@ -57,8 +57,8 @@ describe('Register new errand page', () => {
         });
       });
     cy.get('[data-cy="register-errand"]').should('exist').should('be.enabled').click();
-    cy.get('[data-cy="sumbit-logout-button"]').should('exist').should('be.enabled');
-    cy.get('[data-cy="sumbit-button"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="submit-logout-button"]').should('exist').should('be.enabled');
+    cy.get('[data-cy="submit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
@@ -147,8 +147,8 @@ describe('Register new errand page', () => {
       });
 
     cy.get('[data-cy="register-errand"]').should('exist').should('be.enabled').click();
-    cy.get('[data-cy="sumbit-logout-button"]').should('exist').should('be.enabled');
-    cy.get('[data-cy="sumbit-button"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="submit-logout-button"]').should('exist').should('be.enabled');
+    cy.get('[data-cy="submit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
@@ -254,8 +254,8 @@ describe('Register new errand page', () => {
       });
 
     cy.get('[data-cy="register-errand"]').should('exist').should('be.enabled').click();
-    cy.get('[data-cy="sumbit-logout-button"]').should('exist').should('be.enabled');
-    cy.get('[data-cy="sumbit-button"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="submit-logout-button"]').should('exist').should('be.enabled');
+    cy.get('[data-cy="submit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
@@ -361,8 +361,8 @@ describe('Register new errand page', () => {
       });
 
     cy.get('[data-cy="register-errand"]').should('exist').should('be.enabled').click();
-    cy.get('[data-cy="sumbit-logout-button"]').should('exist').should('be.enabled');
-    cy.get('[data-cy="sumbit-button"]').should('exist').should('be.enabled').click();
+    cy.get('[data-cy="submit-logout-button"]').should('exist').should('be.enabled');
+    cy.get('[data-cy="submit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
       expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
