@@ -3,7 +3,7 @@ import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { PageHeader } from '@layouts/page-header.component';
 import { userMenuGroups } from '@layouts/userMenuGroup';
 import { useUserStore } from '@services/user-service/user-service';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Menu } from 'lucide-react';
 import { Button, Divider, Link, Logo, PopupMenu, UserMenu } from '@sk-web-gui/react';
 import { Fragment } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -72,13 +72,11 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
                 <Divider orientation="vertical" className="mx-24" />
                 <Link
                   href={`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/registrera`}
-                  target="_blank"
                   data-cy="register-new-errand-button"
                 >
                   <Button
                     color={'primary'}
                     variant={'tertiary'}
-                    rightIcon={<LucideIcon name="external-link" color="primary" variant="tertiary" />}
                   >
                     {t('filtering:new_errand')}
                   </Button>
@@ -88,7 +86,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
             mobileMenu={
               <PopupMenu align="end">
                 <PopupMenu.Button iconButton>
-                  <LucideIcon name="menu" />
+                  <Menu />
                 </PopupMenu.Button>
                 <PopupMenu.Panel>
                   <PopupMenu.Group>
@@ -97,8 +95,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
                   <PopupMenu.Items>
                     <PopupMenu.Group>
                       <PopupMenu.Item>
-                        <Link href={`${process.env.NEXT_PUBLIC_BASE_PATH}/registrera`}>
-                          <LucideIcon name="external-link" className="h-md" color="primary" variant="tertiary" />{' '}
+                        <Link href={`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/registrera`}>
                           {t('filtering:new_errand')}
                         </Link>
                       </PopupMenu.Item>

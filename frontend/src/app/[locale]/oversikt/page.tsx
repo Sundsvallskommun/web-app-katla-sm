@@ -8,7 +8,7 @@ import FilteringLayout from '@layouts/filtering-layout/filtering-layout.componen
 import Main from '@layouts/main/main.component';
 import { getMetadata } from '@services/errand-service/errand-service';
 import { useUserStore } from '@services/user-service/user-service';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { ListFilter } from 'lucide-react';
 import { Button, Link } from '@sk-web-gui/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -42,14 +42,13 @@ const Oversikt: React.FC = () => {
               color="vattjom"
               variant={show ? 'tertiary' : 'primary'}
               inverted={show ? false : true}
-              leftIcon={<LucideIcon name="list-filter" size="1.8rem" />}
+              leftIcon={<ListFilter size="1.8rem" />}
             >
               {show ? t('filtering:hide_filter') : t('filtering:show_filter')}
               {/* {show ? 'Dölj filter' : `Visa filter ${numberOfFilters !== 0 ? `(${numberOfFilters})` : ''}`} */}
             </Button>
             <Link
               href={`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/registrera`}
-              target="_blank"
               data-cy="register-new-errand-button"
             >
               <Button color={'vattjom'} variant={'primary'}>

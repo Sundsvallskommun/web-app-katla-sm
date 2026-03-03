@@ -3,7 +3,7 @@ import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contract
 import { yupResolver } from '@hookform/resolvers/yup';
 import { getStakeholderUsingPersonNumber } from '@services/citizen/citizen-service';
 import { getEmployeeStakeholderFromApi } from '@services/employee-service/employee-service';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Pen, Plus } from 'lucide-react';
 import {
   Button,
   cx,
@@ -235,7 +235,7 @@ export const StakeholderList: React.FC<{
               <div className="py-10">
                 <Button
                   data-cy="add-stakeholder-button"
-                  leftIcon={<LucideIcon name="plus" size={16} />}
+                  leftIcon={<Plus size={16} />}
                   variant="primary"
                   onClick={handleSubmit(addStakeholderToErrand)}
                   className="w-full lg:w-auto"
@@ -270,7 +270,7 @@ export const StakeholderList: React.FC<{
           color="vattjom"
           inverted={true}
           className="mt-6 w-fit"
-          leftIcon={<LucideIcon name="pen" />}
+          leftIcon={<Pen />}
           onClick={() => {
             setManualEntryOpen(true);
           }}

@@ -1,5 +1,5 @@
 import { getNotifications } from '@services/errand-service/errand-service';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Mail, X } from 'lucide-react';
 import { Button, cx, Divider, Header } from '@sk-web-gui/react';
 import { sortBy } from 'lodash';
 import { useEffect } from 'react';
@@ -52,7 +52,7 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
           >
             <Header className="h-[64px] flex justify-between" wrapperClasses="py-4 px-40">
               <div className="text-h4-sm flex items-center gap-12">
-                <LucideIcon name="mail" /> Notiser
+                <Mail /> Notiser
               </div>
               <Button
                 tabIndex={show ? 0 : -1}
@@ -64,7 +64,7 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
                 }}
                 data-cy="close-message-wrapper"
               >
-                <LucideIcon name="x" data-cy="close-message-wrapper-icon" />
+                <X data-cy="close-message-wrapper-icon" />
               </Button>
             </Header>
             <div className="flex-grow mt-sm mb-0 p-24 pt-0 flex flex-col gap-24 overflow-auto">

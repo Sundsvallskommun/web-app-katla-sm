@@ -1,6 +1,7 @@
 import { getErrandsCount } from '@services/errand-service/errand-service';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { CircleCheckBig, ClipboardPen, SquarePen } from 'lucide-react';
 import { Badge, Button } from '@sk-web-gui/react';
+import { ReactElement } from 'react';
 import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,12 +11,10 @@ import { useSortStore } from 'src/stores/sort-store';
 
 //TODO: Set correct statuses
 
-type LucideIconName = React.ComponentProps<typeof LucideIcon>['name'];
-
 interface SidebarButton {
   label: string;
   statuses: string[];
-  icon: LucideIconName;
+  icon: ReactElement;
   errandsCount: number;
 }
 
@@ -34,6 +33,7 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
     setClosedErrandCount,
   } = useErrandCountStore();
   const {reset} = useSortStore()
+  const draftEnabled = process.env.NEXT_PUBLIC_DRAFT_ERRAND === 'true';
 
   useEffect(() => {
     if (!activeStatus) {
@@ -41,36 +41,42 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
     }
   }, [t, activeStatus, setActiveStatus]);
 
-  const supportSidebarButtons: SidebarButton[] = [
+  const allSidebarButtons: SidebarButton[] = [
     {
       label: t('filtering:errands.open'),
       statuses: ['NEW'],
-      icon: 'clipboard-pen',
+      icon: <ClipboardPen />,
       errandsCount: newErrandCount,
     },
     {
       label: t('filtering:errands.draft'),
       statuses: ['DRAFT'],
-      icon: 'square-pen',
+      icon: <SquarePen />,
       errandsCount: draftErrandCount,
     },
     {
       label: t('filtering:errands.closed'),
       statuses: ['SOLVED'],
-      icon: 'circle-check-big',
+      icon: <CircleCheckBig />,
       errandsCount: closedErrandCount,
     },
   ];
 
+  const supportSidebarButtons = draftEnabled
+    ? allSidebarButtons
+    : allSidebarButtons.filter((button) => !button.statuses.includes('DRAFT'));
+
   useEffect(() => {
     setIsLoading(true);
-    getErrandsCount({ statuses: supportSidebarButtons[0].statuses }).then((data) => {
+    getErrandsCount({ statuses: ['NEW'] }).then((data) => {
       setNewErrandCount(data.count || 0);
     });
-    getErrandsCount({ statuses: supportSidebarButtons[1].statuses }).then((data) => {
-      setDraftErrandCount(data.count || 0);
-    });
-    getErrandsCount({ statuses: supportSidebarButtons[2].statuses }).then((data) => {
+    if (draftEnabled) {
+      getErrandsCount({ statuses: ['DRAFT'] }).then((data) => {
+        setDraftErrandCount(data.count || 0);
+      });
+    }
+    getErrandsCount({ statuses: ['SOLVED'] }).then((data) => {
       setClosedErrandCount(data.count || 0);
     });
     setIsLoading(false);
@@ -92,7 +98,7 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
             aria-label={`status-button-${button.label}`}
             variant={isActive ? 'primary' : 'ghost'}
             className={`${!smallSideBar && 'justify-start'} ${!isActive && 'hover:bg-dark-ghost'}`}
-            leftIcon={<LucideIcon name={button.icon} />}
+            leftIcon={button.icon}
             key={button.label}
             iconButton={smallSideBar}
           >

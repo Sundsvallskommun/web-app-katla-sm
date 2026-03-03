@@ -1,4 +1,4 @@
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Bell } from 'lucide-react';
 import { Badge, Button } from '@sk-web-gui/react';
 import { useNotificationStore } from 'src/stores/notification-store';
 
@@ -17,9 +17,7 @@ export const NotificationsBell = (props: { toggleShow: () => void }) => {
       variant="tertiary"
       iconButton
       leftIcon={
-        <>
-          <LucideIcon name={'bell'} />
-        </>
+        <Bell />
       }
     >
       {activeNotifications.length > 0 && (

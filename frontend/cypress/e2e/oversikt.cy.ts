@@ -37,8 +37,9 @@ describe('Overview page', () => {
 
     const headerRow = cy.get('[data-cy="errand-table"] .sk-table-thead-tr').first();
     headerRow.get('th').eq(0).find('span').first().should('have.text', 'Status');
-    headerRow.get('th').eq(1).find('span').first().should('have.text', 'Ärendetyp');
-    headerRow.get('th').eq(2).find('span').first().should('have.text', 'Registrerat');
+    headerRow.get('th').eq(1).find('span').first().should('have.text', 'Ärendenummer');
+    headerRow.get('th').eq(2).find('span').first().should('have.text', 'Ärendetyp');
+    headerRow.get('th').eq(3).find('span').first().should('have.text', 'Registrerat');
 
     cy.get('[data-cy="errand-table"] .sk-table-tbody-tr').should('have.length', mockErrands?.content?.length);
   });

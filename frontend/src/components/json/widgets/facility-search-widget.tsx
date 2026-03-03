@@ -3,7 +3,7 @@ import { FacilityInfoDTO, OrgLeafNodeDTO, UserEmploymentDTO } from '@data-contra
 import type { FieldProps } from '@rjsf/utils';
 import { getUserEmployments } from '@services/employee-service/employee-service';
 import { getOrgLeafNodes } from '@services/organization/organization-service';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Check, X } from 'lucide-react';
 import { Button, Combobox, FormControl, FormLabel } from '@sk-web-gui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -161,7 +161,7 @@ export function FacilitySearchWidget(props: FieldProps) {
                 {disabled || readonly || isConfirmed ?
                   <>
                     <span className="flex items-center gap-4 text-gronsta-surface-primary">
-                      <LucideIcon name="check" size={16} />
+                      <Check size={16} />
                       {t('facility_search.confirmed', 'Bekräftat')}
                     </span>
                     {!disabled && !readonly && (
@@ -175,7 +175,7 @@ export function FacilitySearchWidget(props: FieldProps) {
                       type="button"
                       variant="primary"
                       size="sm"
-                      leftIcon={<LucideIcon name="check" size={16} />}
+                      leftIcon={<Check size={16} />}
                       onClick={() => setIsConfirmed(true)}
                     >
                       {t('facility_search.confirm', 'Bekräfta')}
@@ -184,7 +184,7 @@ export function FacilitySearchWidget(props: FieldProps) {
                       type="button"
                       variant="secondary"
                       size="sm"
-                      leftIcon={<LucideIcon name="x" size={16} />}
+                      leftIcon={<X size={16} />}
                       onClick={handleRemove}
                     >
                       {t('facility_search.remove', 'Ta bort')}

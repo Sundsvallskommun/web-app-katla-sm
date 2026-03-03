@@ -1,5 +1,5 @@
 import { Button, cx } from '@sk-web-gui/react';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { capitalize } from 'lodash';
@@ -27,7 +27,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ smallSideBar = false
         size="md"
         color="primary"
         className={cx('w-full hover:bg-dark-ghost', !smallSideBar ? 'justify-start' : '')}
-        leftIcon={<LucideIcon name="log-out" />}
+        leftIcon={<LogOut />}
         aria-label={logOutString}
         iconButton={smallSideBar}
       >
