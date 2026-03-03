@@ -1,6 +1,7 @@
 import { ErrandDisclosure } from '@components/disclosure/errand-information-disclosure.component';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { FormControl, FormErrorMessage, FormLabel, Select } from '@sk-web-gui/react';
+import { Info } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
@@ -20,7 +21,7 @@ export const AboutErrand: React.FC = () => {
   const typesList = labelsList.find((l) => l.resourceName === selectedCategory)?.labels || [];
 
   return (
-    <ErrandDisclosure header={t('errand-information:about.title')} lucideIconName="info">
+    <ErrandDisclosure header={t('errand-information:about.title')} icon={<Info />}>
       <div className="flex flex-col gap-[2.4rem] pb-[2.4rem]">
         <span className="text-dark-secondary">{t('errand-information:about.description')}</span>
         <div className="flex flex-row gap-[2.4rem]">

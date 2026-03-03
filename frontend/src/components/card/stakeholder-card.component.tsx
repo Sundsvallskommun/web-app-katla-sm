@@ -1,6 +1,6 @@
 import { StakeholderFormModal } from '@components/misc/stakeholder-modal.component';
 import { StakeholderDTO } from '@data-contracts/backend/data-contracts';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Pen, X } from 'lucide-react';
 import { Button } from '@sk-web-gui/react';
 import { getStakeholderRoleDisplayName } from '@utils/stakeholder';
 import { useState } from 'react';
@@ -63,7 +63,7 @@ export const StakeholderCard: React.FC<{
             <div className="flex flex-col sm:flex-row gap-[1rem] mb-10">
               <Button
                 data-cy="edit-card-button"
-                leftIcon={<LucideIcon name="pen" size={16} />}
+                leftIcon={<Pen size={16} />}
                 variant="tertiary"
                 size="sm"
                 onClick={() => setIsOpen(true)}
@@ -72,7 +72,7 @@ export const StakeholderCard: React.FC<{
               </Button>
               <Button
                 data-cy="remove-card-button"
-                leftIcon={<LucideIcon name="x" size={16} />}
+                leftIcon={<X size={16} />}
                 variant="tertiary"
                 size="sm"
                 onClick={onRemove}

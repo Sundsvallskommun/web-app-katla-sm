@@ -1,13 +1,12 @@
-import LucideIcon, { LucideIconProps } from '@sk-web-gui/lucide-icon';
 import { Checkbox, Disclosure, Divider, FormControl, Label } from '@sk-web-gui/react';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactElement, ReactNode, useEffect, useState } from 'react';
 
 export const ErrandDisclosure: React.FC<{
   header: string;
-  lucideIconName: React.ComponentProps<LucideIconProps>['name'];
+  icon: ReactElement;
   children: ReactNode;
   errandInformationSection?: boolean;
-}> = ({ header, lucideIconName, children, errandInformationSection }) => {
+}> = ({ header, icon, children, errandInformationSection }) => {
   const [open, setOpen] = useState(true);
   const [doneMark, setDoneMark] = useState(false);
 
@@ -22,7 +21,7 @@ export const ErrandDisclosure: React.FC<{
     <FormControl className="w-full" disabled={false}>
       <Disclosure variant="alt" className="w-full mobileVersion" open={open} onToggleOpen={setOpen}>
         <Disclosure.Header>
-          <Disclosure.Icon icon={<LucideIcon name={lucideIconName} />} />
+          <Disclosure.Icon icon={icon} />
           <Disclosure.Title>{header}</Disclosure.Title>
           {doneMark && (
             <Label inverted rounded color="gronsta">

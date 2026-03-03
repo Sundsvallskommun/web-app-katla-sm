@@ -1,18 +1,18 @@
 import { Avatar, cx } from '@sk-web-gui/react';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Bell, BellRing, File, MessageCircle, type LucideIcon } from 'lucide-react';
 import { NotificationDTO } from '@data-contracts/backend/data-contracts';
 
 interface NotificationRenderIconProps {
   notification: NotificationDTO;
 }
 
-const iconConfig = {
-  'Meddelande mottaget': { icon: 'message-circle', defaultColor: 'gronsta' },
-  'Parkering av ärendet har upphört': { icon: 'bell-ring', defaultColor: 'juniskar' },
-  'Ärende uppdaterat': { icon: 'bell-ring', defaultColor: 'juniskar' },
-  'En bilaga har lagts till i ärendet.': { icon: 'file', defaultColor: 'vattjom' },
+const iconConfig: Record<string, { icon?: LucideIcon; avatar?: boolean; defaultColor: string }> = {
+  'Meddelande mottaget': { icon: MessageCircle, defaultColor: 'gronsta' },
+  'Parkering av ärendet har upphört': { icon: BellRing, defaultColor: 'juniskar' },
+  'Ärende uppdaterat': { icon: BellRing, defaultColor: 'juniskar' },
+  'En bilaga har lagts till i ärendet.': { icon: File, defaultColor: 'vattjom' },
   'Notering skapad': { avatar: true, defaultColor: 'juniskar' },
-  default: { icon: 'bell', defaultColor: 'vattjom' },
+  default: { icon: Bell, defaultColor: 'vattjom' },
 };
 
 const surfaceColor: Record<string, string> = {
@@ -22,12 +22,20 @@ const surfaceColor: Record<string, string> = {
   bjornstigen: 'bg-bjornstigen-surface-accent',
 };
 
+const textColor: Record<string, string> = {
+  juniskar: 'text-juniskar-surface-primary',
+  gronsta: 'text-gronsta-surface-primary',
+  vattjom: 'text-vattjom-surface-primary',
+  bjornstigen: 'text-bjornstigen-surface-primary',
+  primary: 'text-primary',
+};
+
 export const NotificationRenderIcon: React.FC<NotificationRenderIconProps> = ({ notification }) => {
-  const config = iconConfig[notification.description as keyof typeof iconConfig] ?? iconConfig.default;
+  const config = iconConfig[notification.description as string] ?? iconConfig.default;
   const color = notification.acknowledged ? 'primary' : config.defaultColor;
   const bgColor = surfaceColor[color] ?? 'bg-tertiary-surface';
 
-  if ('avatar' in config && config.avatar) {
+  if (config.avatar) {
     const initials =
       `${notification.createdByFullName?.split(' ')[1]?.charAt(0).toUpperCase() ?? ''}` +
       `${notification.createdByFullName?.split(' ')[0]?.charAt(0).toUpperCase() ?? ''}`;
@@ -39,27 +47,10 @@ export const NotificationRenderIcon: React.FC<NotificationRenderIconProps> = ({ 
     );
   }
 
+  const Icon = config.icon;
   return (
     <div className={cx(`w-[4rem] h-[4rem] rounded-12 flex items-center justify-center`, bgColor)}>
-      {'icon' in config && (
-        <LucideIcon
-          name={config.icon as 'message-circle' | 'bell-ring' | 'file' | 'bell'}
-          color={
-            color as
-              | 'gronsta'
-              | 'juniskar'
-              | 'vattjom'
-              | 'primary'
-              | 'error'
-              | 'info'
-              | 'success'
-              | 'warning'
-              | 'bjornstigen'
-              | 'tertiary'
-          }
-          size="2.4rem"
-        />
-      )}
+      {Icon && <Icon size="2.4rem" className={textColor[color] ?? ''} />}
     </div>
   );
 };

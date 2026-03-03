@@ -25,26 +25,27 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 module.exports = withBundleAnalyzer({
   output: 'standalone',
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: process.env.DOMAIN_NAME,
-        pathname: '**',
-      },
-    ],
-
+    remotePatterns: process.env.DOMAIN_NAME ? [{ protocol: 'https', hostname: process.env.DOMAIN_NAME }] : [],
     formats: ['image/avif', 'image/webp'],
   },
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH,
-  sassOptions: {
-    prependData: `$basePath: '${process.env.NEXT_PUBLIC_BASE_PATH}';`,
-  },
-  transpilePackages: ['lucide-react'],
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   experimental: {
-    // forceSwcTransforms: process.env.TEST === 'true' ? false : true,
-    optimizePackageImports: ['@sk-web-gui'],
+    optimizePackageImports: ['@sk-web-gui/core', '@sk-web-gui/react', 'lucide-react', 'lodash', 'dayjs'],
   },
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];
+  },
+  async headers() {
+    return [
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+    ];
   },
 });

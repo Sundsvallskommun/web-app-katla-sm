@@ -1,7 +1,7 @@
 'use client';
 import type { ObjectFieldTemplateProps, RJSFSchema, UiSchema } from '@rjsf/utils';
-import LucideIcon from '@sk-web-gui/lucide-icon';
 import { Checkbox, Disclosure, Divider, Label } from '@sk-web-gui/react';
+import { icons } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface ConditionalRule {
@@ -120,9 +120,9 @@ function SectionDisclosure({ section, children }: SectionDisclosureProps) {
   return (
     <Disclosure variant="alt" className="w-full" open={open} onToggleOpen={setOpen}>
       <Disclosure.Header>
-        {section.icon && (
+        {section.icon && icons[section.icon as keyof typeof icons] && (
           <Disclosure.Icon
-            icon={<LucideIcon name={section.icon as React.ComponentProps<typeof LucideIcon>['name']} />}
+            icon={React.createElement(icons[section.icon as keyof typeof icons])}
           />
         )}
         <Disclosure.Title>{section.title}</Disclosure.Title>
