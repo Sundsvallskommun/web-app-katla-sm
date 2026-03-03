@@ -21,10 +21,11 @@ describe('Overview page', () => {
       .should('exist')
       .should('be.enabled')
       .should('contain.text', `Öppna ärenden${mockCountNewErrands.count}`);
-    cy.get('[aria-label="status-button-utkast"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', `Utkast${mockCountDraftErrands.count}`);
+    //Note: Not in use right now
+    // cy.get('[aria-label="status-button-utkast"]')
+    //   .should('exist')
+    //   .should('be.enabled')
+    //   .should('contain.text', `Utkast${mockCountDraftErrands.count}`);
     cy.get('[aria-label="status-button-avslutade ärenden"]')
       .should('exist')
       .should('be.enabled')
