@@ -1,4 +1,5 @@
 import { SortMode, Table } from '@sk-web-gui/react';
+import { useTranslation } from 'react-i18next';
 import { useSortStore } from 'src/stores/sort-store';
 
 export const ErrandTableHeader: React.FC = () => {
@@ -7,32 +8,33 @@ export const ErrandTableHeader: React.FC = () => {
     desc: 'descending',
   };
 
+  const { t } = useTranslation();
   const { sortColumn, sortOrder, setSort } = useSortStore();
 
   const headers = [
     {
-      label: 'Status',
+      label: t('errand-table.header.status'),
       property: 'status',
       sortable: true,
       screenReaderOnly: false,
       sticky: true,
     },
     {
-      label: 'Ärendenummer',
+      label: t('errand-table.header.errandNumber'),
       property: 'errandNumber',
       sortable: true,
       screenReaderOnly: false,
       sticky: false,
     },
     {
-      label: 'Ärendetyp',
+      label: t('errand-table.header.classificationType'),
       property: 'classification.type',
       sortable: true,
       screenReaderOnly: false,
       sticky: false,
     },
     {
-      label: 'Registrerat',
+      label: t('errand-table.header.created'),
       property: 'created',
       sortable: true,
       screenReaderOnly: false,

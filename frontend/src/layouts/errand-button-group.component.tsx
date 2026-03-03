@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { CenterDiv } from './center-div.component';
+import { appConfig } from 'src/config/appconfig';
 
 interface ErrandButtonGroupProps {
   isNewErrand: boolean;
@@ -33,7 +34,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
 
   const isDraft = errandStatus === 'DRAFT';
   const showButtons = isNewErrand || isDraft;
-  const draftEnabled = process.env.NEXT_PUBLIC_DRAFT_ERRAND === 'true';
+  const draftEnabled = appConfig.features.draftEnabled;
 
   const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
     const { errandFormData, ...errandWithoutFormData } = values;

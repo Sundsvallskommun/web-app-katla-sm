@@ -1,4 +1,12 @@
 {
   "login": "logga in",
-  "logout": "logga ut"
+  "logout": "logga ut",
+  "errand-table": {
+    "header": {
+      "status": "Status",
+      "errandNumber": "Rapportnummer",
+      "classificationType": "Typ av rapport",
+      "created": "Rapporterat"
+    }
+  }
 }

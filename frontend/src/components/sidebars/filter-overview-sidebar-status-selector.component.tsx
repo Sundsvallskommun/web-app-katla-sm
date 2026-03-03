@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useErrandCountStore } from 'src/stores/errand-count-store';
 import { useFilterStore } from 'src/stores/filter-store';
 import { useSortStore } from 'src/stores/sort-store';
+import { appConfig } from 'src/config/appconfig';
 
 //TODO: Set correct statuses
 
@@ -33,7 +34,7 @@ export const FilterOverviewSidebarStatusSelector: React.FC<{
     setClosedErrandCount,
   } = useErrandCountStore();
   const {reset} = useSortStore()
-  const draftEnabled = process.env.NEXT_PUBLIC_DRAFT_ERRAND === 'true';
+  const draftEnabled = appConfig.features.draftEnabled;
 
   useEffect(() => {
     if (!activeStatus) {
