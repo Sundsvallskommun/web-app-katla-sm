@@ -15,13 +15,12 @@ import {
   SearchField,
   Select,
 } from '@sk-web-gui/react';
-import { emptyStakeholder, phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
+import { emptyStakeholder, phoneNumberFormatter, shouldShowContactDetails, stakeholderSchema } from '@utils/stakeholder';
 import { useEffect, useState } from 'react';
 import { FormProvider, Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { StakeholderFormModal } from './stakeholder-modal.component';
-import { appConfig } from 'src/config/appconfig';
 
 export const StakeholderList: React.FC<{
   roles: string[];
@@ -188,7 +187,7 @@ export const StakeholderList: React.FC<{
                   }
                 </div>
               </div>
-              {!(roles?.includes('PRIMARY') && appConfig.features.reducedStakeholderInfo) && (
+              {shouldShowContactDetails(roles) && (
                 <div className="flex flex-row py-10 gap-10 w-full">
                   <FormControl className="w-full">
                     <FormLabel>E-postadress</FormLabel>

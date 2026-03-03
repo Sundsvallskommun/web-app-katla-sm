@@ -1,10 +1,9 @@
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, FormControl, FormErrorMessage, FormLabel, Input, Modal, Select } from '@sk-web-gui/react';
-import { phoneNumberFormatter, stakeholderSchema } from '@utils/stakeholder';
+import { phoneNumberFormatter, shouldShowContactDetails, stakeholderSchema } from '@utils/stakeholder';
 import { useEffect } from 'react';
 import { Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
-import { appConfig } from 'src/config/appconfig';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
 export const StakeholderFormModal: React.FC<{
@@ -74,7 +73,7 @@ export const StakeholderFormModal: React.FC<{
           </FormControl>
         </div>
 
-        {!(roles?.includes('PRIMARY') && appConfig.features.reducedStakeholderInfo) && (
+        {shouldShowContactDetails(roles) && (
           <>
             <div className="flex gap-8">
               <FormControl>

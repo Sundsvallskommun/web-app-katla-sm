@@ -2,9 +2,8 @@ import { StakeholderFormModal } from '@components/misc/stakeholder-modal.compone
 import { StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { Pen, X } from 'lucide-react';
 import { Button } from '@sk-web-gui/react';
-import { getStakeholderRoleDisplayName } from '@utils/stakeholder';
+import { getStakeholderRoleDisplayName, shouldShowContactDetails } from '@utils/stakeholder';
 import { useState } from 'react';
-import { appConfig } from 'src/config/appconfig';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
 export const StakeholderCard: React.FC<{
@@ -33,7 +32,7 @@ export const StakeholderCard: React.FC<{
             {stakeholder.firstName} {stakeholder.lastName}
           </p>
 
-          {!(roles?.includes('PRIMARY') && appConfig.features.reducedStakeholderInfo) && (
+          {shouldShowContactDetails(roles) && (
             <div className="flex text-md mb-10 flex-row gap-15">
               <div className="flex flex-col">
                 {stakeholder.title && (
