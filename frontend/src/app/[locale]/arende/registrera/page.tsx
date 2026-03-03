@@ -10,6 +10,7 @@ import { getEmployeeStakeholderFromApi } from '@services/employee-service/employ
 import { useUserStore } from '@services/user-service/user-service';
 import { getReporterStakeholder, phoneNumberFormatter } from '@utils/stakeholder';
 import { useFormContext } from 'react-hook-form';
+import { appConfig } from 'src/config/appconfig';
 
 const Registrera: React.FC = () => {
   const { watch, setValue } = useFormContext<ErrandDTO>();
@@ -33,7 +34,7 @@ const Registrera: React.FC = () => {
       <AboutErrand />
       <Reporter />
       <User />
-      <OtherParties />
+      {appConfig.features.otherPartiesDisclosure && <OtherParties />}
       <h2 className="text-h2-md text-dark-primary">2. Ärendeuppgifter</h2>
       <DeviationInformation />
     </div>

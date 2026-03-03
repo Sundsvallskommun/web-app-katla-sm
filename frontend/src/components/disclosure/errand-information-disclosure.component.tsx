@@ -1,5 +1,6 @@
 import { Checkbox, Disclosure, Divider, FormControl, Label } from '@sk-web-gui/react';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
+import { appConfig } from 'src/config/appconfig';
 
 export const ErrandDisclosure: React.FC<{
   header: string;
@@ -34,9 +35,11 @@ export const ErrandDisclosure: React.FC<{
           {children}
           {errandInformationSection && <Divider className="pt-20" />}
 
-          <Checkbox onClick={() => setDoneMark(!doneMark)} checked={doneMark}>
-            Markera avsnittet som komplett
-          </Checkbox>
+          {appConfig.features.disclosureDoneMark && (
+            <Checkbox onClick={() => setDoneMark(!doneMark)} checked={doneMark}>
+              Markera avsnittet som komplett
+            </Checkbox>
+          )}
         </Disclosure.Content>
       </Disclosure>
     </FormControl>
