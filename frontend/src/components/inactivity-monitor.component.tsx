@@ -1,7 +1,7 @@
 'use client';
 
 import CountdownTimer from '@components/countdown/countdown-timer.component';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { AlarmClock } from 'lucide-react';
 import { Button, Dialog } from '@sk-web-gui/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -97,7 +97,7 @@ export const InactivityMonitor: React.FC = () => {
     <Dialog show={showWarning} onClose={handleStayLoggedIn}>
       <Dialog.Content className="max-w-[36rem] min-h-[24rem] bg-background-content rounded-[2rem] flex flex-col justify-between items-center">
         <div className="flex items-center justify-center">
-          <LucideIcon name="alarm-clock" size={32} color="vattjom" />
+          <AlarmClock size={32} className="text-vattjom-surface-primary" />
         </div>
 
         <div className="flex flex-col items-center gap-[1.6rem]">

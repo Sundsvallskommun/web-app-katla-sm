@@ -1,4 +1,4 @@
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Moon, Monitor, Sun } from 'lucide-react';
 import { ColorSchemeMode, PopupMenu, RadioButton } from '@sk-web-gui/react';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
 
@@ -15,7 +15,7 @@ const {colorScheme, setColorScheme} = useLocalStorage()
           }}
           checked={colorScheme === 'light'}
         >
-          Ljust <LucideIcon name="sun" className={colorScheme === 'light' ? '' : 'opacity-50'} />
+          Ljust <Sun className={colorScheme === 'light' ? '' : 'opacity-50'} />
         </RadioButton>
       </PopupMenu.Item>
       <PopupMenu.Item>
@@ -26,7 +26,7 @@ const {colorScheme, setColorScheme} = useLocalStorage()
           }}
           checked={colorScheme === 'dark'}
         >
-          Mörkt <LucideIcon name="moon" className={colorScheme === 'dark' ? '' : 'opacity-50'} />
+          Mörkt <Moon className={colorScheme === 'dark' ? '' : 'opacity-50'} />
         </RadioButton>
       </PopupMenu.Item>
       <PopupMenu.Item>
@@ -37,7 +37,7 @@ const {colorScheme, setColorScheme} = useLocalStorage()
           }}
           checked={colorScheme === 'system'}
         >
-          System <LucideIcon name="monitor" className={colorScheme === 'system' ? '' : 'opacity-50'} />
+          System <Monitor className={colorScheme === 'system' ? '' : 'opacity-50'} />
         </RadioButton>
       </PopupMenu.Item>
     </PopupMenu.Items>

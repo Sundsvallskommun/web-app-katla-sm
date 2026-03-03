@@ -1,4 +1,4 @@
-import LucideIcon, { LucideIconProps } from '@sk-web-gui/lucide-icon';
+import { Check, CirclePause, Clock10, Pen, SquarePen } from 'lucide-react';
 import { Label, LabelProps } from '@sk-web-gui/react';
 
 //TODO: Ajust enum values
@@ -16,42 +16,42 @@ enum StatusLabelEnum {
 export const StatusLabel: React.FC<{ status?: string }> = ({ status }) => {
   let color: LabelProps['color'],
     inverted: boolean = false,
-    icon: React.ComponentProps<LucideIconProps>['name'] | null = null;
+    icon: React.ReactNode = null;
   switch (status) {
     case 'SOLVED':
       color = 'primary';
-      icon = 'check';
+      icon = <Check size={16} />;
       break;
     case 'ONGOING':
       color = 'gronsta';
-      icon = 'pen';
+      icon = <Pen size={16} />;
       break;
     case 'NEW':
       color = 'vattjom';
       break;
     case 'DRAFT':
       color = 'tertiary';
-      icon = 'square-pen';
+      icon = <SquarePen size={16} />;
       break;
     case 'PENDING':
       color = 'gronsta';
       inverted = true;
-      icon = 'clock-10';
+      icon = <Clock10 size={16} />;
       break;
     case 'AWAITING_INTERNAL_RESPONSE':
       color = 'gronsta';
       inverted = true;
-      icon = 'clock-10';
+      icon = <Clock10 size={16} />;
       break;
     case 'SUSPENDED':
       color = 'warning';
       inverted = true;
-      icon = 'circle-pause';
+      icon = <CirclePause size={16} />;
       break;
     case 'ASSIGNED':
       color = 'warning';
       inverted = false;
-      icon = 'circle-pause';
+      icon = <CirclePause size={16} />;
       break;
     case 'UPSTART':
       color = 'tertiary';
@@ -88,9 +88,7 @@ export const StatusLabel: React.FC<{ status?: string }> = ({ status }) => {
 
   return (
     <Label rounded inverted={inverted} color={color} className={`max-h-full h-auto text-center whitespace-nowrap`}>
-      {icon ?
-        <LucideIcon name={icon} size={16} />
-      : null}{' '}
+      {icon}{' '}
       {StatusLabelEnum[status as keyof typeof StatusLabelEnum]}
     </Label>
   );

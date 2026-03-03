@@ -1,6 +1,6 @@
 'use client';
 import { SubmitButtonProps } from '@rjsf/utils';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { Plus } from 'lucide-react';
 import { Button } from '@sk-web-gui/react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,7 +24,7 @@ export function SubmitButtonFieldTemplate(props: SubmitButtonProps<Record<string
 
   return (
     <div className={className}>
-      <Button type="submit" variant={variant} leftIcon={leadingIcon ? <LucideIcon name="plus" /> : undefined}>
+      <Button type="submit" variant={variant} leftIcon={leadingIcon ? <Plus /> : undefined}>
         {label}
       </Button>
     </div>

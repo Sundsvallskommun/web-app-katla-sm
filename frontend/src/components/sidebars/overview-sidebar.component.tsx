@@ -3,7 +3,7 @@ import { Button, cx, Divider, Logo, UserMenu } from '@sk-web-gui/react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import NextLink from 'next/link';
-import LucideIcon from '@sk-web-gui/lucide-icon';
+import { ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { FilterOverviewSidebarStatusSelector } from './filter-overview-sidebar-status-selector.component';
 import { LogoutButton } from '@components/buttons/logout-button.component';
 import { userMenuGroups } from '@layouts/userMenuGroup';
@@ -84,7 +84,7 @@ export const OverviewSidebar: React.FC = () => {
               variant="tertiary"
               aria-label={open ? 'Stäng sidomeny' : 'Öppna sidomeny'}
               iconButton
-              leftIcon={open ? <LucideIcon name="chevrons-left" /> : <LucideIcon name="chevrons-right" />}
+              leftIcon={open ? <ChevronsLeft /> : <ChevronsRight />}
               onClick={() => setOpen(!open)}
             />
           </div>
