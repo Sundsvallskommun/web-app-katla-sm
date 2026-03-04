@@ -25,7 +25,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   const toastMessage = useSnackbar();
   const router = useRouter();
   const context = useFormContext<ErrandFormDTO>();
-  const { getValues, trigger, reset, watch } = context;
+  const { getValues, reset, watch } = context;
   const { setShowValidation } = useFormValidation();
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -46,9 +46,6 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   };
 
   const onSaveDraft = async () => {
-    const isValid = await trigger(['classification.category', 'classification.type']);
-    if (!isValid) return;
-
     const errandData = prepareErrandForApi(getValues(), 'DRAFT');
 
     try {
@@ -110,14 +107,31 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
           // Aktivera validering för JSON-formulär
           setShowValidation(true);
 
-          // Validera classification först
-          const isClassificationValid = await trigger(['classification.category', 'classification.type']);
+          // Validera att eventType och eventConcerns är valda
+          const values = getValues();
+          const eventType = values.parameters?.find((p) => p.key === 'eventType')?.values?.[0];
+          const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
+          if (!eventType) {
+            toastMessage({
+              position: 'bottom',
+              status: 'error',
+              message: t('errand-information:about.event_type_required'),
+            });
+            return;
+          }
+          if (!eventConcerns) {
+            toastMessage({
+              position: 'bottom',
+              status: 'error',
+              message: t('errand-information:about.event_concerns_required'),
+            });
+            return;
+          }
 
           // Validera errandFormData
-          const values = getValues();
           const formDataErrors = await validateErrandFormData(values.errandFormData, tForms);
 
-          if (!isClassificationValid || formDataErrors.length > 0) {
+          if (formDataErrors.length > 0) {
             return;
           }
 
