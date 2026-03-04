@@ -7,19 +7,8 @@ import type { TFunction } from 'i18next';
 // Cache schema to avoid repeated fetches
 const schemaCache = new Map<string, { schema: RJSFSchema; uiSchema?: UiSchema; schemaId?: string }>();
 
-const CASETYPE_SCHEMAS: Record<string, string[]> = {
-  DEVIATION: ['avvikelse-plats-handelse'],
-};
-
-//TODO: temporary until casetypes are specified for all schemas
-const DEFAULT_SCHEMAS = ['avvikelse-plats-handelse'];
-
 export function getSchemaIdFromCache(schemaName: string): string | undefined {
   return schemaCache.get(schemaName)?.schemaId;
-}
-
-export function getSchemasForCaseType(caseType: string): string[] {
-  return CASETYPE_SCHEMAS[caseType] ?? DEFAULT_SCHEMAS;
 }
 
 export function enumTitleOf(schema: RJSFSchema | null, field: string, value: string): string {

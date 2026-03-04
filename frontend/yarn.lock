@@ -2304,6 +2304,16 @@
     "@sk-web-gui/utils" "2.2.2"
     lucide-react "^0.553.0"
 
+"@sk-web-gui/alert@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@sk-web-gui/alert/-/alert-1.1.2.tgz#697761a4ba641d86ac928dc6bcf67baba9091c61"
+  integrity sha512-U7zSEp+5F+Bn1IyzyCyfw25bSuJdh/Qn5lvPLb41pNX0J7YEd9me9rV3myPUH2S4tO/iyQuvvIOG3Hi36i+SEg==
+  dependencies:
+    "@sk-web-gui/button" "2.1.10"
+    "@sk-web-gui/icon" "3.1.2"
+    "@sk-web-gui/utils" "2.2.2"
+    lucide-react "0.537.0"
+
 "@sk-web-gui/avatar@1.2.4":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@sk-web-gui/avatar/-/avatar-1.2.4.tgz#0d8c98d17d3fdb23889a4380af4ddfd0ee9ac378"
@@ -6912,7 +6922,7 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-lucide-react@0.575.0, lucide-react@^0.537.0, lucide-react@^0.553.0:
+lucide-react@0.537.0, lucide-react@0.575.0, lucide-react@^0.537.0, lucide-react@^0.553.0:
   version "0.575.0"
   resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-0.575.0.tgz#90feaa4c140e9693e4ee9426d9927a6b833267ac"
   integrity sha512-VuXgKZrk0uiDlWjGGXmKV6MSk9Yy4l10qgVvzGn2AWBx1Ylt0iBexKOAoA6I7JO3m+M9oeovJd3yYENfkUbOeg==

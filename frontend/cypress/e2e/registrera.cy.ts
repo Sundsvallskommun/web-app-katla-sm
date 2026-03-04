@@ -22,16 +22,8 @@ describe('Register new errand page', () => {
     cy.get('main').should('be.visible');
 
     //Om ärendet
-    cy.get('[data-cy="category-input"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.labels?.labelStructure?.[0]?.displayName || '');
-    cy.get('[data-cy="type-input"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.displayName || '');
+    cy.get('[data-cy="event-type-deviation"]').should('exist').click();
+    cy.get('[data-cy="event-concerns-individual"]').should('exist').click();
 
     //Brukare
     cy.get('.sk-disclosure-header-title')
@@ -61,8 +53,8 @@ describe('Register new errand page', () => {
     cy.get('[data-cy="submit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
-      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
-      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
+      expect(intercept.request.body.parameters).to.deep.include({ key: 'eventType', values: ['AVVIKELSE'] });
+      expect(intercept.request.body.parameters).to.deep.include({ key: 'eventConcerns', values: ['ENSKILD_BRUKARE'] });
       expect(intercept.request.body.stakeholders?.length).to.equal(4);
     });
   });
@@ -73,16 +65,8 @@ describe('Register new errand page', () => {
     cy.get('main').should('be.visible');
 
     //Om ärendet
-    cy.get('[data-cy="category-input"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.labels?.labelStructure?.[0]?.displayName || '');
-    cy.get('[data-cy="type-input"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.displayName || '');
+    cy.get('[data-cy="event-type-deviation"]').should('exist').click();
+    cy.get('[data-cy="event-concerns-individual"]').should('exist').click();
 
     //Brukare
     cy.get('.sk-disclosure-header-title')
@@ -151,8 +135,8 @@ describe('Register new errand page', () => {
     cy.get('[data-cy="submit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
-      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
-      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
+      expect(intercept.request.body.parameters).to.deep.include({ key: 'eventType', values: ['AVVIKELSE'] });
+      expect(intercept.request.body.parameters).to.deep.include({ key: 'eventConcerns', values: ['ENSKILD_BRUKARE'] });
       expect(intercept.request.body.stakeholders?.length).to.equal(3);
     });
   });
@@ -163,16 +147,8 @@ describe('Register new errand page', () => {
     cy.get('main').should('be.visible');
 
     //Om ärendet
-    cy.get('[data-cy="category-input"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.labels?.labelStructure?.[0]?.displayName || '');
-    cy.get('[data-cy="type-input"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.displayName || '');
+    cy.get('[data-cy="event-type-deviation"]').should('exist').click();
+    cy.get('[data-cy="event-concerns-individual"]').should('exist').click();
 
     //Brukare
     cy.get('.sk-disclosure-header-title')
@@ -258,8 +234,8 @@ describe('Register new errand page', () => {
     cy.get('[data-cy="submit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
-      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
-      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
+      expect(intercept.request.body.parameters).to.deep.include({ key: 'eventType', values: ['AVVIKELSE'] });
+      expect(intercept.request.body.parameters).to.deep.include({ key: 'eventConcerns', values: ['ENSKILD_BRUKARE'] });
       expect(intercept.request.body.stakeholders?.length).to.equal(2);
     });
   });
@@ -270,16 +246,8 @@ describe('Register new errand page', () => {
     cy.get('main').should('be.visible');
 
     //Om ärendet
-    cy.get('[data-cy="category-input"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.labels?.labelStructure?.[0]?.displayName || '');
-    cy.get('[data-cy="type-input"]')
-      .should('exist')
-      .should('be.enabled')
-      .should('contain.text', 'Välj ett alternativ')
-      .select(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.displayName || '');
+    cy.get('[data-cy="event-type-deviation"]').should('exist').click();
+    cy.get('[data-cy="event-concerns-individual"]').should('exist').click();
 
     //Övriga parter
     cy.get('.sk-disclosure-header-title')
@@ -365,8 +333,8 @@ describe('Register new errand page', () => {
     cy.get('[data-cy="submit-button"]').should('exist').should('be.enabled').click();
     cy.wait('@createDraftErrand').then((intercept) => {
       expect(intercept.response?.statusCode).to.equal(200);
-      expect(intercept.request.body.classification.category).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.resourceName);
-      expect(intercept.request.body.classification.type).to.equal(mockMetadata?.labels?.labelStructure?.[0]?.labels?.[0]?.resourceName);
+      expect(intercept.request.body.parameters).to.deep.include({ key: 'eventType', values: ['AVVIKELSE'] });
+      expect(intercept.request.body.parameters).to.deep.include({ key: 'eventConcerns', values: ['ENSKILD_BRUKARE'] });
       expect(intercept.request.body.stakeholders?.length).to.equal(2);
     });
   });

@@ -8,7 +8,6 @@ import { Button, Divider, Link, Logo, PopupMenu, UserMenu } from '@sk-web-gui/re
 import { Fragment } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { useMetadataStore } from 'src/stores/metadata-store';
 
 interface BaseErrandLayoutProps {
   children: React.ReactNode;
@@ -16,14 +15,11 @@ interface BaseErrandLayoutProps {
 }
 
 export default function BaseErrandLayout({ children, registerNewErrand }: BaseErrandLayoutProps) {
-  const { metadata } = useMetadataStore();
   const user = useUserStore((s) => s.user);
   const { watch } = useFormContext<ErrandDTO>();
   const { t } = useTranslation();
 
   const errandNumber = watch('errandNumber');
-  const category = watch('classification.category');
-  const type = watch('classification.type');
   const status = watch('status');
 
   const SingleErrandTitle = () => (
@@ -39,10 +35,6 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
           <strong className="text-large ml-8 font-bold">{t('filtering:new_errand')}</strong>
         : <>
             <StatusLabel status={status} />
-            <span className="text-large ml-8 font-bold">
-              {metadata?.labels?.labelStructure?.find((l) => l.classification === category)?.labels?.find((l) => l.classification === type)
-                ?.displayName ?? type}
-            </span>
             <span className="ml-8 text-small">{errandNumber}</span>
           </>
         }

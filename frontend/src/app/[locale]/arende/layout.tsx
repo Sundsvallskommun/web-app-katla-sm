@@ -29,19 +29,7 @@ export interface ErrandFormDTO extends ErrandDTO {
   errandFormData?: ErrandFormDataItem[];
 }
 
-const FormSchema = yup
-  .object({
-    classification: yup
-      .object({
-        category: yup
-          .string()
-          .notOneOf(['Välj ett alternativ', ''], 'Välj ett alternativ')
-          .required('Välj en kategori'),
-        type: yup.string().notOneOf(['Välj ett alternativ', ''], 'Välj ett alternativ').required('Välj ett alternativ'),
-      })
-      .required(),
-  })
-  .required();
+const FormSchema = yup.object({}).required();
 
 export default function ErrandLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
