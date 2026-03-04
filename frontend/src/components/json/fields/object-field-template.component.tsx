@@ -3,6 +3,7 @@ import type { ObjectFieldTemplateProps, RJSFSchema, UiSchema } from '@rjsf/utils
 import { Checkbox, Disclosure, Divider, Label } from '@sk-web-gui/react';
 import { icons } from 'lucide-react';
 import React, { useState } from 'react';
+import { appConfig } from 'src/config/appconfig';
 
 interface ConditionalRule {
   if: {
@@ -121,9 +122,7 @@ function SectionDisclosure({ section, children }: SectionDisclosureProps) {
     <Disclosure variant="alt" className="w-full" open={open} onToggleOpen={setOpen}>
       <Disclosure.Header>
         {section.icon && icons[section.icon as keyof typeof icons] && (
-          <Disclosure.Icon
-            icon={React.createElement(icons[section.icon as keyof typeof icons])}
-          />
+          <Disclosure.Icon icon={React.createElement(icons[section.icon as keyof typeof icons])} />
         )}
         <Disclosure.Title>{section.title}</Disclosure.Title>
         {doneMark && (
@@ -136,9 +135,11 @@ function SectionDisclosure({ section, children }: SectionDisclosureProps) {
       <Disclosure.Content>
         {children}
         <Divider className="mt-16" />
-        <Checkbox className="mt-16" onClick={handleDoneMarkChange} checked={doneMark}>
-          Markera avsnittet som komplett
-        </Checkbox>
+        {appConfig.features.disclosureDoneMark && (
+          <Checkbox className="mt-16" onClick={handleDoneMarkChange} checked={doneMark}>
+            Markera avsnittet som komplett
+          </Checkbox>
+        )}
       </Disclosure.Content>
     </Disclosure>
   );
