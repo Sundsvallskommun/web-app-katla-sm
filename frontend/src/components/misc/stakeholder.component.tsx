@@ -25,7 +25,9 @@ import { StakeholderFormModal } from './stakeholder-modal.component';
 export const StakeholderList: React.FC<{
   roles: string[];
   employeeSearch?: boolean;
-}> = ({ roles, employeeSearch = false }) => {
+  autoDetectSearch?: boolean;
+  maxCount?: number;
+}> = ({ roles, employeeSearch = false, autoDetectSearch = false, maxCount }) => {
   const [searchMode, setSearchMode] = useState<string>('PERSON');
   const [query, setQuery] = useState<string>('');
   const [searchResult, setSearchResult] = useState<boolean>(false);
@@ -59,7 +61,9 @@ export const StakeholderList: React.FC<{
 
   const hasPrimaryStakeholder = stakeholders?.some((s) => s.role?.includes('PRIMARY'));
   const hasPrimaryRole = roles.includes('PRIMARY');
-  const showAddButton = !hasPrimaryRole || (hasPrimaryRole && !hasPrimaryStakeholder);
+  const matchingCount = stakeholders?.filter((s) => roles.includes(s.role ?? '')).length ?? 0;
+  const maxCountReached = maxCount !== undefined && matchingCount >= maxCount;
+  const showAddButton = !maxCountReached && (!hasPrimaryRole || (hasPrimaryRole && !hasPrimaryStakeholder));
 
   const clearStakeholderForm = () => {
     setQuery('');
@@ -69,7 +73,10 @@ export const StakeholderList: React.FC<{
   };
 
   const onSearchHandler = async (query: string) => {
-    if (searchMode === 'PERSON') {
+    const effectiveMode =
+      autoDetectSearch ? (/^\d{8}-?\d{4}$/.test(query) ? 'PERSON' : 'EMPLOYEE') : searchMode;
+
+    if (effectiveMode === 'PERSON') {
       setValue('personNumber', query);
       const isValid = await trigger('personNumber');
       if (!isValid) {
@@ -89,7 +96,7 @@ export const StakeholderList: React.FC<{
           setEmptyResult(true);
         });
     }
-    if (searchMode === 'EMPLOYEE') {
+    if (effectiveMode === 'EMPLOYEE') {
       getEmployeeStakeholderFromApi(query)
         .then((res) => {
           if (res.status === 200) {
@@ -116,7 +123,7 @@ export const StakeholderList: React.FC<{
       <FormProvider {...method}>
         {showAddButton && (
           <FormControl className="w-full">
-            {employeeSearch && (
+            {employeeSearch && !autoDetectSearch && (
               <RadioButton.Group className="mb-18" inline>
                 <RadioButton
                   data-cy="radiobutton-person"
@@ -142,7 +149,9 @@ export const StakeholderList: React.FC<{
                 </RadioButton>
               </RadioButton.Group>
             )}
-            <FormLabel>{t(`errand-information:search.${searchMode}`)}</FormLabel>
+            <FormLabel>
+              {t(`errand-information:search.${autoDetectSearch ? 'AUTODETECT' : searchMode}`)}
+            </FormLabel>
             <SearchField
               data-cy="person-number-input"
               size="md"

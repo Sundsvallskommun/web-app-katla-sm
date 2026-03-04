@@ -7,7 +7,8 @@
   "draft": "Utkast: ",
   "search": {
     "PERSON": "Sök på personnummer",
-    "EMPLOYEE": "Sök på användarnamn"
+    "EMPLOYEE": "Sök på användarnamn",
+    "AUTODETECT": "Sök på personnummer eller användarnamn"
   },
   "save_message": {
     "draft": "Utkast sparades",
@@ -23,11 +24,15 @@
   },
   "reporter": {
     "title": "Rapportör",
-    "description": "Rapportören är den person som initierat ärendet och vår primära kontakt när ärendet handläggs. Om du rapporterar åt en kollega så ska du ange kollegan som övrig part."
+    "description": "Rapportören är den person som initierat ärendet och vår primära kontakt när ärendet handläggs. Om du rapporterar åt en annan kollega, lägger du den personen under annan rapportör."
   },
   "user": {
     "title": "Brukare",
     "description": "En brukare är den individ som berörs av ärendet."
+  },
+  "other_reporter": {
+    "title": "Annan rapportör",
+    "description": "Ange den kollega som du rapporterar åt."
   },
   "other_parties": {
     "title": "Övriga parter",
