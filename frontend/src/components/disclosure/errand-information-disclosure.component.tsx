@@ -6,9 +6,16 @@ export const ErrandDisclosure: React.FC<{
   icon: ReactElement;
   children: ReactNode;
   errandInformationSection?: boolean;
-}> = ({ header, icon, children, errandInformationSection }) => {
-  const [open, setOpen] = useState(true);
+  disabled?: boolean;
+}> = ({ header, icon, children, errandInformationSection, disabled = false }) => {
+  const [open, setOpen] = useState(!disabled);
   const [doneMark, setDoneMark] = useState(false);
+
+  useEffect(() => {
+    if (disabled) {
+      setOpen(false);
+    }
+  }, [disabled]);
 
   useEffect(() => {
     if (doneMark) {
@@ -17,9 +24,15 @@ export const ErrandDisclosure: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doneMark]);
 
+  const handleToggleOpen = (isOpen: boolean) => {
+    if (!disabled) {
+      setOpen(isOpen);
+    }
+  };
+
   return (
-    <FormControl className="w-full" disabled={false}>
-      <Disclosure variant="alt" className="w-full mobileVersion" open={open} onToggleOpen={setOpen}>
+    <FormControl className="w-full" disabled={disabled}>
+      <Disclosure variant="alt" className="w-full mobileVersion" open={open} onToggleOpen={handleToggleOpen} disabled={disabled}>
         <Disclosure.Header>
           <Disclosure.Icon icon={icon} />
           <Disclosure.Title>{header}</Disclosure.Title>

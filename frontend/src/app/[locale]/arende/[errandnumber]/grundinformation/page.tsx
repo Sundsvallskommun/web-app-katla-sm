@@ -14,7 +14,6 @@ import { useFormContext } from 'react-hook-form';
 
 const Grundinformation: React.FC = () => {
   const context = useFormContext<ErrandFormDTO>();
-
   const pathName = usePathname();
 
   useEffect(() => {
