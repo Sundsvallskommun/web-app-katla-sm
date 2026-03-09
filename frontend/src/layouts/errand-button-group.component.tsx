@@ -90,7 +90,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   return (
     <div className="flex flex-row gap-[1.8rem]">
       {isNewErrand && (
-        <Button variant="secondary" onClick={() => router.push(`${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`)}>
+        <Button variant="secondary" onClick={() => router.push(`/oversikt`)}>
           {t('errand-information:cancel')}
         </Button>
       )}
