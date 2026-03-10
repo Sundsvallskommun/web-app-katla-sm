@@ -1,3 +1,5 @@
+'use client';
+
 import { getNotifications } from '@services/errand-service/errand-service';
 import { Mail, X } from 'lucide-react';
 import { Button, cx, Divider, Header } from '@sk-web-gui/react';

@@ -3,7 +3,7 @@
 import { useFormSchema } from '@components/json/hooks/use-form-schema';
 import SchemaForm from '@components/json/schema/schema-form.component';
 import { useFormValidation } from '@contexts/form-validation-context';
-import { ErrandFormDTO } from '@app/[locale]/arende/layout';
+import { ErrandFormDTO } from '@interfaces/errand-form';
 import { useCallback } from 'react';
 import { useFormContext } from 'react-hook-form';
 
