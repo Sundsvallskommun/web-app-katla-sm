@@ -28,7 +28,8 @@
     "event_concerns_other": "Annat",
     "event_concerns_describe_note": "(Beskriv med i avsnittet \"Vad har hänt?\")",
     "event_type_required": "Välj en händelsetyp",
-    "event_concerns_required": "Välj vad händelsen berör"
+    "event_concerns_required": "Välj vad händelsen berör",
+    "event_concerns_group_facility_required": "Välj en plats där avvikelsen inträffat när händelsen berör grupp/hela verksamheten"
   },
   "reporter": {
     "title": "Rapportör",
