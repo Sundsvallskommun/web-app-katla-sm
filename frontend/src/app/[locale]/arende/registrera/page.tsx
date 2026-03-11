@@ -14,8 +14,9 @@ import { appConfig } from 'src/config/appconfig';
 
 const Registrera: React.FC = () => {
   const { watch, setValue } = useFormContext<ErrandDTO>();
-  const { stakeholders } = watch();
+  const { stakeholders, parameters } = watch();
   const user = useUserStore((s) => s.user);
+  const eventConcerns = parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0] ?? '';
 
   if (!getReporterStakeholder(stakeholders) && user.username !== '') {
     getEmployeeStakeholderFromApi(user.username).then((res) => {
@@ -33,7 +34,7 @@ const Registrera: React.FC = () => {
       <h2 className="text-h2-md text-dark-primary">1. Grundinformation</h2>
       <AboutErrand />
       <Reporter />
-      <User />
+      {eventConcerns === 'ENSKILD_BRUKARE' && <User />}
       {appConfig.features.otherPartiesDisclosure && <OtherParties />}
       <h2 className="text-h2-md text-dark-primary">2. Ärendeuppgifter</h2>
       <DeviationInformation />
