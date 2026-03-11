@@ -1,5 +1,5 @@
-import type { ErrandFormDataItem } from '@app/[locale]/arende/layout';
 import type { JsonParameterDTO } from '@data-contracts/backend/data-contracts';
+import { ErrandFormDataItem } from '@interfaces/errand-form';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
 import validatorAjv8 from '@rjsf/validator-ajv8';
 import type { TFunction } from 'i18next';

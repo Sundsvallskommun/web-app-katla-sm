@@ -1,18 +1,5 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import LoaderFullScreen from '@components/loader/loader-fullscreen';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-const Index = () => {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.push('/oversikt');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
-
-  return <LoaderFullScreen />;
-};
-
-export default Index;
+export default function Index() {
+  redirect('/oversikt');
+}

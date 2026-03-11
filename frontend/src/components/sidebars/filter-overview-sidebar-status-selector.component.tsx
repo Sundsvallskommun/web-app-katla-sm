@@ -1,3 +1,5 @@
+'use client';
+
 import { getErrandsCount } from '@services/errand-service/errand-service';
 import { CircleCheckBig, ClipboardPen, SquarePen } from 'lucide-react';
 import { Badge, Button } from '@sk-web-gui/react';

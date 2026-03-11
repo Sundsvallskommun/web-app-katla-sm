@@ -26,22 +26,9 @@ module.exports = {
   },
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   experimental: {
-    optimizePackageImports: ['@sk-web-gui/core', '@sk-web-gui/react', 'lucide-react', 'lodash', 'dayjs'],
+    optimizePackageImports: ['@sk-web-gui/core', '@sk-web-gui/react', 'lodash', 'dayjs'],
   },
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];
-  },
-  async headers() {
-    return [
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
-        ],
-      },
-    ];
   },
 };

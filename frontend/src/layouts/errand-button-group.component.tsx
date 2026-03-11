@@ -4,7 +4,6 @@ import {
   validateErrandFormData,
 } from '@components/json/utils/schema-utils';
 import { useFormValidation } from '@contexts/form-validation-context';
-import { ErrandFormDTO, ErrandFormDataItem } from '@app/[locale]/arende/layout';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import { StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { Inbox } from 'lucide-react';
@@ -15,6 +14,7 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { CenterDiv } from './center-div.component';
 import { appConfig } from 'src/config/appconfig';
+import { ErrandFormDTO, ErrandFormDataItem } from '@interfaces/errand-form';
 
 interface ErrandButtonGroupProps {
   isNewErrand: boolean;
