@@ -2,9 +2,10 @@ import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contract
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, FormControl, FormErrorMessage, FormLabel, Input, Modal, Select } from '@sk-web-gui/react';
 import { phoneNumberFormatter, shouldShowContactDetails, stakeholderSchema } from '@utils/stakeholder';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { useMetadataStore } from 'src/stores/metadata-store';
+import * as yup from 'yup';
 
 export const StakeholderFormModal: React.FC<{
   index?: number;
@@ -13,7 +14,9 @@ export const StakeholderFormModal: React.FC<{
   roles: string[];
   initialValues?: StakeholderDTO;
   edit?: boolean;
-}> = ({ index, onClose, show, roles, edit, initialValues }) => {
+  editableFields?: (keyof StakeholderDTO)[];
+}> = ({ index, onClose, show, roles, edit, initialValues, editableFields }) => {
+  const showField = (field: keyof StakeholderDTO) => !editableFields || editableFields.includes(field);
   const { metadata } = useMetadataStore();
   const context = useFormContext<ErrandDTO>();
 
@@ -22,9 +25,21 @@ export const StakeholderFormModal: React.FC<{
     name: 'stakeholders',
   });
 
+  const schema = useMemo(() => {
+    if (!editableFields) return stakeholderSchema;
+    const fields: Record<string, yup.Schema> = {};
+    const fullSchema = stakeholderSchema.describe().fields;
+    for (const field of editableFields) {
+      if (field in fullSchema) {
+        fields[field] = yup.reach(stakeholderSchema, field) as yup.Schema;
+      }
+    }
+    return yup.object(fields);
+  }, [editableFields]);
+
   const method = useForm<StakeholderDTO>({
     mode: 'onSubmit',
-    resolver: yupResolver(stakeholderSchema) as unknown as Resolver<StakeholderDTO>,
+    resolver: yupResolver(schema) as unknown as Resolver<StakeholderDTO>,
   });
 
   const { handleSubmit, register, reset, formState } = method;
@@ -35,7 +50,8 @@ export const StakeholderFormModal: React.FC<{
   }, [onClose]);
 
   const onSave = (data: StakeholderDTO) => {
-    const stakeholder: StakeholderDTO = { ...data, phoneNumbers: [phoneNumberFormatter(data?.phoneNumbers?.[0])] };
+    const merged = editableFields ? { ...initialValues, ...data } : data;
+    const stakeholder: StakeholderDTO = { ...merged, phoneNumbers: [phoneNumberFormatter(merged?.phoneNumbers?.[0])] };
     if (edit && index !== undefined) {
       update(index, stakeholder);
     } else {
@@ -52,89 +68,121 @@ export const StakeholderFormModal: React.FC<{
       label={edit ? `Redigera person` : 'Lägg till person manuellt'}
     >
       <Modal.Content>
-        <FormControl>
-          <FormLabel>Personnummer</FormLabel>
-          <Input data-cy="modal-personNumber-input" {...register(`personNumber`)} readOnly />
-        </FormControl>
-        <div className="flex gap-8">
-          <FormControl required>
-            <FormLabel>Förnamn</FormLabel>
-            <Input data-cy="modal-firstName-input" {...register(`firstName`)} />
-            {formState.errors.firstName && (
-              <FormErrorMessage data-cy="firstName-input-error">{formState.errors.firstName.message}</FormErrorMessage>
-            )}
+        {showField('personNumber') && (
+          <FormControl>
+            <FormLabel>Personnummer</FormLabel>
+            <Input data-cy="modal-personNumber-input" {...register(`personNumber`)} readOnly />
           </FormControl>
-          <FormControl required>
-            <FormLabel>Efternamn</FormLabel>
-            <Input data-cy="modal-lastName-input" {...register(`lastName`)} />
-            {formState.errors.lastName && (
-              <FormErrorMessage data-cy="lastName-input-error">{formState.errors.lastName.message}</FormErrorMessage>
+        )}
+        {(showField('firstName') || showField('lastName')) && (
+          <div className="flex gap-8">
+            {showField('firstName') && (
+              <FormControl required>
+                <FormLabel>Förnamn</FormLabel>
+                <Input data-cy="modal-firstName-input" {...register(`firstName`)} />
+                {formState.errors.firstName && (
+                  <FormErrorMessage data-cy="firstName-input-error">
+                    {formState.errors.firstName.message}
+                  </FormErrorMessage>
+                )}
+              </FormControl>
             )}
-          </FormControl>
-        </div>
+            {showField('lastName') && (
+              <FormControl required>
+                <FormLabel>Efternamn</FormLabel>
+                <Input data-cy="modal-lastName-input" {...register(`lastName`)} />
+                {formState.errors.lastName && (
+                  <FormErrorMessage data-cy="lastName-input-error">
+                    {formState.errors.lastName.message}
+                  </FormErrorMessage>
+                )}
+              </FormControl>
+            )}
+          </div>
+        )}
 
         {shouldShowContactDetails(roles) && (
           <>
-            <div className="flex gap-8">
-              <FormControl>
-                <FormLabel>E-postadress</FormLabel>
-                <Input data-cy="modal-email-input" {...register('emails.0')} />
-                {formState.errors.emails?.[0]?.message && (
-                  <FormErrorMessage data-cy="modal-email-input-error">
-                    {formState.errors.emails[0].message}
-                  </FormErrorMessage>
+            {(showField('emails') || showField('phoneNumbers')) && (
+              <div className="flex gap-8">
+                {showField('emails') && (
+                  <FormControl>
+                    <FormLabel>E-postadress</FormLabel>
+                    <Input data-cy="modal-email-input" {...register('emails.0')} />
+                    {formState.errors.emails?.[0]?.message && (
+                      <FormErrorMessage data-cy="modal-email-input-error">
+                        {formState.errors.emails[0].message}
+                      </FormErrorMessage>
+                    )}
+                  </FormControl>
                 )}
-              </FormControl>
-              <FormControl>
-                <FormLabel>Telefonnummer</FormLabel>
-                <Input data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
-                {formState.errors.phoneNumbers?.[0]?.message && (
-                  <FormErrorMessage data-cy="modal-phone-input-error" className="max-w-[22.9rem] truncate">
-                    {formState.errors.phoneNumbers[0].message}
-                  </FormErrorMessage>
+                {showField('phoneNumbers') && (
+                  <FormControl>
+                    <FormLabel>Telefonnummer</FormLabel>
+                    <Input data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
+                    {formState.errors.phoneNumbers?.[0]?.message && (
+                      <FormErrorMessage data-cy="modal-phone-input-error" className="max-w-[22.9rem] truncate">
+                        {formState.errors.phoneNumbers[0].message}
+                      </FormErrorMessage>
+                    )}
+                  </FormControl>
                 )}
-              </FormControl>
-            </div>
+              </div>
+            )}
 
-            <div className="flex gap-8">
-              <FormControl>
-                <FormLabel>Adress</FormLabel>
-                <Input data-cy="modal-address-input" {...register(`address`)} />
-              </FormControl>
-              <FormControl>
-                <FormLabel>C/o adress</FormLabel>
-                <Input data-cy="modal-careOf-input" {...register(`careOf`)} />
-              </FormControl>
-            </div>
+            {(showField('address') || showField('careOf')) && (
+              <div className="flex gap-8">
+                {showField('address') && (
+                  <FormControl>
+                    <FormLabel>Adress</FormLabel>
+                    <Input data-cy="modal-address-input" {...register(`address`)} />
+                  </FormControl>
+                )}
+                {showField('careOf') && (
+                  <FormControl>
+                    <FormLabel>C/o adress</FormLabel>
+                    <Input data-cy="modal-careOf-input" {...register(`careOf`)} />
+                  </FormControl>
+                )}
+              </div>
+            )}
 
-            <div className="flex gap-8">
-              <FormControl>
-                <FormLabel>Postnummer</FormLabel>
-                <Input data-cy="modal-zipCode-input" {...register(`zipCode`)} />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Ort</FormLabel>
-                <Input data-cy="modal-city-input" {...register(`city`)} />
-              </FormControl>
-            </div>
+            {(showField('zipCode') || showField('city')) && (
+              <div className="flex gap-8">
+                {showField('zipCode') && (
+                  <FormControl>
+                    <FormLabel>Postnummer</FormLabel>
+                    <Input data-cy="modal-zipCode-input" {...register(`zipCode`)} />
+                  </FormControl>
+                )}
+                {showField('city') && (
+                  <FormControl>
+                    <FormLabel>Ort</FormLabel>
+                    <Input data-cy="modal-city-input" {...register(`city`)} />
+                  </FormControl>
+                )}
+              </div>
+            )}
           </>
         )}
 
-        <div className="flex flex-col">
-          <FormControl required>
-            <FormLabel>Roll</FormLabel>
-            <Select data-cy="modal-stakeholder-role-select" {...register(`role`)}>
-              {metadata?.roles?.map(
-                (role) =>
-                  roles?.includes(role.name) && (
-                    <Select.Option key={role.name} value={role.name}>
-                      {role.displayName}
-                    </Select.Option>
-                  )
-              )}
-            </Select>
-          </FormControl>
-        </div>
+        {showField('role') && (
+          <div className="flex flex-col">
+            <FormControl required>
+              <FormLabel>Roll</FormLabel>
+              <Select data-cy="modal-stakeholder-role-select" {...register(`role`)}>
+                {metadata?.roles?.map(
+                  (role) =>
+                    roles?.includes(role.name) && (
+                      <Select.Option key={role.name} value={role.name}>
+                        {role.displayName}
+                      </Select.Option>
+                    )
+                )}
+              </Select>
+            </FormControl>
+          </div>
+        )}
       </Modal.Content>
 
       <Modal.Footer>

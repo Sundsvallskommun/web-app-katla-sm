@@ -9,10 +9,12 @@ import { useMetadataStore } from 'src/stores/metadata-store';
 export const StakeholderCard: React.FC<{
   stakeholder: StakeholderDTO;
   isEditable?: boolean;
+  hideRemove?: boolean;
+  editableFields?: (keyof StakeholderDTO)[];
   onRemove?: () => void;
   index?: number;
   roles?: string[];
-}> = ({ stakeholder, isEditable, onRemove, index, roles }) => {
+}> = ({ stakeholder, isEditable, hideRemove, editableFields, onRemove, index, roles }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { metadata } = useMetadataStore();
 
@@ -72,15 +74,17 @@ export const StakeholderCard: React.FC<{
               >
                 Redigera uppgifter
               </Button>
-              <Button
-                data-cy="remove-card-button"
-                leftIcon={<X size={16} />}
-                variant="tertiary"
-                size="sm"
-                onClick={onRemove}
-              >
-                Ta bort
-              </Button>
+              {!hideRemove && (
+                <Button
+                  data-cy="remove-card-button"
+                  leftIcon={<X size={16} />}
+                  variant="tertiary"
+                  size="sm"
+                  onClick={onRemove}
+                >
+                  Ta bort
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -91,6 +95,7 @@ export const StakeholderCard: React.FC<{
         initialValues={stakeholder}
         show={isOpen}
         roles={roles as string[]}
+        editableFields={editableFields}
         onClose={() => setIsOpen(false)}
       />
     </>
