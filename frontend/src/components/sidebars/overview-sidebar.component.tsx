@@ -1,3 +1,5 @@
+'use client';
+
 import { useUserStore } from '@services/user-service/user-service';
 import { Button, cx, Divider, Logo, UserMenu } from '@sk-web-gui/react';
 import { useState } from 'react';

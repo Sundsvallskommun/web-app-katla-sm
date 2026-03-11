@@ -1,3 +1,5 @@
+'use client';
+
 import { Button, cx } from '@sk-web-gui/react';
 import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
