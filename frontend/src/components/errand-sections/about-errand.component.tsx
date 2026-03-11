@@ -14,9 +14,21 @@ export const AboutErrand: React.FC = () => {
   const eventType = parameters.find((p) => p.key === 'eventType')?.values?.[0] ?? '';
   const eventConcerns = parameters.find((p) => p.key === 'eventConcerns')?.values?.[0] ?? '';
 
+  const stakeholders = watch('stakeholders') || [];
+
   const setParameter = (key: string, value: string) => {
     const otherParams = parameters.filter((p) => p.key !== key);
     setValue('parameters', [...otherParams, { key, values: [value] }]);
+  };
+
+  const setEventConcerns = (value: string) => {
+    setParameter('eventConcerns', value);
+    if (value !== 'ENSKILD_BRUKARE') {
+      setValue(
+        'stakeholders',
+        stakeholders.filter((s) => s.role !== 'PRIMARY')
+      );
+    }
   };
 
   return (
@@ -62,7 +74,7 @@ export const AboutErrand: React.FC = () => {
               data-cy="event-concerns-individual"
               checked={eventConcerns === 'ENSKILD_BRUKARE'}
               value="ENSKILD_BRUKARE"
-              onChange={() => setParameter('eventConcerns', 'ENSKILD_BRUKARE')}
+              onChange={() => setEventConcerns('ENSKILD_BRUKARE')}
             >
               {t('errand-information:about.event_concerns_individual')}
             </RadioButton>
@@ -70,7 +82,7 @@ export const AboutErrand: React.FC = () => {
               data-cy="event-concerns-group-activity"
               checked={eventConcerns === 'GRUPP_VERKSAMHET'}
               value="GRUPP_VERKSAMHET"
-              onChange={() => setParameter('eventConcerns', 'GRUPP_VERKSAMHET')}
+              onChange={() => setEventConcerns('GRUPP_VERKSAMHET')}
             >
               {t('errand-information:about.event_concerns_group')}{' '}
               <span className="text-dark-secondary">
@@ -81,7 +93,7 @@ export const AboutErrand: React.FC = () => {
               data-cy="event-concerns-other"
               checked={eventConcerns === 'ANNAT'}
               value="ANNAT"
-              onChange={() => setParameter('eventConcerns', 'ANNAT')}
+              onChange={() => setEventConcerns('ANNAT')}
             >
               {t('errand-information:about.event_concerns_other')}{' '}
               <span className="text-dark-secondary">
