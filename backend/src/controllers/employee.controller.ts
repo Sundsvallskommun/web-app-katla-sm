@@ -1,12 +1,13 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { Employeev2, Employment, PortalPersonData } from '@/data-contracts/employee/data-contracts';
+import { Account, Employeev2, Employment, PortalPersonData } from '@/data-contracts/employee/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import { UserEmploymentDTO } from '@/responses/employee.response';
 import { StakeholderDTO } from '@/responses/supportmanagement.response';
 import ApiService from '@/services/api.service';
+import { addHyphenToPersonNumber } from '@/utils/stakeholder-mapping';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -14,6 +15,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 export class EmployeeController {
   private apiService = new ApiService();
   private apiBase = getApiBase('employee');
+  private citizenBase = getApiBase('citizen');
 
   @Get('/employee/personal/:username')
   @OpenAPI({ summary: 'Read maching errands' })
@@ -48,6 +50,59 @@ export class EmployeeController {
 
       return stakeholder;
     } catch (error: any) {
+      if (error.status === 404) {
+        return null;
+      }
+      return null;
+    }
+  }
+
+  @Get('/employee/personnumber/:personNumber')
+  @OpenAPI({ summary: 'Get employee stakeholder using personNumber via citizen and employee APIs' })
+  @UseBefore(authMiddleware)
+  async getEmployeeByPersonNumber(
+    @Req() req: RequestWithUser,
+    @Param('personNumber') personNumber: string
+  ): Promise<StakeholderDTO> {
+    try {
+
+      const personIdUrl = `${this.citizenBase}/${MUNICIPALITY_ID}/${personNumber}/guid/`;
+      const personIdRes = await this.apiService.get<string>({ url: personIdUrl }, req);
+      const personId = personIdRes.data;
+      if (!personId) throw new HttpException(500, 'No personId from Citizen API');
+
+      const accountsUrl = `${this.apiBase}/${MUNICIPALITY_ID}/employed/${personId}/accounts`;
+      const accountsRes = await this.apiService.get<Account[]>({ url: accountsUrl }, req);
+      const loginname = accountsRes.data?.[0]?.loginname;
+      if (!loginname) throw new HttpException(404, 'No loginname found for person');
+
+      const personDataUrl = `${this.apiBase}/${MUNICIPALITY_ID}/portalpersondata/personal/${loginname}`;
+      const personDataRes = await this.apiService.get<PortalPersonData>({ url: personDataUrl }, req);
+      if (!personDataRes.data) throw new HttpException(500, 'No data from Employee API');
+
+      const employmentsUrl = `${this.apiBase}/${MUNICIPALITY_ID}/employments?PersonId=${personDataRes.data.personid}`;
+      const employmentsRes = await this.apiService.get<Employeev2[]>({ url: employmentsUrl }, req);
+      const mainEmployment = employmentsRes.data?.[0]?.employments?.find((e) => e.isMainEmployment === true);
+
+      const stakeholder: StakeholderDTO = {
+        externalId: personDataRes.data.personid,
+        firstName: personDataRes.data.givenname,
+        lastName: personDataRes.data.lastname,
+        address: personDataRes.data.address,
+        city: personDataRes.data.city,
+        zipCode: personDataRes.data.postalCode,
+        personNumber: addHyphenToPersonNumber(personNumber),
+        emails: [personDataRes.data.email?.toLocaleLowerCase()],
+        phoneNumbers: [
+          personDataRes.data.workPhone ?? personDataRes.data.mobilePhone ?? personDataRes.data.extraMobilePhone,
+        ],
+        title: mainEmployment?.title,
+        department: mainEmployment?.orgName,
+      };
+
+      return stakeholder;
+    } catch (error: any) {
+      console.error('getEmployeeByPersonNumber failed at:', error.message, 'status:', error.status);
       if (error.status === 404) {
         return null;
       }
