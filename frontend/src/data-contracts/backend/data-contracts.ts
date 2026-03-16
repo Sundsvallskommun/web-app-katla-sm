@@ -163,6 +163,7 @@ export interface ErrandDTO {
   parameters?: ParameterDTO[];
   jsonParameters?: JsonParameterDTO[];
   classification?: ClassificationDTO;
+  labels?: LabelDTO[];
   status?: string;
   resolution?: string;
   description?: string;

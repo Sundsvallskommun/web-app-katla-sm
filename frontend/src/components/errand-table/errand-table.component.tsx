@@ -13,26 +13,29 @@ import { useSortStore } from 'src/stores/sort-store';
 import { ErrandTableFooter } from './errand-table-footer.component';
 import { ErrandTableHeader } from './errand-table-header.component';
 import { useMetadataStore } from 'src/stores/metadata-store';
+import { useRouter } from 'next/navigation';
 
 export const ErrandTable: React.FC = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const { sortColumn, sortOrder, page, size, rowHeight } = useSortStore();
   const { statuses } = useFilterStore();
 
   const getTypeDisplayName = (errand: ErrandDTO) => {
-    return errand.classification?.type ?? '';
+    const hasAdverseIncident = errand.labels?.some((l) => l.resourceName === 'ADVERSE_INCIDENT');
+    return hasAdverseIncident ? 'Missförhållande' : 'Avvikelse';
   };
 
   const [rows, setRows] = useState<ErrandDTO[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const { setMetadata } = useMetadataStore();
-  
-    useEffect(() => {
-      getMetadata().then((res) => setMetadata(res));
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+  const { setMetadata } = useMetadataStore();
+
+  useEffect(() => {
+    getMetadata().then((res) => setMetadata(res));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -53,23 +56,18 @@ export const ErrandTable: React.FC = () => {
   if (rows.length === 0) return <CenterDiv className="mt-[20rem]">{t('errand-information:no_errands')}</CenterDiv>;
 
   return (
-    <Table data-cy="errand-table" dense={rowHeight === 'dense'} className='px-40'>
+    <Table data-cy="errand-table" dense={rowHeight === 'dense'} className="px-40">
       <ErrandTableHeader />
 
       {rows.map((errand, index) => (
         <Table.Row
+          className="cursor-pointer"
           key={`errand-row-${index}`}
           tabIndex={0}
-          onClick={() =>
-            window.open(`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`, '_blank')
-          }
+          onClick={() => router.push(`/arende/${errand.errandNumber}/grundinformation`)}
           onKeyDown={(e: React.KeyboardEvent) => {
             if (e.key === 'Enter') {
-              e.preventDefault();
-              window.open(
-                `${process.env.NEXT_PUBLIC_BASE_PATH}/arende/${errand.errandNumber}/grundinformation`,
-                '_blank'
-              );
+              router.push(`/arende/${errand.errandNumber}/grundinformation`);
             }
           }}
         >

@@ -11,6 +11,7 @@ import {
 } from '@/data-contracts/supportmanagement/data-contracts';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { LabelDTO } from './supportmanagement-metadata.response';
 
 export class ErrandsQueryDTO {
   @IsOptional()
@@ -195,8 +196,6 @@ export class ErrandDTO implements Errand {
   @IsBoolean()
   @IsOptional()
   businessRelated?: boolean;
-  //   /** List of labels for the errand */
-  //   labels?: ErrandLabel[];
   /** List of active notifications for the errand */
   //   activeNotifications?: Notification[];
   @IsString()
@@ -208,6 +207,10 @@ export class ErrandDTO implements Errand {
   @IsString()
   @IsOptional()
   touched?: string;
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => LabelDTO)
+  labels?: LabelDTO[];
 }
 
 class SortObjectDTO implements SortObject {
