@@ -34,7 +34,8 @@ export const ErrandLayoutContent: React.FC<{ children: React.ReactNode }> = ({ c
     title: 'Empty errand',
     priority: 'MEDIUM',
     status: 'DRAFT',
-    channel: 'ESERVICE_KATLA',
+    //TODO: Change channel to ESERVICE_KATLA?
+    channel: 'ESERVICE',
     resolution: 'INFORMED',
   };
 
