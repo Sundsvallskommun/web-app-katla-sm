@@ -15,6 +15,8 @@ export const Reporter: React.FC = () => {
   const { stakeholders } = watch();
   const [otherReporter, setOtherReporter] = useState(false);
 
+  const reporterIndex = stakeholders?.findIndex((s) => s.role === 'REPORTER') ?? -1;
+
   const { remove } = useFieldArray({
     control,
     name: 'stakeholders',
@@ -49,7 +51,14 @@ export const Reporter: React.FC = () => {
         <span className="text-dark-secondary">{t('errand-information:reporter.description')}</span>
         {getReporterStakeholder(stakeholders) ?
           <>
-            <StakeholderCard stakeholder={getReporterStakeholder(stakeholders) ?? {}} />
+            <StakeholderCard
+              stakeholder={getReporterStakeholder(stakeholders) ?? {}}
+              isEditable
+              hideRemove
+              editableFields={['emails']}
+              index={reporterIndex}
+              roles={['REPORTER']}
+            />
             <Checkbox className="-mt-[2.4rem]" checked={otherReporter} onChange={handleOtherReporterChange}>
               Jag rapporterar åt en annan kollega
             </Checkbox>
