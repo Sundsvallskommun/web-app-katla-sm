@@ -2,7 +2,7 @@ import { StakeholderCard } from '@components/card/stakeholder-card.component';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { getStakeholderUsingPersonNumber } from '@services/citizen/citizen-service';
-import { getEmployeeStakeholderFromApi } from '@services/employee-service/employee-service';
+import { getEmployeeByPersonNumber, getEmployeeStakeholderFromApi } from '@services/employee-service/employee-service';
 import { Pen, Plus } from 'lucide-react';
 import {
   Button,
@@ -82,7 +82,8 @@ export const StakeholderList: React.FC<{
       if (!isValid) {
         return;
       }
-      getStakeholderUsingPersonNumber(query)
+      const searchFn = autoDetectSearch ? getEmployeeByPersonNumber : getStakeholderUsingPersonNumber;
+      searchFn(query)
         .then((res) => {
           if (res.status === 200) {
             reset(res.data);
