@@ -24,11 +24,12 @@
     "misconduct_alert_description": "Ärendet skickas till en oberoende utredare. Din chef får veta om ärendet men beslutar inte om resultatet.",
     "event_concerns_label": "Händelsen berör",
     "event_concerns_individual": "Enskild brukare",
-    "event_concerns_group": "grupp/hela verksamheten",
+    "event_concerns_group": "Grupp/hela verksamheten",
     "event_concerns_other": "Annat",
     "event_concerns_describe_note": "(Beskriv med i avsnittet \"Vad har hänt?\")",
     "event_type_required": "Välj en händelsetyp",
-    "event_concerns_required": "Välj vad händelsen berör"
+    "event_concerns_required": "Välj vad händelsen berör",
+    "event_concerns_group_facility_required": "Välj en plats där avvikelsen inträffat när händelsen berör grupp/hela verksamheten"
   },
   "reporter": {
     "title": "Rapportör",

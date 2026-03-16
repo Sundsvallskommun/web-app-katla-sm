@@ -5,6 +5,7 @@ import {
 } from '@components/json/utils/schema-utils';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
+import { StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { Inbox } from 'lucide-react';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
@@ -13,7 +14,7 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { CenterDiv } from './center-div.component';
 import { appConfig } from 'src/config/appconfig';
-import { ErrandFormDTO } from '@interfaces/errand-form';
+import { ErrandFormDTO, ErrandFormDataItem } from '@interfaces/errand-form';
 
 interface ErrandButtonGroupProps {
   isNewErrand: boolean;
@@ -36,10 +37,38 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   const showButtons = isNewErrand || isDraft;
   const draftEnabled = appConfig.features.draftEnabled;
 
+  const getFacilityOrgName = (errandFormData: ErrandFormDataItem[] | undefined): string | undefined => {
+    const platsEntry = errandFormData?.find((e) => e.schemaName === 'avvikelse-plats-handelse');
+    if (!platsEntry?.data) return undefined;
+    const parsed = JSON.parse(platsEntry.data);
+    for (const value of Object.values(parsed)) {
+      if (value && typeof value === 'object' && 'orgName' in (value as Record<string, unknown>)) {
+        return (value as Record<string, string>).orgName;
+      }
+    }
+    return undefined;
+  };
+
   const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
     const { errandFormData, ...errandWithoutFormData } = values;
+    const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
+
+    let stakeholders = errandWithoutFormData.stakeholders ?? [];
+
+    if (eventConcerns === 'GRUPP_VERKSAMHET') {
+      const orgName = getFacilityOrgName(errandFormData);
+      if (orgName) {
+        const facilityStakeholder: StakeholderDTO = {
+          firstName: orgName,
+          role: 'PRIMARY',
+        };
+        stakeholders = [...stakeholders.filter((s) => s.role !== 'PRIMARY'), facilityStakeholder];
+      }
+    }
+
     return {
       ...errandWithoutFormData,
+      stakeholders,
       status,
       jsonParameters: errandFormDataToJsonParameters(errandFormData),
     };
@@ -124,6 +153,14 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
               position: 'bottom',
               status: 'error',
               message: t('errand-information:about.event_concerns_required'),
+            });
+            return;
+          }
+          if (eventConcerns === 'GRUPP_VERKSAMHET' && !getFacilityOrgName(values.errandFormData)) {
+            toastMessage({
+              position: 'bottom',
+              status: 'error',
+              message: t('errand-information:about.event_concerns_group_facility_required'),
             });
             return;
           }
