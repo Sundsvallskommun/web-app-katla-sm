@@ -1,6 +1,7 @@
 import {
   Classification,
   Errand,
+  ErrandLabel,
   ExternalTag,
   PageableObject,
   PageErrand,
@@ -11,7 +12,6 @@ import {
 } from '@/data-contracts/supportmanagement/data-contracts';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { LabelDTO } from './supportmanagement-metadata.response';
 
 export class ErrandsQueryDTO {
   @IsOptional()
@@ -124,6 +124,24 @@ export class JsonParameterDTO {
   schemaId: string;
 }
 
+export class ErrandLabelDTO implements ErrandLabel {
+  @IsString()
+  @IsOptional()
+  id?: string;
+  @IsString()
+  @IsOptional()
+  classification?: string;
+  @IsString()
+  @IsOptional()
+  displayName?: string;
+  @IsString()
+  @IsOptional()
+  resourcePath?: string;
+  @IsString()
+  @IsOptional()
+  resourceName?: string;
+}
+
 export class ErrandDTO implements Errand {
   @IsString()
   @IsOptional()
@@ -209,8 +227,8 @@ export class ErrandDTO implements Errand {
   touched?: string;
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => LabelDTO)
-  labels?: LabelDTO[];
+  @Type(() => ErrandLabelDTO)
+  labels?: ErrandLabelDTO[];
 }
 
 class SortObjectDTO implements SortObject {
