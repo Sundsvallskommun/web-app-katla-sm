@@ -15,7 +15,7 @@ export const StakeholderFormModal: React.FC<{
   initialValues?: StakeholderDTO;
   edit?: boolean;
   editableFields?: (keyof StakeholderDTO)[];
-}> = ({ index, onClose, show, roles, edit, initialValues, editableFields }) => {
+}> = ({ index, onClose, show, roles, edit, initialValues, editableFields}) => {
   const showField = (field: keyof StakeholderDTO) => !editableFields || editableFields.includes(field);
   const { metadata } = useMetadataStore();
   const context = useFormContext<ErrandDTO>();
@@ -52,6 +52,9 @@ export const StakeholderFormModal: React.FC<{
   const onSave = (data: StakeholderDTO) => {
     const merged = editableFields ? { ...initialValues, ...data } : data;
     const stakeholder: StakeholderDTO = { ...merged, phoneNumbers: [phoneNumberFormatter(merged?.phoneNumbers?.[0])] };
+    if(!editableFields?.includes('role') && !stakeholder.role) {
+      stakeholder.role = roles.length === 1 ? roles[0] : undefined;
+    }
     if (edit && index !== undefined) {
       update(index, stakeholder);
     } else {

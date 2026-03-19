@@ -46,7 +46,7 @@ export const Reporter: React.FC = () => {
   };
 
   return (
-    <ErrandDisclosure header={t('errand-information:reporter.title')} icon={<UserIcon />}>
+    <ErrandDisclosure header={t('errand-information:reporter.title')} icon={<UserIcon />} initialOpen={false}>
       <div className="flex flex-col gap-[2.4rem] pb-[2.4rem]">
         <span className="text-dark-secondary">{t('errand-information:reporter.description')}</span>
         {getReporterStakeholder(stakeholders) ?
@@ -55,7 +55,7 @@ export const Reporter: React.FC = () => {
               stakeholder={getReporterStakeholder(stakeholders) ?? {}}
               isEditable
               hideRemove
-              editableFields={['emails']}
+              editableFields={['emails', 'phoneNumbers']}
               index={reporterIndex}
               roles={['REPORTER']}
             />
@@ -70,7 +70,7 @@ export const Reporter: React.FC = () => {
                 <span className="text-dark-secondary">
                   {t('errand-information:other_reporter.description')}
                 </span>
-                <StakeholderList roles={['CONTACT']} autoDetectSearch maxCount={1} />
+                <StakeholderList roles={['CONTACT', 'SUBSTITUTEASSIGNMENT']} autoDetectSearch maxCount={1} />
               </div>
             )}
           </>

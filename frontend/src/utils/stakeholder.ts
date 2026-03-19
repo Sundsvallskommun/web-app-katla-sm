@@ -3,7 +3,7 @@ import { appConfig } from 'src/config/appconfig';
 import * as yup from 'yup';
 
 export const shouldShowContactDetails = (roles?: string[]) =>
-  !(roles?.includes('PRIMARY') && appConfig.features.reducedStakeholderInfo);
+  !(roles?.includes('PRIMARY')  && appConfig.features.reducedStakeholderInfo);
 
 export const emptyStakeholder: StakeholderDTO = {
   externalIdType: 'PERSON',

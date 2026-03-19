@@ -7,10 +7,10 @@ export const User: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <ErrandDisclosure header={t('errand-information:user.title')} icon={<UserIcon />}>
+    <ErrandDisclosure header={t('errand-information:user.title')} icon={<UserIcon />} initialOpen={false}>
       <div className="flex flex-col gap-[2.4rem] pb-[2.4rem]">
         <span className="text-dark-secondary">{t('errand-information:user.description')}</span>
-        <StakeholderList roles={['PRIMARY']}/>
+        <StakeholderList roles={['PRIMARY']} hideRoleSelect/>
       </div>
     </ErrandDisclosure>
   );
