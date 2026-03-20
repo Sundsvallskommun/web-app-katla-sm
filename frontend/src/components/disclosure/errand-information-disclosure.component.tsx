@@ -8,15 +8,18 @@ export const ErrandDisclosure: React.FC<{
   children: ReactNode;
   errandInformationSection?: boolean;
   disabled?: boolean;
-}> = ({ header, icon, children, errandInformationSection, disabled = false }) => {
+  initialOpen?: boolean;
+}> = ({ header, icon, children, errandInformationSection, disabled = false, initialOpen = true }) => {
   const [open, setOpen] = useState(!disabled);
   const [doneMark, setDoneMark] = useState(false);
 
   useEffect(() => {
     if (disabled) {
       setOpen(false);
+    } else {
+      setOpen(initialOpen);
     }
-  }, [disabled]);
+  }, [disabled, initialOpen]);
 
   useEffect(() => {
     if (doneMark) {
