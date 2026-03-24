@@ -21,6 +21,7 @@ export const emptyStakeholder: StakeholderDTO = {
 
 const personNumberRegex = /^\d{8}-?\d{4}$/;
 const phoneRegExp = /^$|^(?:\+|0)[0-9\s-]{6,19}$/;
+const emailRegExp = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}$/;
 
 export function phoneNumberFormatter(phoneNumber: string | undefined | null): string {
   if (!phoneNumber) return '';
@@ -62,7 +63,17 @@ export const stakeholderSchema = yup.object({
       const date = new Date(year, month, day);
       return date.getFullYear() === year && date.getMonth() === month && date.getDate() === day;
     }),
-  emails: yup.array().of(yup.string().email('Ogiltig e-postadress')).notRequired(),
+  emails: yup
+    .array()
+    .of(
+      yup
+        .string()
+        .matches(emailRegExp, {
+          message: 'Ogiltig e-postadress',
+          excludeEmptyString: true,
+        })
+    )
+    .notRequired(),
   phoneNumbers: yup
     .array()
     .of(
