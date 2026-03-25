@@ -1,8 +1,10 @@
 'use client';
+import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import type { ObjectFieldTemplateProps, RJSFSchema, UiSchema } from '@rjsf/utils';
 import { Checkbox, Disclosure, Divider, Label } from '@sk-web-gui/react';
 import { icons } from 'lucide-react';
 import React, { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { appConfig } from 'src/config/appconfig';
 
 interface ConditionalRule {
@@ -106,6 +108,11 @@ interface SectionDisclosureProps {
 }
 
 function SectionDisclosure({ section, children }: SectionDisclosureProps) {
+
+      const { watch } = useFormContext<ErrandDTO>();
+    
+      const errandStatus = watch('status');
+      const isDraft = errandStatus === 'DRAFT';
   const [open, setOpen] = useState(section.defaultOpen ?? false);
   const [doneMark, setDoneMark] = useState(false);
 
@@ -133,7 +140,10 @@ function SectionDisclosure({ section, children }: SectionDisclosureProps) {
         <Disclosure.Button />
       </Disclosure.Header>
       <Disclosure.Content>
+        
+        <div className={`${!isDraft && 'pointer-events-none opacity-80'}`}>
         {children}
+        </div>
         <Divider className="mt-16" />
         {appConfig.features.disclosureDoneMark && (
           <Checkbox className="mt-16" onClick={handleDoneMarkChange} checked={doneMark}>
