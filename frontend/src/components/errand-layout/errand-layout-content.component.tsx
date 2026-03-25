@@ -36,7 +36,6 @@ export const ErrandLayoutContent: React.FC<{ children: React.ReactNode }> = ({ c
     status: 'DRAFT',
     //TODO: Change channel to ESERVICE_KATLA?
     channel: 'ESERVICE',
-    resolution: 'INFORMED',
   };
 
   const methods = useForm<ErrandFormDTO>({
@@ -95,7 +94,7 @@ export const ErrandLayoutContent: React.FC<{ children: React.ReactNode }> = ({ c
                             </NextLink>
                           </Tabs.Button>
                           <Tabs.Content>
-                            <div className={`pt-xl pb-64 px-40 ${!isDraft ? 'pointer-events-none opacity-80' : ''}`}>
+                            <div className={`pt-xl pb-64 px-40`}>
                               {children}
                             </div>
                           </Tabs.Content>
