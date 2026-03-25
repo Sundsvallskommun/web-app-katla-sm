@@ -4,7 +4,7 @@
   "errand-table": {
     "header": {
       "status": "Status",
-      "errandNumber": "Rapportnummer",
+      "errandNumber": "Ärendenummer",
       "classificationType": "Typ av rapport",
       "created": "Rapporterat"
     }

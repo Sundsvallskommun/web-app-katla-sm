@@ -15,7 +15,12 @@ import {
   SearchField,
   Select,
 } from '@sk-web-gui/react';
-import { emptyStakeholder, phoneNumberFormatter, shouldShowContactDetails, stakeholderSchema } from '@utils/stakeholder';
+import {
+  emptyStakeholder,
+  phoneNumberFormatter,
+  shouldShowContactDetails,
+  stakeholderSchema,
+} from '@utils/stakeholder';
 import { useEffect, useState } from 'react';
 import { FormProvider, Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +32,8 @@ export const StakeholderList: React.FC<{
   employeeSearch?: boolean;
   autoDetectSearch?: boolean;
   maxCount?: number;
-}> = ({ roles, employeeSearch = false, autoDetectSearch = false, maxCount }) => {
+  hideRoleSelect?: boolean;
+}> = ({ roles, employeeSearch = false, autoDetectSearch = false, maxCount, hideRoleSelect = false }) => {
   const [searchMode, setSearchMode] = useState<string>('PERSON');
   const [query, setQuery] = useState<string>('');
   const [searchResult, setSearchResult] = useState<boolean>(false);
@@ -74,7 +80,11 @@ export const StakeholderList: React.FC<{
 
   const onSearchHandler = async (query: string) => {
     const effectiveMode =
-      autoDetectSearch ? (/^\d{8}-?\d{4}$/.test(query) ? 'PERSON' : 'EMPLOYEE') : searchMode;
+      autoDetectSearch ?
+        /^\d{8}-?\d{4}$/.test(query) ?
+          'PERSON'
+        : 'EMPLOYEE'
+      : searchMode;
 
     if (effectiveMode === 'PERSON') {
       setValue('personNumber', query);
@@ -115,6 +125,9 @@ export const StakeholderList: React.FC<{
   };
 
   const addStakeholderToErrand = (stakeholder: StakeholderDTO) => {
+    if (hideRoleSelect && metadata) {
+     stakeholder.role = roles[0];
+    }
     append({ ...stakeholder, phoneNumbers: [phoneNumberFormatter(stakeholder?.phoneNumbers?.[0])] });
     clearStakeholderForm();
   };
@@ -150,9 +163,7 @@ export const StakeholderList: React.FC<{
                 </RadioButton>
               </RadioButton.Group>
             )}
-            <FormLabel>
-              {t(`errand-information:search.${autoDetectSearch ? 'AUTODETECT' : searchMode}`)}
-            </FormLabel>
+            <FormLabel>{t(`errand-information:search.${autoDetectSearch ? 'AUTODETECT' : searchMode}`)}</FormLabel>
             <SearchField
               data-cy="person-number-input"
               size="md"
@@ -228,19 +239,21 @@ export const StakeholderList: React.FC<{
                 </div>
               )}
 
-              <FormControl required className="w-full sm:w-[calc(50%-10px)]">
-                <FormLabel>Personens roll</FormLabel>
-                <Select data-cy="stakeholder-role-select" className="w-full" {...register('role')}>
-                  {metadata?.roles?.map(
-                    (role) =>
-                      roles?.includes(role.name) && (
-                        <Select.Option key={role.name} value={role.name}>
-                          {role.displayName}
-                        </Select.Option>
-                      )
-                  )}
-                </Select>
-              </FormControl>
+              {!hideRoleSelect && (
+                <FormControl required className="w-full sm:w-[calc(50%-10px)]">
+                  <FormLabel>Personens roll</FormLabel>
+                  <Select data-cy="stakeholder-role-select" className="w-full" {...register('role')}>
+                    {metadata?.roles?.map(
+                      (role) =>
+                        roles?.includes(role.name) && (
+                          <Select.Option key={role.name} value={role.name}>
+                            {role.displayName}
+                          </Select.Option>
+                        )
+                    )}
+                  </Select>
+                </FormControl>
+              )}
               <div className="py-10">
                 <Button
                   data-cy="add-stakeholder-button"
@@ -288,7 +301,7 @@ export const StakeholderList: React.FC<{
         </Button>
       )}
 
-      <StakeholderFormModal roles={roles} show={manualEntryOpen} onClose={() => setManualEntryOpen(false)} />
+      <StakeholderFormModal roles={roles} show={manualEntryOpen} onClose={() => setManualEntryOpen(false)} editableFields={roles.includes('EMPLOYEE') || roles.includes('SUBSTITUTEASSIGNMENT') ? ['personNumber', 'firstName', 'lastName', 'emails', 'phoneNumbers', 'role'] : ['personNumber', 'firstName', 'lastName', 'emails', 'phoneNumbers']} />
     </div>
   );
 };

@@ -24,8 +24,8 @@
   "about": {
     "title": "Om ärendet",
     "event_type_label": "Välj händelsetyp",
-    "event_type_deviation": "Rapportera avvikelse",
-    "event_type_misconduct": "Rapportera missförhållande",
+    "event_type_deviation": "Avvikelse",
+    "event_type_misconduct": "Missförhållande",
     "misconduct_alert_title": "Missförhållande",
     "misconduct_alert_description": "Ärendet skickas till en oberoende utredare. Din chef får veta om ärendet men beslutar inte om resultatet.",
     "event_concerns_label": "Händelsen berör",

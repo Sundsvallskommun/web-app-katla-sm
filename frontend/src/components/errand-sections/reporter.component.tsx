@@ -54,7 +54,7 @@ export const ReporterContent: React.FC = () => {
             stakeholder={getReporterStakeholder(stakeholders) ?? {}}
             isEditable
             hideRemove
-            editableFields={['emails']}
+            editableFields={['emails', 'phoneNumbers']}
             index={reporterIndex}
             roles={['REPORTER']}
           />
@@ -69,7 +69,7 @@ export const ReporterContent: React.FC = () => {
               <span className="text-dark-secondary">
                 {t('errand-information:other_reporter.description')}
               </span>
-              <StakeholderList roles={['CONTACT']} autoDetectSearch maxCount={1} />
+              <StakeholderList roles={['CONTACT', 'SUBSTITUTEASSIGNMENT']} autoDetectSearch maxCount={1} />
             </div>
           )}
         </>
@@ -82,7 +82,7 @@ export const Reporter: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <ErrandDisclosure header={t('errand-information:reporter.title')} icon={<UserIcon />}>
+    <ErrandDisclosure header={t('errand-information:reporter.title')} icon={<UserIcon />} initialOpen={false}>
       <ReporterContent />
     </ErrandDisclosure>
   );
