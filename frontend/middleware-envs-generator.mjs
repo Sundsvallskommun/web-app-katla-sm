@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import { writeFileSync } from 'fs';
-config({ path: './.env', quiet: true });
+// Samma kaskad som Next.js: .env.local vinner över .env (första träffen gäller)
+config({ path: ['./.env.local', './.env'], quiet: true });
 
 const outputContent = `export const envs = {
   protectedRoutes: '${process.env.NEXT_PUBLIC_PROTECTED_ROUTES || ''}',

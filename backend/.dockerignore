@@ -14,3 +14,8 @@ jest.config.js
 # docker
 Dockerfile
 docker-compose.yml
+
+# hemligheter - skickas in via env_file i runtime, ska aldrig bakas in i imagen
+.env
+.env.*
+
