@@ -17,12 +17,12 @@ describe('security middleware', () => {
 
   it('sets hardened attributes on a persisted session cookie', async () => {
     const app = new App([IndexController]).getServer();
-    app.get('/session-test', (req, res) => {
+    app.get('/api/session-test', (req, res) => {
       req.session.returnTo = '/';
       res.sendStatus(204);
     });
 
-    const response = await request(app).get('/session-test').expect(204);
+    const response = await request(app).get('/api/session-test').expect(204);
     const cookies = response.headers['set-cookie'];
     if (!Array.isArray(cookies)) {
       throw new Error('Expected one persisted session cookie');
@@ -35,6 +35,7 @@ describe('security middleware', () => {
     expect(cookies).toHaveLength(1);
     expect(cookie).toContain('HttpOnly');
     expect(cookie).toContain('SameSite=Lax');
+    expect(cookie).toContain('Path=/api');
   });
 
   it('publishes standard rate-limit headers without legacy headers', async () => {
