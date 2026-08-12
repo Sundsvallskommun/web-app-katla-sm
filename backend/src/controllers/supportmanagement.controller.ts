@@ -291,9 +291,9 @@ export class SupportManagementController {
 
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/notifications`;
 
-    // SupportManagement acknowledges with 204 No Content. A resolved request is
-    // therefore the success signal; the gateway keeps its existing boolean body
-    // for Katla clients.
+    // SupportManagement kvitterar med 204 No Content. Ett uppfyllt anrop är därför
+    // framgångssignalen; gatewayen behåller sin befintliga boolean-body för
+    // Katla-klienterna.
     await this.apiService.patch<undefined>({ url, data: notifications, propagateClientError: true }, req);
 
     return { data: true, message: 'Success' };

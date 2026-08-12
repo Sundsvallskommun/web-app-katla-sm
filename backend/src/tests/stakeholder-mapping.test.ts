@@ -221,4 +221,18 @@ describe('stakeholder mapping', () => {
     expect(upstreamStakeholder.parameters).toEqual(legacyStakeholder.parameters);
     expect(mapStakeholderDTOToStakeholder(editedStakeholder).parameters).toEqual([{ key: 'title', displayName: 'Titel', values: ['Överläkare'] }]);
   });
+
+  it('reads a legacy managed parameter that upstream serialized with an empty values list', () => {
+    const legacyStakeholder: Stakeholder = {
+      parameters: [{ key: 'title', displayName: 'Sjuksköterska', values: [] }],
+    };
+
+    const frontendStakeholder = mapStakeholderToStakeholderDTO(legacyStakeholder);
+    const editedStakeholder = structuredClone(frontendStakeholder);
+    editedStakeholder.title = 'Överläkare';
+
+    expect(frontendStakeholder.title).toBe('Sjuksköterska');
+    expect(mapStakeholderDTOToStakeholder(frontendStakeholder).parameters).toEqual(legacyStakeholder.parameters);
+    expect(mapStakeholderDTOToStakeholder(editedStakeholder).parameters).toEqual([{ key: 'title', displayName: 'Titel', values: ['Överläkare'] }]);
+  });
 });

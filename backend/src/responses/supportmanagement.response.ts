@@ -94,13 +94,13 @@ export class StakeholderDTO implements Partial<Stakeholder> {
   @IsString()
   @IsOptional()
   department?: string;
-  /** Original channels retained so unsupported channel types survive a frontend roundtrip. */
+  /** Ursprungliga kanaler behålls så att kanaltyper utan stöd överlever en rundtur via frontend. */
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ContactChannelDTO)
   contactChannels?: ContactChannelDTO[];
-  /** Parameters that must survive editing even when this frontend does not render them. */
+  /** Parametrar som måste överleva redigering även när denna frontend inte renderar dem. */
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

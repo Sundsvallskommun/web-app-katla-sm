@@ -46,8 +46,8 @@ const mergeManagedContactChannels = (
     const requestedValue = projectedValues[projectedIndex];
     projectedIndex += 1;
 
-    // The frontend only exposes the primary value. Missing trailing projections therefore
-    // mean "not edited", not "delete the remaining upstream channels".
+    // Frontend exponerar bara det primära värdet. Saknade efterföljande projektioner
+    // betyder därför "inte ändrat", inte "ta bort resterande uppströmskanaler".
     if (requestedValue === undefined || requestedValue === originalProjectedValue) {
       return [cloneContactChannel(contactChannel)];
     }
@@ -75,8 +75,12 @@ const mergeContactChannels = (
   return merged.length ? merged : undefined;
 };
 
+// Äldre poster bar värdet i displayName utan values. Uppströms kan serialisera
+// en tom lista antingen som utelämnad eller som [], så båda formerna måste falla
+// tillbaka på displayName. Annars försvinner värdet ur gränssnittet och en
+// efterföljande sparning tolkar det som "inte ändrat" och tappar det permanent.
 const getParameterValueFromParameter = (parameter: Parameter | undefined): string | undefined =>
-  parameter?.values?.[0] ?? (parameter?.values === undefined ? parameter?.displayName : undefined);
+  parameter?.values?.[0] ?? (parameter?.values?.length ? undefined : parameter?.displayName);
 
 const getParameterValue = (parameters: Parameter[] | undefined, key: ManagedStakeholderParameter): string | undefined => {
   const parameter = parameters?.find(candidate => candidate.key === key);
@@ -123,7 +127,7 @@ const updateManagedParameter = (parameters: Parameter[], key: ManagedStakeholder
   return replaceFirstParameterByKey(parameters, key, {
     ...cloneParameter(existingParameter),
     key,
-    ...(existingParameter.values === undefined ? { displayName: stakeholderParameterDisplayNames[key] } : {}),
+    ...(existingParameter.values?.length ? {} : { displayName: stakeholderParameterDisplayNames[key] }),
     values: [value, ...remainingValues],
   });
 };

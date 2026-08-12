@@ -1,8 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { defaultMetadataStorage } from 'class-transformer/cjs/storage';
-import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import { getMetadataArgsStorage } from 'routing-controllers';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
 import ts from 'typescript';
@@ -10,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import { SupportManagementController } from '@/controllers/supportmanagement.controller';
 import { StakeholderDTO } from '@/responses/supportmanagement.response';
-import { additionalConverters } from '@/utils/custom-validation-classes';
+import { buildOpenApiSchemas } from '@/utils/openapi-spec';
 
 interface ContractProperty {
   optional: boolean;
@@ -62,13 +60,9 @@ const schemaPropertyToTypeScript = (value: unknown, description: string): string
 };
 
 const getOpenApiSchemas = () => {
-  // Importing the DTO above registers its decorator metadata before the schemas are built.
+  // Importen av DTO:n ovan registrerar dess dekoratormetadata innan schemana byggs.
   void StakeholderDTO;
-  return validationMetadatasToSchemas({
-    classTransformerMetadataStorage: defaultMetadataStorage,
-    refPointerPrefix: '#/components/schemas/',
-    additionalConverters,
-  });
+  return buildOpenApiSchemas();
 };
 
 const getBackendContract = (schemas: Record<string, unknown>): ContractGraph => {
