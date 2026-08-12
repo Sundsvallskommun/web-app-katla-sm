@@ -3,6 +3,7 @@ import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, Vali
 
 import {
   Classification,
+  ContactChannel,
   CountResponse,
   Errand,
   ErrandAction,
@@ -18,6 +19,7 @@ import {
   SortObject,
   Stakeholder,
 } from '@/data-contracts/supportmanagement/data-contracts';
+import { NotificationDTO } from '@/responses/notification.response';
 
 export class ErrandCountDTO implements CountResponse {
   @IsNumber()
@@ -92,8 +94,27 @@ export class StakeholderDTO implements Partial<Stakeholder> {
   @IsString()
   @IsOptional()
   department?: string;
-  // /** Parameters for the stakeholder */
-  // parameters?: Parameter[];
+  /** Original channels retained so unsupported channel types survive a frontend roundtrip. */
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ContactChannelDTO)
+  contactChannels?: ContactChannelDTO[];
+  /** Parameters that must survive editing even when this frontend does not render them. */
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParameterDTO)
+  parameters?: ParameterDTO[];
+}
+
+export class ContactChannelDTO implements ContactChannel {
+  @IsString()
+  @IsOptional()
+  type?: string;
+  @IsString()
+  @IsOptional()
+  value?: string;
 }
 
 export class ClassificationDTO implements Classification {
@@ -295,6 +316,15 @@ export class ErrandDTO implements Errand {
   @IsNumber()
   @IsOptional()
   version?: number;
+}
+
+/** Concrete request contract shared by the save and update mutation routes. */
+export class ErrandMutationRequestDTO extends ErrandDTO implements Pick<Errand, 'activeNotifications'> {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => NotificationDTO)
+  activeNotifications?: NotificationDTO[];
 }
 
 class SortObjectDTO implements SortObject {
