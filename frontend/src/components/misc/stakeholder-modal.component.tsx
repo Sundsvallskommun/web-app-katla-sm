@@ -50,7 +50,12 @@ export const StakeholderFormModal: React.FC<{
 
   const onSave = (data: StakeholderDTO) => {
     const merged = editableFields ? { ...initialValues, ...data } : data;
-    const stakeholder: StakeholderDTO = { ...merged, phoneNumbers: [phoneNumberFormatter(merged?.phoneNumbers?.[0])] };
+    const phoneNumbers = merged.phoneNumbers;
+    const stakeholder: StakeholderDTO = {
+      ...merged,
+      phoneNumbers:
+        phoneNumbers?.length ? [phoneNumberFormatter(phoneNumbers[0]), ...phoneNumbers.slice(1)] : phoneNumbers,
+    };
     if (!editableFields?.includes('role') && !stakeholder.role) {
       stakeholder.role = roles.length === 1 ? roles[0] : undefined;
     }

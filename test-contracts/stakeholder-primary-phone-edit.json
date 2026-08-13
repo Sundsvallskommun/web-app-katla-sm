@@ -1,0 +1,36 @@
+{
+  "initialStakeholder": {
+    "externalId": "person-id",
+    "role": "CONTACT",
+    "firstName": "Ada",
+    "lastName": "Lovelace",
+    "phoneNumbers": ["+46701111111", "+46702222222"],
+    "contactChannels": [
+      { "type": "sms", "value": "+46709999999", "source": "upstream-sms" },
+      { "type": "Phone", "value": "+46701111111", "source": "primary-phone" },
+      { "type": "Phone", "value": "+46702222222", "source": "secondary-phone" }
+    ]
+  },
+  "primaryPhoneInput": "0703333333",
+  "frontendAfterNoop": {
+    "phoneNumbers": ["+46701111111", "+46702222222"],
+    "contactChannels": [
+      { "type": "sms", "value": "+46709999999", "source": "upstream-sms" },
+      { "type": "Phone", "value": "+46701111111", "source": "primary-phone" },
+      { "type": "Phone", "value": "+46702222222", "source": "secondary-phone" }
+    ]
+  },
+  "frontendAfterPrimaryEdit": {
+    "phoneNumbers": ["+46703333333", "+46702222222"],
+    "contactChannels": [
+      { "type": "sms", "value": "+46709999999", "source": "upstream-sms" },
+      { "type": "Phone", "value": "+46701111111", "source": "primary-phone" },
+      { "type": "Phone", "value": "+46702222222", "source": "secondary-phone" }
+    ]
+  },
+  "upstreamAfterPrimaryEdit": [
+    { "type": "sms", "value": "+46709999999", "source": "upstream-sms" },
+    { "type": "Phone", "value": "+46703333333", "source": "primary-phone" },
+    { "type": "Phone", "value": "+46702222222", "source": "secondary-phone" }
+  ]
+}

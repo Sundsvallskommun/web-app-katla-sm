@@ -1,15 +1,21 @@
-import { HttpException } from '@exceptions/HttpException';
 import { logger } from '@utils/logger';
+import type { ValidationError } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
+import { HttpError } from 'routing-controllers';
+
+interface HandledHttpError extends HttpError {
+  status?: number;
+  errors?: ValidationError[];
+}
 
 // Helper function to sanitize log input by removing CR and LF characters
 function sanitizeLogInput(input: string): string {
   return input.replace(/[\r\n]/g, '');
 }
 
-const errorMiddleware = (error: HttpException, req: Request, res: Response, next: NextFunction) => {
+const errorMiddleware = (error: HandledHttpError, req: Request, res: Response, next: NextFunction) => {
   try {
-    const status: number = error.status || 500;
+    const status = error.status ?? error.httpCode ?? 500;
     const message: string = error.message || 'Something went wrong';
     const errors: string =
       error.errors && error.errors.length > 0

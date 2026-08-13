@@ -128,6 +128,13 @@ export interface StakeholderDTO {
   phoneNumbers?: string[];
   title?: string;
   department?: string;
+  contactChannels?: ContactChannelDTO[];
+  parameters?: ParameterDTO[];
+}
+
+export interface ContactChannelDTO {
+  type?: string;
+  value?: string;
 }
 
 export interface ClassificationDTO {
@@ -140,6 +147,7 @@ export interface ParameterDTO {
   displayName?: string;
   group?: string;
   values?: string[];
+  version?: number;
 }
 
 export interface ExternalTagDTO {

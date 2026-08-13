@@ -9,10 +9,10 @@ import type ApiResponse from '@/interfaces/api-service.interface';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import { NotificationAcknowledgementResponse, NotificationDTO } from '@/responses/notification.response';
-import { ErrandCountDTO, ErrandDTO, ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
+import { ErrandCountDTO, ErrandDTO, ErrandMutationRequestDTO, ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
 import { MetadataResponseDTO } from '@/responses/supportmanagement-metadata.response';
 import ApiService from '@/services/api.service';
-import { mapStakeholderDTOToStakeholder, mapStakeholderToStakeholderDTO } from '@/utils/stakeholder-mapping';
+import { mapStakeholderDTOToStakeholder, mapStakeholdersToStakeholderDTOs } from '@/utils/stakeholder-mapping';
 import { apiURL } from '@/utils/util';
 
 // Bygger filtervärdet på samma sätt som tidigare stränginterpolering; okända värdetyper hoppas över.
@@ -49,10 +49,11 @@ export class SupportManagementController {
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands`;
     const baseURL = apiURL(this.apiBase);
 
-    const errandInformation = {
-      ...(errand as Errand),
+    const { stakeholders: requestStakeholders, ...errandData } = errand;
+    const errandInformation: Errand = {
+      ...errandData,
       reporterUserId: req.user.username,
-      stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
+      stakeholders: requestStakeholders?.map(mapStakeholderDTOToStakeholder),
     };
 
     const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errandInformation, propagateClientError: true }, req);
@@ -61,7 +62,7 @@ export class SupportManagementController {
     const resStakeholders = res.data.stakeholders;
     if (!resStakeholders) throw new HttpException(502, 'No stakeholders in response when creating errand');
 
-    const stakeholders = await Promise.all(resStakeholders.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)));
+    const stakeholders = await mapStakeholdersToStakeholderDTOs(resStakeholders, req, requestStakeholders);
 
     return {
       ...res.data,
@@ -73,24 +74,28 @@ export class SupportManagementController {
   @OpenAPI({ summary: 'Save an errand' })
   @UseBefore(authMiddleware)
   @ResponseSchema(ErrandDTO)
-  async saveErrand(@Req() req: RequestWithUser, @Body() errand: Errand): Promise<Partial<Errand>> {
+  async saveErrand(@Req() req: RequestWithUser, @Body() errand: ErrandMutationRequestDTO): Promise<Partial<ErrandDTO>> {
     if (!errand.id) {
       throw new HttpException(400, 'Errand id is required when saving an errand');
     }
 
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${errand.id}`;
 
-    delete errand.activeNotifications;
-    delete errand.created;
-    delete errand.errandNumber;
-    delete errand.id;
-    delete errand.reporterUserId;
-    delete errand.touched;
-    delete errand.modified;
+    const {
+      activeNotifications: _activeNotifications,
+      created: _created,
+      errandNumber: _errandNumber,
+      id: _id,
+      modified: _modified,
+      reporterUserId: _reporterUserId,
+      stakeholders: requestStakeholders,
+      touched: _touched,
+      ...errandData
+    } = errand;
 
-    const errandInformation = {
-      ...errand,
-      stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
+    const errandInformation: Partial<Errand> = {
+      ...errandData,
+      stakeholders: requestStakeholders?.map(mapStakeholderDTOToStakeholder),
     };
 
     const baseURL = apiURL(this.apiBase);
@@ -98,7 +103,7 @@ export class SupportManagementController {
     const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errandInformation, propagateClientError: true }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when saving errand');
 
-    const stakeholders = await Promise.all(res.data.stakeholders?.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)) ?? []);
+    const stakeholders = await mapStakeholdersToStakeholderDTOs(res.data.stakeholders ?? [], req, requestStakeholders);
 
     return {
       ...res.data,
@@ -110,7 +115,7 @@ export class SupportManagementController {
   @OpenAPI({ summary: 'Update errand' })
   @UseBefore(authMiddleware)
   @ResponseSchema(ErrandDTO)
-  async updateErrand(@Req() req: RequestWithUser, @Param('id') id: string, @Body() errand: Partial<Errand>): Promise<Partial<Errand>> {
+  async updateErrand(@Req() req: RequestWithUser, @Param('id') id: string, @Body() errand: ErrandMutationRequestDTO): Promise<Partial<ErrandDTO>> {
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${id}`;
     const baseURL = apiURL(this.apiBase);
     // Strip read-only fields that the API does not accept on update
@@ -122,15 +127,26 @@ export class SupportManagementController {
       touched: _touched,
       reporterUserId: _reporterUserId,
       activeNotifications: _activeNotifications,
+      stakeholders: requestStakeholders,
       ...errandData
     } = errand;
 
     if (!id.trim()) throw new HttpException(400, 'Errand id is required when updating an errand');
 
-    const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errandData, propagateClientError: true }, req);
+    const errandInformation: Partial<Errand> = {
+      ...errandData,
+      stakeholders: requestStakeholders?.map(mapStakeholderDTOToStakeholder),
+    };
+
+    const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errandInformation, propagateClientError: true }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when updating errand');
 
-    return res.data;
+    const stakeholders = res.data.stakeholders ? await mapStakeholdersToStakeholderDTOs(res.data.stakeholders, req, requestStakeholders) : undefined;
+
+    return {
+      ...res.data,
+      stakeholders,
+    };
   }
 
   @Get('/supportmanagement/errand/:errandNumber')
@@ -146,7 +162,7 @@ export class SupportManagementController {
     const matchedErrand = res.data.content?.[0];
     if (!matchedErrand) throw new HttpException(404, 'Errand not found');
 
-    const stakeholders = await Promise.all(matchedErrand.stakeholders?.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)) ?? []);
+    const stakeholders = await mapStakeholdersToStakeholderDTOs(matchedErrand.stakeholders ?? [], req);
 
     return {
       ...matchedErrand,
@@ -275,9 +291,9 @@ export class SupportManagementController {
 
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/notifications`;
 
-    // SupportManagement acknowledges with 204 No Content. A resolved request is
-    // therefore the success signal; the gateway keeps its existing boolean body
-    // for Katla clients.
+    // SupportManagement kvitterar med 204 No Content. Ett uppfyllt anrop är därför
+    // framgångssignalen; gatewayen behåller sin befintliga boolean-body för
+    // Katla-klienterna.
     await this.apiService.patch<undefined>({ url, data: notifications, propagateClientError: true }, req);
 
     return { data: true, message: 'Success' };
