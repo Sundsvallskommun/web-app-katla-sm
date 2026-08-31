@@ -1,0 +1,44 @@
+{
+  "id": "2281_avvikelse-plats-handelse_1.3",
+  "name": "avvikelse-plats-handelse",
+  "version": "1.3",
+  "description": "Schema för avvikelserapportering - plats och händelseförlopp",
+  "value": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "title": "Plats och händelseförlopp",
+    "required": ["facilityInfo", "eventDate", "eventDescription", "actionsTaken"],
+    "properties": {
+      "facilityInfo": {
+        "type": "object"
+      },
+      "eventDate": {
+        "type": "string",
+        "format": "date"
+      },
+      "eventTime": {
+        "type": "string",
+        "format": "time"
+      },
+      "occurredDate": {
+        "type": "string",
+        "format": "date"
+      },
+      "occurredTime": {
+        "type": "string",
+        "format": "time"
+      },
+      "eventDescription": {
+        "type": "string",
+        "minLength": 10
+      },
+      "actionsTaken": {
+        "type": "string",
+        "minLength": 10
+      },
+      "suggestedActions": {
+        "type": "string"
+      }
+    }
+  }
+}

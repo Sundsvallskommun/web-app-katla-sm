@@ -17,12 +17,11 @@
     "new_tab_announcement": "Opens in a new tab"
   },
   "facility_search": {
-    "section_title": "More information about the location",
-    "add_label": "Add location where the deviation occurred",
+    "description": "State where the event occurred.",
+    "search_label": "Unit or department",
     "card_header": "Location where the deviation occurred",
     "label": "Location",
-    "placeholder": "Search location",
-    "label_hint": "Search by facility, department or any higher organisational level.",
+    "placeholder": "Select unit or department",
     "department_label": "Department",
     "select_sub_place": "Select a unit within {{place}}",
     "sub_place_required": "You need to select a unit for the location to be complete.",

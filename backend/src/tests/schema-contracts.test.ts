@@ -161,10 +161,70 @@ describe('JSON schema adapter contracts', () => {
       expect(JSON.stringify(body)).not.toContain('x-i18n');
     });
 
+    /**
+     * Avvikelseformuläret hålls lokalt i repot tills vidare. Det ska aldrig gå till API:t, och
+     * det ska ändå passera samma x-i18n-upplösning som API-svaren.
+     */
+    describe('locally held schema', () => {
+      const LOCAL_SCHEMA_NAME = 'avvikelse-plats-handelse';
+      const LOCAL_SCHEMA_ID = '2281_avvikelse-plats-handelse_1.3';
+
+      it('serves the local schema by name without calling the API', async () => {
+        const getSpy = vi.spyOn(ApiService.prototype, 'get');
+
+        const response = await request(app).get(`/api/schemas/latest/${LOCAL_SCHEMA_NAME}`).expect(200);
+        const body = response.body as SchemaResponseDTO;
+        const sections = body.uiSchema['ui:sections'] as { title: string }[];
+
+        expect(getSpy).not.toHaveBeenCalled();
+        expect(body.schemaId).toBe(LOCAL_SCHEMA_ID);
+        expect(sections.map(section => section.title)).toEqual(['Plats', 'Tidpunkter', 'Beskrivning av händelse']);
+        expect(JSON.stringify(body)).not.toContain('x-i18n');
+      });
+
+      it('serves the local schema by its pinned ID, so saved errands keep rendering', async () => {
+        const getSpy = vi.spyOn(ApiService.prototype, 'get');
+
+        const response = await request(app).get(`/api/schemas/${LOCAL_SCHEMA_ID}`).expect(200);
+        const body = response.body as SchemaResponseDTO;
+
+        expect(getSpy).not.toHaveBeenCalled();
+        expect(body.schemaId).toBe(LOCAL_SCHEMA_ID);
+      });
+
+      /**
+       * Hjälptexterna i beskrivningsavsnittet ska stå mellan rubriken och fältet. FieldTemplate
+       * lägger dem under fältet så snart descriptionBelow är satt, så frånvaron är det som styr.
+       */
+      it('keeps the description fields titled and described above the input', async () => {
+        const response = await request(app).get(`/api/schemas/latest/${LOCAL_SCHEMA_NAME}`).expect(200);
+        const uiSchema = (response.body as SchemaResponseDTO).uiSchema;
+
+        const described = ['eventDescription', 'actionsTaken', 'suggestedActions'] as const;
+        const titles = described.map(field => (uiSchema[field] as Record<string, unknown>)['ui:title']);
+        expect(titles).toEqual(['Händelseförlopp', 'Omedelbart vidtagna åtgärder', 'Förslag på åtgärder']);
+
+        for (const field of described) {
+          const fieldUiSchema = uiSchema[field] as Record<string, unknown>;
+          expect(fieldUiSchema['ui:description']).toEqual(expect.stringContaining('Beskriv'));
+          expect(fieldUiSchema['ui:options']).toBeUndefined();
+        }
+      });
+
+      it('translates the local schema like any other', async () => {
+        const response = await request(app).get(`/api/schemas/latest/${LOCAL_SCHEMA_NAME}`).set('Accept-Language', 'en').expect(200);
+        const body = response.body as SchemaResponseDTO;
+        const sections = body.uiSchema['ui:sections'] as { title: string }[];
+
+        expect(sections.map(section => section.title)).toEqual(['Location', 'Times', 'Description of the event']);
+        expect(body.schema.title).toBe('Location and sequence of events');
+      });
+    });
+
     it('applies the same resolution to the latest-version route', async () => {
       mockUpstream();
 
-      const response = await request(app).get('/api/schemas/latest/avvikelse-plats-handelse').set('Accept-Language', 'en-GB,en;q=0.9').expect(200);
+      const response = await request(app).get('/api/schemas/latest/schema-name').set('Accept-Language', 'en-GB,en;q=0.9').expect(200);
       const body = response.body as SchemaResponseDTO;
       const eventTime = body.uiSchema.eventTime as Record<string, unknown>;
 

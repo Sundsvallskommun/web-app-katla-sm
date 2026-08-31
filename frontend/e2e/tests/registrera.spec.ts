@@ -8,9 +8,9 @@ import { jsonRoute } from '../utils/routes';
 import {
   addEmployeeStakeholder,
   addStakeholder,
-  disclosureByTitle,
   manuallyAddStakeholder,
   manuallyEditStakeholder,
+  sectionByTitle,
 } from '../utils/stakeholder';
 import { expect, test } from '../utils/test';
 
@@ -76,6 +76,10 @@ const registerErrandAndExpectDraft = async (page: Page, expectedStakeholderCount
     },
   ]);
   expect(body.stakeholders?.length).toBe(expectedStakeholderCount);
+
+  // En inskickad rapport landar på kvittot, inte i det inlämnade ärendets formulär.
+  await expect(page).toHaveURL(/\/arende\/inskickad$/);
+  await expect(page.getByRole('heading', { name: 'Rapporten är inskickad.' })).toBeVisible();
 };
 
 const selectRequiredErrandParameters = async (page: Page) => {
@@ -115,7 +119,7 @@ test.describe('Register new errand page', () => {
     // Att kontrollerna syns bevisar inte att de serverrenderade radioknapparna
     // har hydrerats. Rapportören läggs till av en klienteffekt, så det är
     // registreringsflödets observerbara readiness-gräns.
-    await expect(disclosureByTitle(page, 'Rapportör').getByTestId('stakeholder-card')).toHaveCount(1);
+    await expect(sectionByTitle(page, 'Rapportör').getByTestId('stakeholder-card')).toHaveCount(1);
   });
 
   test('Add stakeholders using personnumber and register draft errand', async ({ page }) => {
@@ -125,14 +129,14 @@ test.describe('Register new errand page', () => {
     await completeRequiredErrandForm(page);
 
     //Brukare
-    const brukare = disclosureByTitle(page, 'Brukare');
+    const brukare = sectionByTitle(page, 'Enskild brukare');
     await addStakeholder(page, brukare, 'PRIMARY');
     await expect(brukare.getByTestId('edit-card-button')).toBeVisible();
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
 
     //Övriga parter
-    const ovrigaParter = disclosureByTitle(page, 'Övriga parter');
+    const ovrigaParter = sectionByTitle(page, 'Övriga parter');
     for (const role of ['CONTACT', 'CONTACT']) {
       await addStakeholder(page, ovrigaParter, role);
       await expect(ovrigaParter.getByTestId('edit-card-button').first()).toBeVisible();
@@ -145,7 +149,7 @@ test.describe('Register new errand page', () => {
 
   test('Preserves entered data and stays on the form when registration fails', async ({ page }) => {
     await page.route('**/supportmanagement/errand/create', jsonRoute({ message: 'Upstream unavailable' }, 502));
-    await expect(disclosureByTitle(page, 'Rapportör').getByTestId('stakeholder-card')).toHaveCount(1);
+    await expect(sectionByTitle(page, 'Rapportör').getByTestId('stakeholder-card')).toHaveCount(1);
     await completeRequiredErrandForm(page);
 
     const submitButton = await openRegistrationConfirmation(page);
@@ -171,7 +175,7 @@ test.describe('Register new errand page', () => {
     await completeRequiredErrandForm(page);
 
     //Brukare
-    const brukare = disclosureByTitle(page, 'Brukare');
+    const brukare = sectionByTitle(page, 'Enskild brukare');
     await brukare.getByTestId('add-manual-person-button').dispatchEvent('click');
 
     await manuallyAddStakeholder(page);
@@ -190,7 +194,7 @@ test.describe('Register new errand page', () => {
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
 
     //Övriga parter
-    const ovrigaParter = disclosureByTitle(page, 'Övriga parter');
+    const ovrigaParter = sectionByTitle(page, 'Övriga parter');
     await ovrigaParter.getByTestId('add-manual-person-button').dispatchEvent('click');
 
     await manuallyAddStakeholder(page);
@@ -218,7 +222,7 @@ test.describe('Register new errand page', () => {
     await completeRequiredErrandForm(page);
 
     //Brukare
-    const brukare = disclosureByTitle(page, 'Brukare');
+    const brukare = sectionByTitle(page, 'Enskild brukare');
     await addStakeholder(page, brukare, 'PRIMARY');
     await expect(brukare.getByTestId('edit-card-button')).toBeVisible();
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
@@ -281,7 +285,7 @@ test.describe('Register new errand page', () => {
     await completeRequiredErrandForm(page);
 
     //Övriga parter
-    const ovrigaParter = disclosureByTitle(page, 'Övriga parter');
+    const ovrigaParter = sectionByTitle(page, 'Övriga parter');
     await addEmployeeStakeholder(page, ovrigaParter, 'CONTACT');
     await expect(ovrigaParter.getByTestId('edit-card-button')).toBeVisible();
     await expect(ovrigaParter.getByTestId('remove-card-button')).toBeVisible();
@@ -338,7 +342,7 @@ test.describe('Register new errand page', () => {
   });
 
   test('Reporter information should be displayed', async ({ page }) => {
-    const rapportor = disclosureByTitle(page, 'Rapportör');
+    const rapportor = sectionByTitle(page, 'Rapportör');
     const stakeholderCard = rapportor.getByTestId('stakeholder-card');
     await expect(stakeholderCard.getByTestId('stakeholder-role')).toContainText('Rapportör');
     await expect(stakeholderCard.getByTestId('stakeholder-title')).toContainText(mockReporterStakeholder.title ?? '');
@@ -357,6 +361,91 @@ test.describe('Register new errand page', () => {
     await expect(rapportor.getByTestId('edit-card-button')).toBeVisible();
     await expect(rapportor.getByTestId('remove-card-button')).toHaveCount(0);
     await expect(rapportor.getByTestId('add-manual-person-button')).toHaveCount(0);
+  });
+
+  test('Sections are ordered with the reporter first and Brukare follows the event scope', async ({ page }) => {
+    // Rapportören står först, och brukaren finns inte alls innan händelsen berör en
+    // enskild brukare. Uppgifter kring avvikelsen renderas som schemaformulär med egna
+    // underrubriker och ingår därför inte i listan.
+    await expect(page.locator('section > h2')).toHaveText(['Rapportör', 'Om ärendet', 'Övriga parter']);
+
+    await page.getByTestId('event-concerns-individual').check();
+    await expect(page.locator('section > h2')).toHaveText([
+      'Rapportör',
+      'Om ärendet',
+      'Enskild brukare',
+      'Övriga parter',
+    ]);
+
+    await page.getByTestId('event-concerns-group-activity').check();
+    await expect(sectionByTitle(page, 'Enskild brukare')).toHaveCount(0);
+  });
+
+  test('Event scope offers only the two remaining options and each event type explains itself', async ({ page }) => {
+    await expect(page.getByTestId('event-concerns-other')).toHaveCount(0);
+    await expect(page.getByTestId('event-concerns-group').getByRole('radio')).toHaveCount(2);
+
+    await expect(
+      page.getByText(
+        'Rapportören är den person som anmäler händelsen och är kontaktperson för ärendet. Om du rapporterar åt en kollega, markera rutan nedan och ange kollegans uppgifter.'
+      )
+    ).toBeVisible();
+
+    // Hjälptexten för Om ärendet står före radioknapparna, och båda fälten har sina rubriker
+    const aboutDescription = page.getByText('Ange vilken typ av händelse det gäller och vem eller vilka som berörs.');
+    await expect(aboutDescription).toBeVisible();
+    // Etiketterna matchas via klassen, eftersom obligatoriska fält får en asterisk efter texten
+    const formLabels = page.locator('.sk-form-label');
+    await expect(formLabels.filter({ hasText: 'Typ av händelse' })).toBeVisible();
+    await expect(formLabels.filter({ hasText: 'Vem eller vilka berör händelsen?' })).toBeVisible();
+
+    const aboutDescriptionBox = await aboutDescription.boundingBox();
+    const eventTypeGroupBox = await page.getByTestId('event-type-group').boundingBox();
+    if (!aboutDescriptionBox || !eventTypeGroupBox) throw new Error('Saknar mått för hjälptext eller radiogrupp');
+    expect(aboutDescriptionBox.y).toBeLessThan(eventTypeGroupBox.y);
+
+    // Båda förklaringarna syns samtidigt, så typerna går att jämföra innan valet görs.
+    const deviationDescription = page.getByText(
+      'Något har inte blivit som det var tänkt eller planerat i verksamheten. Gäller inom alla områden SoL, LSS och HSL.'
+    );
+    const misconductDescription = page.getByText(
+      'En brist eller händelse som medfört allvarlig risk för den enskildes liv, säkerhet och hälsa.'
+    );
+    await expect(deviationDescription).toBeVisible();
+    await expect(misconductDescription).toBeVisible();
+
+    // Designsystemets etikett har fast höjd. Utan höjdöverstyrningen lägger sig
+    // alternativens textblock över varandra i stället för att staplas.
+    const deviationBox = await deviationDescription.boundingBox();
+    const misconductBox = await misconductDescription.boundingBox();
+    if (!deviationBox || !misconductBox) throw new Error('Saknar mått för hjälptexterna');
+    expect(deviationBox.y + deviationBox.height).toBeLessThanOrEqual(misconductBox.y);
+  });
+
+  test('Sections are plain headings without disclosures or icons', async ({ page }) => {
+    await page.getByTestId('event-concerns-individual').check();
+
+    // Inga hopfällbara avsnitt kvar, varken de handkodade eller schemaformulärets
+    await expect(page.locator('.sk-disclosure')).toHaveCount(0);
+
+    // Rubrikerna är kvar och innehållet syns utan att något behöver fällas ut
+    const rapportor = sectionByTitle(page, 'Rapportör');
+    await expect(rapportor.getByRole('heading', { name: 'Rapportör', exact: true })).toBeVisible();
+    await expect(rapportor.getByTestId('stakeholder-card')).toBeVisible();
+    await expect(sectionByTitle(page, 'Enskild brukare').getByTestId('add-manual-person-button')).toBeVisible();
+
+    // Ikonerna satt i disclosure-huvudet; inga svg:er ska ligga kvar bredvid rubrikerna
+    await expect(rapportor.locator('h2 svg')).toHaveCount(0);
+    await expect(page.locator('section > h2 svg')).toHaveCount(0);
+  });
+
+  test('The submitted report page leads back to the overview', async ({ page }) => {
+    await completeRequiredErrandForm(page);
+    await registerErrandAndExpectDraft(page, 1);
+
+    await page.getByTestId('back-to-overview').click();
+
+    await expect(page).toHaveURL(/\/oversikt$/);
   });
 
   // TODO: Add test for registering complete errand when frontend functionality is ready

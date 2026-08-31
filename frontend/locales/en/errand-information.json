@@ -10,6 +10,11 @@
   "register": "Submit",
   "no_errands": "There are no cases to display",
   "errand": "Case: ",
+  "new_report": "New report",
+  "submitted": {
+    "title": "The report has been submitted.",
+    "back_to_overview": "Back to overview"
+  },
   "draft": "Draft: ",
   "search": {
     "PERSON": "Search by personal identity number",
@@ -23,16 +28,17 @@
   },
   "about": {
     "title": "About the case",
-    "event_type_label": "Select event type",
+    "description": "State what kind of event it concerns and who is affected.",
+    "event_type_label": "Type of event",
     "event_type_deviation": "Deviation",
+    "event_type_deviation_description": "Something has not turned out as intended or planned in the operation. Applies within all areas: SoL, LSS and HSL.",
     "event_type_misconduct": "Misconduct",
+    "event_type_misconduct_description": "A shortcoming or event that has caused a serious risk to the individual's life, safety and health.",
     "misconduct_alert_title": "Misconduct",
     "misconduct_alert_description": "The case is sent to an independent investigator. Your manager is informed about the case but does not decide the outcome.",
-    "event_concerns_label": "The event concerns",
+    "event_concerns_label": "Who is affected by the event?",
     "event_concerns_individual": "An individual client",
     "event_concerns_group": "Group/the entire operation",
-    "event_concerns_other": "Other",
-    "event_concerns_describe_note": "(Describe further in the \"What happened?\" section)",
     "event_type_required": "Select an event type",
     "event_concerns_required": "Select what the event concerns",
     "event_concerns_group_facility_required": "Select a location where the deviation occurred when the event concerns a group/the entire operation",
@@ -40,13 +46,11 @@
   },
   "reporter": {
     "title": "Reporter",
-    "description": "The reporter is the person who initiated the case and our primary contact while the case is being processed. If you are reporting on behalf of another colleague, add that person under other reporter."
+    "description": "The reporter is the person who reports the event and is the contact person for the case. If you are reporting on behalf of a colleague, tick the box below and enter your colleague's details."
   },
   "user": {
-    "title": "Client",
-    "description": "A client is the individual affected by the case.",
-    "not_required_title": "No client is needed for this case",
-    "not_required_description": "Since the event does not concern an individual client, you do not need to specify a client. You can continue to the next step."
+    "title": "Individual client",
+    "description": "A client is the individual affected by the case."
   },
   "other_reporter": {
     "title": "Other reporter",
@@ -106,8 +110,6 @@
   "read_only": {
     "notice": "The errand has been submitted and can no longer be changed."
   },
-  "basic_information_heading": "1. Basic information",
-  "errand_details_heading": "2. Case details",
   "wizard": {
     "step_indicator": "Step {{current}}/{{total}}",
     "next": "Next",

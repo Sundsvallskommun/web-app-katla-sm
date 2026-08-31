@@ -13,9 +13,12 @@ import {
 } from './constants';
 import { emptyRoute, jsonRoute } from './routes';
 
-/** Hittar disclosure-sektionen med angiven rubrik, motsvarar Cypress .contains().closest('.sk-disclosure') */
-export const disclosureByTitle = (page: Page, title: string): Locator =>
-  page.locator('.sk-disclosure').filter({ has: page.locator('.sk-disclosure-header-title', { hasText: title }) });
+/**
+ * Hittar avsnittet med angiven rubrik. Rubriken matchas exakt, eftersom "Rapportör" annars
+ * även träffar "Annan rapportör" och locatorn tyst pekar på två avsnitt.
+ */
+export const sectionByTitle = (page: Page, title: string): Locator =>
+  page.locator('section').filter({ has: page.getByRole('heading', { name: title, exact: true }) });
 
 /**
  * Knapparna i sök-/formulärsektionerna täcks av en transparent .sk-form-control-wrapper

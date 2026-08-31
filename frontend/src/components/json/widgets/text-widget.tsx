@@ -2,7 +2,7 @@
 import type { WidgetProps } from '@rjsf/utils';
 import { Input } from '@sk-web-gui/react';
 
-import { getCommonProps, getWidgetOptions } from './types';
+import { getCommonProps, getWidgetOptions, requiredProps } from './types';
 
 const DEFAULT_CLASS = 'w-full';
 
@@ -19,7 +19,7 @@ export function TextWidget(props: WidgetProps) {
       value={(value as string) ?? ''}
       disabled={disabled}
       readOnly={readonly}
-      required={required}
+      {...requiredProps(required)}
       aria-describedby={describedBy}
       aria-invalid={invalid}
       onBlur={onBlur}

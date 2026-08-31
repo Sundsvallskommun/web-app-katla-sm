@@ -88,3 +88,16 @@ export function stripHtml(html: string): string {
   }
   return result.trim();
 }
+
+/**
+ * Märker fältet som obligatoriskt för hjälpmedel utan att sätta HTML-attributet `required`.
+ *
+ * Designsystemet ritar röd ram på både `[aria-invalid="true"]` och webbläsarens `:invalid`.
+ * Ett tomt `required`-fält är `:invalid` redan vid rendering — `noHtml5Validate` stänger av
+ * valideringen vid submit men inte pseudoklassen — så fältet såg felmarkerat ut innan
+ * användaren rört det. Valideringen sköts ändå av schemavalidatorn, och stjärnan i etiketten
+ * kommer från FormControl, så ingetdera går förlorat.
+ *
+ * `required: false` skickas explicit: utan det ärver kontrollen `required` från FormControl.
+ */
+export const requiredProps = (required: boolean) => ({ required: false, 'aria-required': required });

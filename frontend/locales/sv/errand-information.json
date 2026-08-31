@@ -10,6 +10,11 @@
   "register": "Skicka",
   "no_errands": "Det finns inga ärenden att visa",
   "errand": "Ärende: ",
+  "new_report": "Ny rapport",
+  "submitted": {
+    "title": "Rapporten är inskickad.",
+    "back_to_overview": "Tillbaka till översikt"
+  },
   "draft": "Utkast: ",
   "search": {
     "PERSON": "Sök på personnummer",
@@ -23,16 +28,17 @@
   },
   "about": {
     "title": "Om ärendet",
-    "event_type_label": "Välj händelsetyp",
+    "description": "Ange vilken typ av händelse det gäller och vem eller vilka som berörs.",
+    "event_type_label": "Typ av händelse",
     "event_type_deviation": "Avvikelse",
+    "event_type_deviation_description": "Något har inte blivit som det var tänkt eller planerat i verksamheten. Gäller inom alla områden SoL, LSS och HSL.",
     "event_type_misconduct": "Missförhållande",
+    "event_type_misconduct_description": "En brist eller händelse som medfört allvarlig risk för den enskildes liv, säkerhet och hälsa.",
     "misconduct_alert_title": "Missförhållande",
     "misconduct_alert_description": "Ärendet skickas till en oberoende utredare. Din chef får veta om ärendet men beslutar inte om resultatet.",
-    "event_concerns_label": "Händelsen berör",
+    "event_concerns_label": "Vem eller vilka berör händelsen?",
     "event_concerns_individual": "Enskild brukare",
     "event_concerns_group": "Grupp/hela verksamheten",
-    "event_concerns_other": "Annat",
-    "event_concerns_describe_note": "(Beskriv mer i avsnittet \"Vad har hänt?\")",
     "event_type_required": "Välj en händelsetyp",
     "event_concerns_required": "Välj vad händelsen berör",
     "event_concerns_group_facility_required": "Välj en plats där avvikelsen inträffat när händelsen berör grupp/hela verksamheten",
@@ -40,13 +46,11 @@
   },
   "reporter": {
     "title": "Rapportör",
-    "description": "Rapportören är den person som initierat ärendet och vår primära kontakt när ärendet handläggs. Om du rapporterar åt en annan kollega, lägger du den personen under annan rapportör."
+    "description": "Rapportören är den person som anmäler händelsen och är kontaktperson för ärendet. Om du rapporterar åt en kollega, markera rutan nedan och ange kollegans uppgifter."
   },
   "user": {
-    "title": "Brukare",
-    "description": "En brukare är den individ som berörs av ärendet.",
-    "not_required_title": "Brukare behövs inte för detta ärende",
-    "not_required_description": "Eftersom händelsen inte berör en enskild brukare behöver du inte ange en brukare. Du kan gå vidare till nästa steg."
+    "title": "Enskild brukare",
+    "description": "En brukare är den individ som berörs av ärendet."
   },
   "other_reporter": {
     "title": "Annan rapportör",
@@ -106,8 +110,6 @@
   "read_only": {
     "notice": "Ärendet är inlämnat och kan inte längre ändras."
   },
-  "basic_information_heading": "1. Grundinformation",
-  "errand_details_heading": "2. Ärendeuppgifter",
   "wizard": {
     "step_indicator": "Steg {{current}}/{{total}}",
     "next": "Nästa",

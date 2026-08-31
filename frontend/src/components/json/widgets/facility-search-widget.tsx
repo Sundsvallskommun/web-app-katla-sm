@@ -19,10 +19,13 @@ import {
   PlaceNode,
   placeParentName,
 } from '@utils/label-structure';
-import { Check, Pen } from 'lucide-react';
+// Check används av det bortkommenterade förhandsvalet nedan
+import { Pen } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
+
+import { requiredProps } from './types';
 
 /** Fler underenheter än så blir en ohanterlig radioknappsgrupp — då används sökning istället */
 const MAX_RADIO_SUB_PLACES = 6;
@@ -44,9 +47,10 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
   const selectablePlaceNodes = useMemo(() => placeNodes.filter((node) => !hasSubPlaces(node)), [placeNodes]);
 
   const [placeSearchValue, setPlaceSearchValue] = useState('');
-  const [suggestedNode, setSuggestedNode] = useState<PlaceNode | null>(null);
+  // Förhandsvalet är bortkommenterat tills vidare – användaren söker alltid fram platsen själv.
+  // const [suggestedNode, setSuggestedNode] = useState<PlaceNode | null>(null);
   const employmentMatchRef = useRef<{ node: PlaceNode; employment: UserEmploymentDTO } | null>(null);
-  const prefillDoneRef = useRef(false);
+  const employmentLookupDoneRef = useRef(false);
 
   const isEditable = !disabled && !readonly;
 
@@ -98,28 +102,28 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
     [onChange]
   );
 
-  // Föreslå plats utifrån användarens anställning — men sätt den inte som vald. Platsvalet styr
-  // vilka som får se ärendet, och den som rapporterar åt en annan verksamhet än sin egen ska inte
-  // kunna skicka in på en plats hen aldrig tagit ställning till. Anställningen används bara för att
-  // hitta rätt nod i labelstrukturen; har noden underenheter måste användaren välja en av dem.
+  // Slår upp användarens anställning i labelstrukturen. Den föreslås inte längre som plats —
+  // förhandsvalet är bortkommenterat nedan — men uppslaget behövs ändå: selectPlace fyller i
+  // orgId och enhetschef ur anställningen när användaren väljer en plats i sin egen organisation.
+  // Tas det bort sparas ärendet utan enhetschef.
   useEffect(() => {
-    if (!isEditable || prefillDoneRef.current || placeNodes.length === 0) return;
+    if (!isEditable || employmentLookupDoneRef.current || placeNodes.length === 0) return;
     if (formData?.orgName) {
-      prefillDoneRef.current = true;
+      employmentLookupDoneRef.current = true;
       return;
     }
 
-    prefillDoneRef.current = true;
+    employmentLookupDoneRef.current = true;
 
-    const suggestFromEmployment = async () => {
+    const lookUpEmployment = async () => {
       try {
         const employments = await getUserEmployments();
-        // Backend sorterar huvudanställningen först, så den föreslås före eventuella sidotjänster.
+        // Backend sorterar huvudanställningen först, så den matchas före eventuella sidotjänster.
         for (const employment of employments) {
           const node = findPlaceNode(placeNodes, employment.orgName);
           if (node) {
             employmentMatchRef.current = { node, employment };
-            setSuggestedNode(node);
+            // setSuggestedNode(node);
             return;
           }
         }
@@ -128,20 +132,20 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
       }
     };
 
-    void suggestFromEmployment();
+    void lookUpEmployment();
   }, [isEditable, placeNodes, formData?.orgName]);
 
-  const suggestedPlacePresentation = useMemo(
-    () => (suggestedNode ? getPlaceSelectionPresentation(suggestedNode) : undefined),
-    [suggestedNode]
-  );
+  // const suggestedPlacePresentation = useMemo(
+  //   () => (suggestedNode ? getPlaceSelectionPresentation(suggestedNode) : undefined),
+  //   [suggestedNode]
+  // );
 
-  const handleAcceptSuggestion = useCallback(() => {
-    if (suggestedNode) {
-      selectPlace(suggestedNode);
-      setSuggestedNode(null);
-    }
-  }, [selectPlace, suggestedNode]);
+  // const handleAcceptSuggestion = useCallback(() => {
+  //   if (suggestedNode) {
+  //     selectPlace(suggestedNode);
+  //     setSuggestedNode(null);
+  //   }
+  // }, [selectPlace, suggestedNode]);
 
   const handleSelectPlace = useCallback(
     (key: string) => {
@@ -158,15 +162,12 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
     setPlaceSearchValue('');
     // Förslaget kommer inte tillbaka. Har användaren aktivt rensat platsen är anställningen
     // inte längre en rimlig gissning.
-    setSuggestedNode(null);
+    // setSuggestedNode(null);
   }, [onChange]);
-
-  const sectionTitle = <h2 className="hidden md:block text-xl font-bold mb-6">{t('facility_search.section_title')}</h2>;
 
   if (!metadata) {
     return (
       <div className={className}>
-        {sectionTitle}
         <p className="text-text-secondary">{t('facility_search.loading')}</p>
       </div>
     );
@@ -175,7 +176,6 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
   if (placeNodes.length === 0) {
     return (
       <div className={className}>
-        {sectionTitle}
         <p className="text-error" data-cy="facility-structure-missing">
           {t('facility_search.no_place_structure')}
         </p>
@@ -185,17 +185,16 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
 
   return (
     <div className={className}>
-      {sectionTitle}
-
       {!selectedNode && (
         <FormControl disabled={!isEditable} invalid={invalid} required={required} className="w-full">
+          <span className="text-dark-secondary mb-8">{t('facility_search.description')}</span>
           <FormLabel id={searchLabelId} htmlFor={id} className="font-bold">
-            {t('facility_search.add_label')}
+            {t('facility_search.search_label')}
           </FormLabel>
           <Combobox
             id={`${id}__combobox`}
             className="w-full"
-            size="lg"
+            size="md"
             value=""
             autofilter={false}
             aria-labelledby={searchLabelId}
@@ -214,7 +213,7 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
               className="w-full"
               disabled={!isEditable}
               readOnly={!!readonly}
-              required={required}
+              {...requiredProps(Boolean(required))}
               aria-labelledby={searchLabelId}
               aria-describedby={describedBy}
               aria-invalid={invalid}
@@ -251,10 +250,10 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
               })}
             </Combobox.List>
           </Combobox>
-          <span className="text-small text-text-secondary mt-4">{t('facility_search.label_hint')}</span>
         </FormControl>
       )}
 
+      {/* Förhandsvalet av plats är bortkommenterat tills vidare – användaren söker fram platsen själv.
       {!selectedNode && suggestedNode && (
         <div className="border-1 rounded-12 bg-background-content w-full mt-16" data-cy="facility-suggestion">
           <div className="rounded-t-12 bg-juniskar-background-200 px-16 py-12">
@@ -291,6 +290,7 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
           </div>
         </div>
       )}
+      */}
 
       {selectedNode && (
         <div className="border-1 rounded-12 bg-background-content w-full mt-16" data-cy="facility-card">

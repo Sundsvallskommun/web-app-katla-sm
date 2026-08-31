@@ -1,7 +1,7 @@
 import SchemaForm from '@components/json/schema/schema-form.component';
 import type { LabelDTO, UserEmploymentDTO } from '@data-contracts/backend/data-contracts';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -118,11 +118,35 @@ afterEach(() => {
 });
 
 /**
+ * Förhandsvalet är bortkommenterat i FacilitySearchWidget tills vidare, så förslaget ska inte
+ * längre nå användaren. Anställningen slås fortfarande upp, eftersom platsvalet hämtar orgId
+ * och enhetschef därifrån — den delen syns i selectPlace, inte här.
+ */
+describe('FacilitySearchWidget employment suggestion is disabled', () => {
+  it('never renders the suggestion, even when the employment matches a place', async () => {
+    employmentsMock.mockResolvedValue([employment('Anläggning utan avdelning', true)]);
+
+    renderForm('facility-suggestion-disabled:1');
+
+    // Sökfältet är den observerbara readiness-gränsen; förslaget hann rendera innan det om det fanns.
+    expect(await screen.findByRole('textbox', { name: 'facility_search.search_label' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(employmentsMock).toHaveBeenCalled();
+    });
+
+    expect(cy('facility-suggestion')).not.toBeInTheDocument();
+    expect(cy('facility-card')).not.toBeInTheDocument();
+  });
+});
+
+/**
  * Platsvalet avgör vilka som får se ärendet. Den som rapporterar åt en annan verksamhet än
  * sin egen ska därför inte kunna skicka in på en plats som fyllts i åt hen — förslaget måste
  * bekräftas aktivt innan det blir ett värde.
+ *
+ * Testerna är pausade tillsammans med förhandsvalet och tas i bruk igen när det återaktiveras.
  */
-describe('FacilitySearchWidget employment suggestion', () => {
+describe.skip('FacilitySearchWidget employment suggestion', () => {
   it('offers the employment as a suggestion without selecting it', async () => {
     employmentsMock.mockResolvedValue([employment('Anläggning utan avdelning', true)]);
 

@@ -120,7 +120,7 @@ vi.mock('@layouts/errand-button-group.component', async () => {
 });
 
 vi.mock('@sk-web-gui/react', () => {
-  const Tabs = Object.assign(({ children }: PropsWithChildren) => <div>{children}</div>, {
+  const Tabs = Object.assign(({ children }: PropsWithChildren) => <div data-testid="errand-tabs">{children}</div>, {
     Button: ({ children }: PropsWithChildren) => <div>{children}</div>,
     Content: ({ children }: PropsWithChildren) => <div>{children}</div>,
     Item: ({ children }: PropsWithChildren) => <div>{children}</div>,
@@ -331,6 +331,24 @@ describe('errand layout route identity', () => {
     expect(mocks.register).toHaveBeenCalledWith(expectedDefaults);
     expect(mocks.wizardReset).toHaveBeenCalledTimes(1);
     expect(getErrandMock).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * Registreringen har bara ett innehåll, så fliklisten blir en ensam flik som inte leder
+   * någonstans. Ärendevyn behåller den — där tillkommer meddelanden och bilagor.
+   */
+  it('drops the tab list on the registration route but keeps it for an existing errand', async () => {
+    getErrandMock.mockResolvedValueOnce({ id: 'id-a', errandNumber: 'ERRAND-A', status: 'DRAFT', jsonParameters: [] });
+
+    const view = render(<ErrandLayoutContent>registration-content</ErrandLayoutContent>);
+    expect(await screen.findByTestId('errand-tabs')).toBeInTheDocument();
+
+    mocks.pathname.value = '/arende/registrera';
+    mocks.params.value.errandnumber = undefined;
+    view.rerender(<ErrandLayoutContent>registration-content</ErrandLayoutContent>);
+
+    expect(screen.queryByTestId('errand-tabs')).not.toBeInTheDocument();
+    expect(screen.getByText('registration-content')).toBeInTheDocument();
   });
 
   it('does not process a response after the current route owner unmounts', async () => {

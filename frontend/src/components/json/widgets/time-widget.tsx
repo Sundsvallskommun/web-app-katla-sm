@@ -2,7 +2,7 @@
 import type { WidgetProps } from '@rjsf/utils';
 import { Input } from '@sk-web-gui/react';
 
-import { getCommonProps } from './types';
+import { getCommonProps, requiredProps } from './types';
 
 const DEFAULT_CLASS = 'w-full';
 
@@ -29,7 +29,7 @@ export function TimeWidget(props: WidgetProps) {
       value={(value as string) ?? ''}
       disabled={disabled}
       readOnly={readonly}
-      required={required}
+      {...requiredProps(required)}
       aria-describedby={describedBy}
       aria-invalid={invalid}
       onBlur={onBlur}

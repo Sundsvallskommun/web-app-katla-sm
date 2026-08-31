@@ -1,6 +1,5 @@
-import { ErrandDisclosure } from '@components/disclosure/errand-information-disclosure.component';
+import { ErrandSection } from '@components/errand-sections/errand-section.component';
 import { StakeholderList } from '@components/misc/stakeholder.component';
-import { User as UserIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export const OtherPartiesContent: React.FC = () => {
@@ -18,8 +17,8 @@ export const OtherParties: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <ErrandDisclosure header={t('errand-information:other_parties.title')} icon={<UserIcon />}>
+    <ErrandSection header={t('errand-information:other_parties.title')}>
       <OtherPartiesContent />
-    </ErrandDisclosure>
+    </ErrandSection>
   );
 };

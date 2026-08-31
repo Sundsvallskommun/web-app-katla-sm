@@ -1,11 +1,9 @@
 'use client';
 import { ErrandContentLock } from '@components/errand-content-lock/errand-content-lock.component';
 import type { ErrorSchema, ObjectFieldTemplateProps, RJSFSchema, UiSchema } from '@rjsf/utils';
-import { Checkbox, Disclosure, Divider, Label } from '@sk-web-gui/react';
-import { icons } from 'lucide-react';
-import React, { useState } from 'react';
+import { Divider, Label } from '@sk-web-gui/react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { appConfig } from 'src/config/appconfig';
 
 interface ConditionalRule {
   if: {
@@ -26,9 +24,7 @@ interface RowDefinition {
 interface SectionDefinition {
   id: string;
   title: string;
-  icon?: string;
   fields: string[];
-  defaultOpen?: boolean;
 }
 
 interface FormContext {
@@ -102,23 +98,6 @@ function getSectionDefinitions(uiSchema: UiSchema | undefined): SectionDefinitio
 }
 
 /**
- * UI-schemat använder Lucides stabila kebab-case-namn medan lucide-reacts
- * ikonregister använder PascalCase som objektnycklar.
- */
-function getSectionIcon(iconName: string | undefined) {
-  if (!iconName) return undefined;
-
-  const iconKey = iconName
-    .trim()
-    .split('-')
-    .filter(Boolean)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-    .join('') as keyof typeof icons;
-
-  return icons[iconKey];
-}
-
-/**
  * Fältet kan ha fel både på sig självt och i underliggande objekt, så hela grenen gås igenom.
  */
 function containsErrors(node: unknown): boolean {
@@ -143,67 +122,42 @@ function sectionHasErrors(fieldNames: string[], errorSchema: ErrorSchema | undef
 type SectionStatus = 'error' | 'complete';
 
 /**
- * Section component with completion checkbox
+ * Formulärets avsnitt: rubrik med fälten under. Avsnitten går inte att fälla ihop, så
+ * statusetiketten sitter kvar bredvid rubriken där den syns medan fälten fylls i.
  */
-interface SectionDisclosureProps {
+interface FormSectionProps {
   section: SectionDefinition;
   status?: SectionStatus;
+  /** Avdelaren skiljer avsnittet från nästa. Sista avsnittet har inget under sig att skilja från. */
+  showDivider: boolean;
   children: React.ReactNode;
 }
 
-function SectionDisclosure({ section, status, children }: SectionDisclosureProps) {
+function FormSection({ section, status, showDivider, children }: FormSectionProps) {
   const { t } = useTranslation('forms');
-  // Öppen om inget annat sägs, samma standard som ErrandDisclosure. Sätt defaultOpen:false
-  // i ui:sections för att stänga en enskild sektion.
-  const [open, setOpen] = useState(section.defaultOpen ?? true);
-  const [doneMark, setDoneMark] = useState(false);
-  const SectionIcon = getSectionIcon(section.icon);
-
-  const handleDoneMarkChange = () => {
-    const newDoneMark = !doneMark;
-    setDoneMark(newDoneMark);
-
-    if (newDoneMark) {
-      setOpen(false);
-    }
-  };
 
   return (
-    <Disclosure variant="alt" className="w-full" open={open} onToggleOpen={setOpen}>
-      <Disclosure.Header>
-        {SectionIcon && <Disclosure.Icon icon={React.createElement(SectionIcon)} />}
+    <section className="w-full">
+      <div className="flex flex-row items-center justify-between gap-16 py-8">
         {/* min-w-0 låter rubriken krympa i stället för att trycka ut statusetiketten över kanten */}
-        <Disclosure.Title className="min-w-0">{section.title}</Disclosure.Title>
+        <h3 className="text-h4-md text-dark-primary min-w-0">{section.title}</h3>
         {status && (
           <Label
             inverted
             rounded
             color={status === 'error' ? 'error' : 'gronsta'}
-            className="sk-disclosure-label whitespace-nowrap"
+            className="whitespace-nowrap"
             data-cy={`section-status-${section.id}`}
           >
             {t(status === 'error' ? 'section_incomplete' : 'section_complete')}
           </Label>
         )}
-        {doneMark && status !== 'complete' && (
-          <Label inverted rounded color="gronsta" className="sk-disclosure-label whitespace-nowrap">
-            {t('section_complete')}
-          </Label>
-        )}
-        <Disclosure.Button />
-      </Disclosure.Header>
-      <Disclosure.Content>
-        <ErrandContentLock>
-          {children}
-          <Divider className="mt-16" />
-          {appConfig.features.disclosureDoneMark && (
-            <Checkbox className="mt-16" onClick={handleDoneMarkChange} checked={doneMark}>
-              {t('errand-information:section.mark_complete')}
-            </Checkbox>
-          )}
-        </ErrandContentLock>
-      </Disclosure.Content>
-    </Disclosure>
+      </div>
+      <ErrandContentLock>
+        {children}
+        {showDivider && <Divider className="mt-16" />}
+      </ErrandContentLock>
+    </section>
   );
 }
 
@@ -260,7 +214,7 @@ function renderFields(
 
 /**
  * ObjectFieldTemplate that hides fields based on if/then conditions in the schema
- * and supports ui:rows for horizontal field grouping and ui:sections for Disclosure grouping
+ * and supports ui:rows for horizontal field grouping and ui:sections for heading grouping
  */
 export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   const { properties, uiSchema, errorSchema } = props;
@@ -315,6 +269,12 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   // Track rendered rows across all sections
   const renderedRows = new Set<string>();
 
+  // Tomma avsnitt hoppas över, så sista avdelaren hör till sista avsnittet som faktiskt
+  // renderas — inte till sista i schemat.
+  const lastRenderedSectionId = sections
+    .filter((section) => order.some((field) => section.fields.includes(field) && visibleFields.has(field)))
+    .at(-1)?.id;
+
   return (
     <div className="flex flex-col gap-32">
       {/* Render sections */}
@@ -347,11 +307,16 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
           : 'complete';
 
         return (
-          <SectionDisclosure key={section.id} section={section} status={status}>
+          <FormSection
+            key={section.id}
+            section={section}
+            status={status}
+            showDivider={section.id !== lastRenderedSectionId || unsectionedFields.length > 0}
+          >
             <div className="flex flex-col gap-32 py-16">
               {renderFields(sectionFieldsInOrder, properties, visibleFields, rows, rowFieldNames, renderedRows)}
             </div>
-          </SectionDisclosure>
+          </FormSection>
         );
       })}
 

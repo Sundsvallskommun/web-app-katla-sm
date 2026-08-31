@@ -411,10 +411,10 @@ describe('SchemaForm accessibility contract', () => {
     render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
 
     // i18n-mocken ekar nyckeln, så det är nyckeln som blir fältets tillgängliga namn här.
-    const input = screen.getByRole('textbox', { name: 'facility_search.add_label' });
+    const input = screen.getByRole('textbox', { name: 'facility_search.search_label' });
     const searchLabel = document.querySelector(`label[for="${input.id}"]`);
 
-    expect(searchLabel).toHaveTextContent('facility_search.add_label');
+    expect(searchLabel).toHaveTextContent('facility_search.search_label');
     expect(input).toHaveAttribute('aria-labelledby', searchLabel?.id);
     expect(input).toHaveAttribute('aria-describedby', expect.stringContaining(descriptionId(input.id)));
     const list = document.querySelector('.sk-form-combobox-list');
@@ -509,7 +509,7 @@ describe('SchemaForm accessibility contract', () => {
 
     await user.click(changeButton);
 
-    expect(await screen.findByRole('textbox', { name: 'facility_search.add_label' })).toBeInTheDocument();
+    expect(await screen.findByRole('textbox', { name: 'facility_search.search_label' })).toBeInTheDocument();
   });
 
   it('visar bara anläggningen för ett val på nivå 6 utan avdelning', () => {

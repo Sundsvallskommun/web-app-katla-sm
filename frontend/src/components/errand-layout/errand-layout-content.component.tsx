@@ -34,11 +34,16 @@ const ReporterInit: React.FC = () => {
 
 const FormSchema = yup.object({}).required();
 const REGISTER_ROUTE_IDENTITY = 'new-errand';
+const SUBMITTED_ROUTE_IDENTITY = 'submitted-errand';
 const INVALID_ROUTE_IDENTITY = 'invalid-errand-route';
 const REGISTER_ROUTE_PATTERN = /\/arende\/registrera\/?$/;
+// Kvittot ligger under /arende för att behålla rapporteringens sidhuvud och innehållsyta.
+// Det laddar inget ärende: rapporten är inskickad och sidan bär bara beskedet.
+const SUBMITTED_ROUTE_PATTERN = /\/arende\/inskickad\/?$/;
 
 type ErrandRoute =
   | { identity: typeof REGISTER_ROUTE_IDENTITY; kind: 'register' }
+  | { identity: typeof SUBMITTED_ROUTE_IDENTITY; kind: 'submitted' }
   | { errandNumber: string; identity: string; kind: 'existing' }
   | { identity: typeof INVALID_ROUTE_IDENTITY; kind: 'invalid' };
 
@@ -67,9 +72,20 @@ interface ErrandRouteContentProps {
 // samtidigt runt den installerade deklarationen, som inte exponerar målets props.
 const createLinkTabProps = (href: string) => ({ as: NextLink, href });
 
+/**
+ * Registreringen visar bara ett innehåll och får därför ingen fliklist — en ensam flik är
+ * en kontroll som inte leder någonstans. Kortet och innehållsytan delas med flikvyn, så
+ * att sidorna ser likadana ut när ärendet väl finns och flikarna tillkommer.
+ */
+const ERRAND_CARD_CLASS = 'border-1 rounded-12 bg-background-content mx-auto max-w-[108rem]';
+const ERRAND_PANEL_CLASS = 'pt-xl pb-64 px-16 md:px-40';
+
 const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route }) => {
   const { t } = useTranslation();
   const registerNewErrand = route.kind === 'register';
+  // Kvittot delar rapporteringens skal — sidhuvud och innehållsyta — men inga åtgärder:
+  // rapporten är inskickad, så det finns inget kvar att spara eller skicka.
+  const submittedView = route.kind === 'submitted';
   const requestedErrandNumber = route.kind === 'existing' ? route.errandNumber : null;
   const initialFocus = useRef<HTMLBodyElement>(null);
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
@@ -80,7 +96,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   const { metadataError, metadataLoadState } = useLoadMetadata();
   const metadata = useMetadataStore((state) => state.metadata);
   const [loadState, setLoadState] = useState<'error' | 'loading' | 'ready'>(
-    route.kind === 'register' ? 'ready'
+    route.kind === 'register' || route.kind === 'submitted' ? 'ready'
     : route.kind === 'invalid' ? 'error'
     : 'loading'
   );
@@ -159,11 +175,13 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   // Ett utkast är samma oavslutade arbete oavsett om det just skapats eller
   // återupptagits, och wizarden är det gränssnitt som är byggt för smal skärm.
   // Utan det här villkoret bytte ett återupptaget utkast till flikvyn på mobil.
-  const showMobileWizard = isMobile && (registerNewErrand || isDraft);
+  // Utkastets standardstatus är DRAFT, så kvittot måste undantas explicit — annars
+  // öppnas wizarden ovanpå beskedet på mobil.
+  const showMobileWizard = isMobile && !submittedView && (registerNewErrand || isDraft);
 
   const getHeaderTitle = () => {
     if (registerNewErrand) {
-      return t('filtering:new_errand');
+      return t('errand-information:new_report');
     }
     if (isDraft) {
       return `${t('errand-information:draft')} ${errandNumber}`;
@@ -204,36 +222,47 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
           {t('layout:header.goto_content')}
         </NextLink>
         {registerNewErrand && <ReporterInit />}
-        <BaseErrandLayout registerNewErrand={registerNewErrand}>
+        <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
           {showMobileWizard ?
             <MobileWizard />
           : <div className="grow shrink overflow-y-auto">
               <div className="bg-transparent">
                 <div className="mb-xl">
-                  <div className="mx-auto max-w-[108rem] flex flex-col md:flex-row justify-between pt-16 md:pt-32 pb-12 px-16 md:px-0 gap-12">
-                    <h1 className="text-h2-sm md:text-h2-lg">{getHeaderTitle()}</h1>
-                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
-                  </div>
+                  {/* Kvittot bär sitt eget besked i kortet och har inga åtgärder kvar, så hela
+                      raden med rubrik och knappar utgår där. */}
+                  {!submittedView && (
+                    <div className="mx-auto max-w-[108rem] flex flex-col md:flex-row justify-between pt-16 md:pt-32 pb-12 px-16 md:px-0 gap-12">
+                      <h1 className="text-h2-sm md:text-h2-lg">{getHeaderTitle()}</h1>
+                      <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                    </div>
+                  )}
                   <Main>
-                    <Tabs
-                      className="border-1 rounded-12 bg-background-content pt-22 pl-5 mx-auto max-w-[108rem]"
-                      tabslistClassName="border-0 -m-b-12 flex-wrap ml-10 overflow-x-auto"
-                      panelsClassName="border-t-1"
-                      size="sm"
-                    >
-                      {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
-                        return (
-                          <Tabs.Item key={tab.path}>
-                            <Tabs.Button {...createLinkTabProps(tab.path)} className="text-base whitespace-nowrap">
-                              {t(tab.labelKey)}
-                            </Tabs.Button>
-                            <Tabs.Content>
-                              <div className="pt-xl pb-64 px-16 md:px-40">{children}</div>
-                            </Tabs.Content>
-                          </Tabs.Item>
-                        );
-                      })}
-                    </Tabs>
+                    {registerNewErrand || submittedView ?
+                      // Utan rubrikraden ovanför saknar kvittot det toppavstånd raden gav,
+                      // och kortet klistrar sig mot sidhuvudet.
+                      <div className={submittedView ? `${ERRAND_CARD_CLASS} mt-16 md:mt-32` : ERRAND_CARD_CLASS}>
+                        <div className={ERRAND_PANEL_CLASS}>{children}</div>
+                      </div>
+                    : <Tabs
+                        className={`${ERRAND_CARD_CLASS} pt-22 pl-5`}
+                        tabslistClassName="border-0 -m-b-12 flex-wrap ml-10 overflow-x-auto"
+                        panelsClassName="border-t-1"
+                        size="sm"
+                      >
+                        {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
+                          return (
+                            <Tabs.Item key={tab.path}>
+                              <Tabs.Button {...createLinkTabProps(tab.path)} className="text-base whitespace-nowrap">
+                                {t(tab.labelKey)}
+                              </Tabs.Button>
+                              <Tabs.Content>
+                                <div className={ERRAND_PANEL_CLASS}>{children}</div>
+                              </Tabs.Content>
+                            </Tabs.Item>
+                          );
+                        })}
+                      </Tabs>
+                    }
                   </Main>
                 </div>
               </div>
@@ -252,6 +281,8 @@ export const ErrandLayoutContent: React.FC<{ children: React.ReactNode }> = ({ c
   let route: ErrandRoute;
   if (REGISTER_ROUTE_PATTERN.test(pathName)) {
     route = { identity: REGISTER_ROUTE_IDENTITY, kind: 'register' };
+  } else if (SUBMITTED_ROUTE_PATTERN.test(pathName)) {
+    route = { identity: SUBMITTED_ROUTE_IDENTITY, kind: 'submitted' };
   } else if (errandnumber) {
     route = { errandNumber: errandnumber, identity: `existing:${errandnumber}`, kind: 'existing' };
   } else {

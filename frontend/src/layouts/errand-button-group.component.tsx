@@ -76,7 +76,9 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       if (logout) {
         router.push(`/logout`);
       } else {
-        router.push(`/arende/${errand.errandNumber}/grundinformation`);
+        // Kvittosidan, inte ärendet: rapportören är klar och ska inte landa i ett formulär
+        // som inte längre går att ändra.
+        router.push('/arende/inskickad');
       }
     } catch (error: unknown) {
       toastMessage({

@@ -1,10 +1,9 @@
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
-import { ErrandDisclosure } from '@components/disclosure/errand-information-disclosure.component';
+import { ErrandSection } from '@components/errand-sections/errand-section.component';
 import { StakeholderList } from '@components/misc/stakeholder.component';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { Checkbox, Spinner } from '@sk-web-gui/react';
 import { getReporterStakeholder } from '@utils/stakeholder';
-import { User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -81,8 +80,8 @@ export const Reporter: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <ErrandDisclosure header={t('errand-information:reporter.title')} icon={<UserIcon />}>
+    <ErrandSection header={t('errand-information:reporter.title')}>
       <ReporterContent />
-    </ErrandDisclosure>
+    </ErrandSection>
   );
 };
