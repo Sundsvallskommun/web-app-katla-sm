@@ -4,7 +4,7 @@ import { ErrandFormSections } from '@components/errand-pages/errand-form-section
 
 export const RegisterErrand: React.FC = () => {
   return (
-    <div className="flex flex-col gap-32">
+    <div className="flex flex-col gap-48">
       <ErrandFormSections />
     </div>
   );

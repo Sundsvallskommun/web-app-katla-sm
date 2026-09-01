@@ -1,9 +1,8 @@
 'use client';
 import { ErrandContentLock } from '@components/errand-content-lock/errand-content-lock.component';
-import type { ErrorSchema, ObjectFieldTemplateProps, RJSFSchema, UiSchema } from '@rjsf/utils';
-import { Divider, Label } from '@sk-web-gui/react';
+import { SectionHeader } from '@components/misc/section-header.component';
+import type { ObjectFieldTemplateProps, RJSFSchema, UiSchema } from '@rjsf/utils';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 
 interface ConditionalRule {
   if: {
@@ -19,18 +18,37 @@ interface ConditionalRule {
 interface RowDefinition {
   fields: string[];
   gap?: string;
+  /**
+   * Namngiven radlayout i stället för klasser i ui-schemat: Tailwind genererar bara klasser
+   * den hittar i frontendkoden, och schemat ligger i backend. "narrow" är designens tvåfältsrad
+   * med fast fältbredd, för fält som datum och tid där full bredd bara blir tomrum.
+   */
+  layout?: 'narrow';
 }
+
+const NARROW_ROW_GAP_CLASS = 'gap-40';
+/**
+ * Fälten i en smal rad ställs i linje med varandra genom att etikettblocket har plats för en
+ * rubrik med hjälptext under: 2,4rem rubrik + 0,8rem mellanrum + 1,8rem hjälptext. Fältet utan
+ * hjälptext hamnar då på samma höjd som grannens i stället för att hoppa upp till etiketten.
+ *
+ * Höjden är satt, inte växande: ett felmeddelande under fältet gör annars den kolumnen högre,
+ * och grannens etikettblock skulle svälla lika mycket och flytta ned dess fält igen.
+ */
+const NARROW_ROW_FIELD_CLASS =
+  'flex w-[32rem] max-w-full [&>.form-row]:flex [&>.form-row]:flex-col [&_.field-label-block]:min-h-[5rem]';
 
 interface SectionDefinition {
   id: string;
   title: string;
+  /** Valfri: alla avsnitt behöver inte förklaras, bara de vars innehåll inte är självklart. */
+  description?: string;
   fields: string[];
 }
 
 interface FormContext {
   originalSchema?: RJSFSchema;
   compact?: boolean;
-  validationActive?: boolean;
 }
 
 function isConditionMet(condition: ConditionalRule['if'], formData: Record<string, unknown>): boolean {
@@ -98,65 +116,22 @@ function getSectionDefinitions(uiSchema: UiSchema | undefined): SectionDefinitio
 }
 
 /**
- * Fältet kan ha fel både på sig självt och i underliggande objekt, så hela grenen gås igenom.
- */
-function containsErrors(node: unknown): boolean {
-  if (typeof node !== 'object' || node === null) return false;
-
-  const branch = node as Record<string, unknown>;
-  if (Array.isArray(branch.__errors) && branch.__errors.length > 0) return true;
-
-  return Object.entries(branch).some(([key, value]) => key !== '__errors' && containsErrors(value));
-}
-
-function sectionHasErrors(fieldNames: string[], errorSchema: ErrorSchema | undefined): boolean {
-  if (!errorSchema) return false;
-  const errors = errorSchema as Record<string, unknown>;
-  return fieldNames.some((fieldName) => containsErrors(errors[fieldName]));
-}
-
-/**
- * Avsnitten får sin status först när valideringen är igång. Innan dess vet formuläret inte
- * om ett tomt fält är ett fel eller bara något användaren inte hunnit fram till.
- */
-type SectionStatus = 'error' | 'complete';
-
-/**
- * Formulärets avsnitt: rubrik med fälten under. Avsnitten går inte att fälla ihop, så
- * statusetiketten sitter kvar bredvid rubriken där den syns medan fälten fylls i.
+ * Formulärets avsnitt: ett eget kort med rubrik och fälten under, likadant som ärendets övriga
+ * avsnitt. Felen står vid sina fält och samlat i sammanfattningen överst — avsnittet självt
+ * bär ingen status.
  */
 interface FormSectionProps {
   section: SectionDefinition;
-  status?: SectionStatus;
-  /** Avdelaren skiljer avsnittet från nästa. Sista avsnittet har inget under sig att skilja från. */
-  showDivider: boolean;
   children: React.ReactNode;
 }
 
-function FormSection({ section, status, showDivider, children }: FormSectionProps) {
-  const { t } = useTranslation('forms');
-
+function FormSection({ section, children }: FormSectionProps) {
   return (
-    <section className="w-full">
-      <div className="flex flex-row items-center justify-between gap-16 py-8">
-        {/* min-w-0 låter rubriken krympa i stället för att trycka ut statusetiketten över kanten */}
-        <h3 className="text-h4-md text-dark-primary min-w-0">{section.title}</h3>
-        {status && (
-          <Label
-            inverted
-            rounded
-            color={status === 'error' ? 'error' : 'gronsta'}
-            className="whitespace-nowrap"
-            data-cy={`section-status-${section.id}`}
-          >
-            {t(status === 'error' ? 'section_incomplete' : 'section_complete')}
-          </Label>
-        )}
+    <section className="bg-background-color-mixin-1 rounded-utility w-full p-16 md:p-32">
+      <div className="mb-32">
+        <SectionHeader as="h3" title={section.title} description={section.description} />
       </div>
-      <ErrandContentLock>
-        {children}
-        {showDivider && <Divider className="mt-16" />}
-      </ErrandContentLock>
+      <ErrandContentLock>{children}</ErrandContentLock>
     </section>
   );
 }
@@ -189,12 +164,22 @@ function renderFields(
       const visibleRowFields = row.fields.filter((f) => visibleFields.has(f));
       if (visibleRowFields.length === 0) return null;
 
+      const narrow = row.layout === 'narrow';
+      const rowGapClass =
+        compact ? 'flex-col gap-32'
+        : narrow ? NARROW_ROW_GAP_CLASS
+        : (row.gap ?? '') || 'gap-32';
+      const rowFieldClass =
+        compact ? ''
+        : narrow ? NARROW_ROW_FIELD_CLASS
+        : 'flex-1';
+
       return (
-        <div key={rowKey} className={`flex ${compact ? 'flex-col gap-32' : (row.gap ?? '') || 'gap-32'}`}>
+        <div key={rowKey} className={`flex flex-wrap ${rowGapClass}`}>
           {visibleRowFields.map((f) => {
             const prop = properties.find((p) => p.name === f);
             return prop ?
-                <div key={f} className={compact ? '' : 'flex-1'}>
+                <div key={f} className={rowFieldClass}>
                   {prop.content}
                 </div>
               : null;
@@ -217,7 +202,7 @@ function renderFields(
  * and supports ui:rows for horizontal field grouping and ui:sections for heading grouping
  */
 export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
-  const { properties, uiSchema, errorSchema } = props;
+  const { properties, uiSchema } = props;
   const formData = props.formData as Record<string, unknown> | undefined;
 
   // Get original schema from formContext (RJSF processes and removes allOf from schema prop)
@@ -248,7 +233,6 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   }
 
   const compact = ctx?.compact ?? false;
-  const validationActive = ctx?.validationActive ?? false;
 
   // If no sections defined, use original flat rendering
   if (sections.length === 0) {
@@ -269,14 +253,10 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   // Track rendered rows across all sections
   const renderedRows = new Set<string>();
 
-  // Tomma avsnitt hoppas över, så sista avdelaren hör till sista avsnittet som faktiskt
-  // renderas — inte till sista i schemat.
-  const lastRenderedSectionId = sections
-    .filter((section) => order.some((field) => section.fields.includes(field) && visibleFields.has(field)))
-    .at(-1)?.id;
-
   return (
-    <div className="flex flex-col gap-32">
+    // Korten skiljs åt av luften mellan dem, och behöver mer än fälten inuti ett kort.
+    // Wizarden har inga kort och behåller sitt tätare avstånd.
+    <div className={`flex flex-col ${compact ? 'gap-32' : 'gap-48'}`}>
       {/* Render sections */}
       {sections.map((section) => {
         // Get visible fields for this section in order
@@ -301,19 +281,9 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
           );
         }
 
-        const status =
-          !validationActive ? undefined
-          : sectionHasErrors(sectionFieldsInOrder, errorSchema) ? 'error'
-          : 'complete';
-
         return (
-          <FormSection
-            key={section.id}
-            section={section}
-            status={status}
-            showDivider={section.id !== lastRenderedSectionId || unsectionedFields.length > 0}
-          >
-            <div className="flex flex-col gap-32 py-16">
+          <FormSection key={section.id} section={section}>
+            <div className="flex flex-col gap-40">
               {renderFields(sectionFieldsInOrder, properties, visibleFields, rows, rowFieldNames, renderedRows)}
             </div>
           </FormSection>

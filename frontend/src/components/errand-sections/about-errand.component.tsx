@@ -16,7 +16,7 @@ const RADIO_WITH_DESCRIPTION_CLASS = 'h-auto items-start';
 
 /** Alternativets namn med förklaringen under, så att båda typerna går att jämföra innan valet. */
 const RadioButtonLabelWithDescription: React.FC<{ label: string; description: string }> = ({ label, description }) => (
-  <span className="flex flex-col gap-2">
+  <span className="flex flex-col gap-8">
     {label}
     <span className="text-dark-secondary text-small">{description}</span>
   </span>
@@ -54,11 +54,10 @@ export const AboutErrandContent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-[2.4rem]">
-      <span className="text-dark-secondary">{t('errand-information:about.description')}</span>
+    <div className="flex flex-col gap-40">
       <FormControl required id="event-type" {...(missingEventType ? { [INVALID_FIELD_ATTRIBUTE]: 'event-type' } : {})}>
         <FormLabel>{t('errand-information:about.event_type_label')}</FormLabel>
-        <RadioButton.Group data-cy="event-type-group" className="mb-18">
+        <RadioButton.Group data-cy="event-type-group" className="gap-16">
           <RadioButton
             data-cy="event-type-deviation"
             className={RADIO_WITH_DESCRIPTION_CLASS}
@@ -108,7 +107,7 @@ export const AboutErrandContent: React.FC = () => {
         {...(missingEventConcerns ? { [INVALID_FIELD_ATTRIBUTE]: 'event-concerns' } : {})}
       >
         <FormLabel>{t('errand-information:about.event_concerns_label')}</FormLabel>
-        <RadioButton.Group data-cy="event-concerns-group" className="mb-18">
+        <RadioButton.Group data-cy="event-concerns-group" className="gap-16">
           <RadioButton
             data-cy="event-concerns-individual"
             checked={eventConcerns === EVENT_CONCERNS_INDIVIDUAL}
@@ -142,7 +141,7 @@ export const AboutErrand: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <ErrandSection header={t('errand-information:about.title')}>
+    <ErrandSection header={t('errand-information:about.title')} description={t('errand-information:about.description')}>
       <AboutErrandContent />
     </ErrandSection>
   );

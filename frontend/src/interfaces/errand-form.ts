@@ -8,4 +8,9 @@ export interface ErrandFormDataItem {
 
 export interface ErrandFormDTO extends ErrandDTO {
   errandFormData?: ErrandFormDataItem[];
+  /**
+   * Rapporteras ärendet åt en kollega. Valet finns bara i gränssnittet — kollegan sparas som
+   * part — men valideringen måste se det för att kunna kräva att kollegan faktiskt fylls i.
+   */
+  reportingForColleague?: boolean;
 }

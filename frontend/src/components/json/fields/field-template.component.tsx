@@ -34,12 +34,13 @@ export function FieldTemplate(props: FieldTemplateProps) {
 
   const renderDescription = (position: 'above' | 'below') => {
     if (!sanitizedDescription.html || hideDescription) return null;
-    const marginClass = position === 'above' ? 'mb-2' : 'mt-2';
+    // Ovanför fältet sitter hjälptexten i etikettblocket, som äger avståndet ned till fältet.
+    const marginClass = position === 'above' ? '' : 'mt-8';
     return (
       <>
         <div
           id={descriptionId(id)}
-          className={`text-xs text-muted-foreground ${marginClass} [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4`}
+          className={`text-small text-dark-secondary ${marginClass} [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4`}
           dangerouslySetInnerHTML={{ __html: sanitizedDescription.html }}
         />
         {sanitizedDescription.hasNewTabLink && (
@@ -51,19 +52,33 @@ export function FieldTemplate(props: FieldTemplateProps) {
     );
   };
 
+  const labelElement =
+    displayLabel ?
+      <FormLabel
+        id={titleId(id)}
+        {...(isRadioGroup ? { as: 'legend' } : { htmlFor: id })}
+        className={hideLabel ? 'sr-only' : undefined}
+      >
+        {label}
+      </FormLabel>
+    : null;
+
   const fieldContent = (
     <>
-      {displayLabel && (
-        <FormLabel
-          id={titleId(id)}
-          {...(isRadioGroup ? { as: 'legend' } : { htmlFor: id })}
-          className={hideLabel ? 'sr-only' : undefined}
-        >
-          {label}
-        </FormLabel>
-      )}
-
-      {!descriptionBelow && renderDescription('above')}
+      {/* En legend namnger sin fieldset bara som dess första barn, så radiogruppen får inget
+          omslag. Övriga fält samlar etikett och hjälptext i ett block med jämnt avstånd ned till
+          fältet, oavsett om hjälptexten finns. Klassen är också hållpunkten för rader som ställer
+          sina fält i linje – se NARROW_ROW_FIELD_CLASS i ObjectFieldTemplate. */}
+      {isRadioGroup ?
+        <>
+          {labelElement}
+          {!descriptionBelow && renderDescription('above')}
+        </>
+      : <div className="field-label-block flex flex-col gap-8">
+          {labelElement}
+          {!descriptionBelow && renderDescription('above')}
+        </div>
+      }
 
       {children}
 

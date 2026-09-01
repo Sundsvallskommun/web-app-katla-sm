@@ -7,12 +7,12 @@
     "back": "No, continue"
   },
   "save_draft": "Save draft",
-  "register": "Submit",
+  "register": "Submit report",
   "no_errands": "There are no cases to display",
   "errand": "Case: ",
   "new_report": "New report",
   "submitted": {
-    "title": "The report has been submitted.",
+    "title": "The report has been submitted",
     "back_to_overview": "Back to overview"
   },
   "draft": "Draft: ",
@@ -27,18 +27,18 @@
     "error": "Something went wrong while saving the case"
   },
   "about": {
-    "title": "About the case",
+    "title": "About the report",
     "description": "State what kind of event it concerns and who is affected.",
-    "event_type_label": "Type of event",
+    "event_type_label": "Type of report",
     "event_type_deviation": "Deviation",
     "event_type_deviation_description": "Something has not turned out as intended or planned in the operation. Applies within all areas: SoL, LSS and HSL.",
     "event_type_misconduct": "Misconduct",
     "event_type_misconduct_description": "A shortcoming or event that has caused a serious risk to the individual's life, safety and health.",
     "misconduct_alert_title": "Misconduct",
     "misconduct_alert_description": "The case is sent to an independent investigator. Your manager is informed about the case but does not decide the outcome.",
-    "event_concerns_label": "Who is affected by the event?",
+    "event_concerns_label": "Who is affected by the report?",
     "event_concerns_individual": "An individual client",
-    "event_concerns_group": "Group/the entire operation",
+    "event_concerns_group": "Group and/or operation",
     "event_type_required": "Select an event type",
     "event_concerns_required": "Select what the event concerns",
     "event_concerns_group_facility_required": "Select a location where the deviation occurred when the event concerns a group/the entire operation",
@@ -50,11 +50,13 @@
   },
   "user": {
     "title": "Individual client",
-    "description": "A client is the individual affected by the case."
+    "description": "A client is the individual affected by the case.",
+    "required": "Add the client the report concerns"
   },
   "other_reporter": {
-    "title": "Other reporter",
-    "description": "Specify the colleague you are reporting on behalf of."
+    "title": "Add colleague",
+    "description": "Specify the colleague you are reporting on behalf of.",
+    "required": "Add the colleague you are reporting for"
   },
   "other_parties": {
     "title": "Other parties",
@@ -81,7 +83,7 @@
     "add_manually": "Add manually",
     "edit_details": "Edit details",
     "remove": "Remove",
-    "reporting_for_colleague": "I am reporting on behalf of another colleague",
+    "reporting_for_colleague": "I am reporting on behalf of a colleague",
     "modal": {
       "edit_title": "Edit person",
       "add_title": "Add person manually",
@@ -92,16 +94,15 @@
       "zip_code": "Postcode",
       "city": "City",
       "role": "Role",
-      "save_edit": "Save changes",
+      "save_edit": "Save",
       "save_add": "Add",
       "cancel": "Cancel"
     }
   },
   "submit_confirm": {
-    "question": "Do you want to submit the case?",
-    "no": "No",
-    "submit": "Submit",
-    "submit_and_logout": "Submit and log out"
+    "question": "Once you submit the report it is registered and can no longer be changed.",
+    "submit": "Submit report",
+    "title": "Submit the report?"
   },
   "section": {
     "complete": "Complete",
@@ -124,5 +125,10 @@
   },
   "sequence_of_events": {
     "title": "Sequence of events"
+  },
+  "validation_summary": {
+    "title_one": "You need to fix {{count}} thing",
+    "title_other": "You need to fix {{count}} things",
+    "go_to_error": "Go to the field: {{message}}"
   }
 }

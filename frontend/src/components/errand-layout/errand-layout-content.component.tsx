@@ -81,11 +81,17 @@ const createLinkTabProps = (href: string) => ({ as: NextLink, href });
 
 /**
  * Registreringen visar bara ett innehåll och får därför ingen fliklist — en ensam flik är
- * en kontroll som inte leder någonstans. Kortet och innehållsytan delas med flikvyn, så
- * att sidorna ser likadana ut när ärendet väl finns och flikarna tillkommer.
+ * en kontroll som inte leder någonstans. Innehållsytan delas med flikvyn, så att sidorna
+ * ser likadana ut när ärendet väl finns och flikarna tillkommer.
+ *
+ * Formuläret har inget eget ytterkort: avsnitten bär sina egna kort, och ett kort runt dem
+ * hade bara ramat in ramarna. Sidmarginalen behövs därför bara på smal skärm, där innehållet
+ * annars går ända ut i kanten.
  */
-const ERRAND_CARD_CLASS = 'border-1 rounded-12 bg-background-content mx-auto max-w-[108rem]';
-const ERRAND_PANEL_CLASS = 'pt-xl pb-64 px-16 md:px-40';
+const ERRAND_CONTENT_CLASS = 'mx-auto w-full max-w-[160rem] px-16 md:px-[12rem]';
+const ERRAND_PANEL_CLASS = 'pt-24 pb-80';
+/** Kvittot har ingen rubrikrad ovanför sig och behöver därför sitt eget toppavstånd. */
+const RECEIPT_PANEL_CLASS = 'pt-64 pb-80';
 
 const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route }) => {
   const { t } = useTranslation();
@@ -206,7 +212,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   if (loadErrors.length > 0 || loadState !== 'ready' || metadataLoadState !== 'ready' || !metadata) {
     return (
       <FormProvider {...methods}>
-        <div className="bg-background-100 h-screen min-h-screen flex items-center justify-center p-24">
+        <div className="bg-background-content h-screen min-h-screen flex items-center justify-center p-24">
           {loadErrors.length > 0 ?
             <ErrorAlertList messages={loadErrors} />
           : <Spinner aria-label={t('forms:loading')} />}
@@ -245,20 +251,24 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                       Egen bakgrund krävs: kortet skulle annars synas rakt igenom raden.
                       Klistrar mot skrollytan (.grow.shrink.overflow-y-auto), inte mot fönstret. */}
                   {!submittedView && (
-                    <div className="sticky top-0 z-10 bg-background-100 mx-auto max-w-[108rem] flex flex-col md:flex-row justify-between pt-16 md:pt-32 pb-12 px-16 md:px-0 gap-12">
+                    <div
+                      className={
+                        // Raden klistrar sig mot sidhuvudet vid skroll, och en toppmarginal försvinner då ur
+                        // beräkningen. Utan den är avståndet detsamma överst på sidan som under skroll.
+                        `sticky top-0 z-10 bg-background-content flex flex-col md:flex-row justify-between py-24 gap-12 ${ERRAND_CONTENT_CLASS}`
+                      }
+                    >
                       <h1 className="text-h2-sm md:text-h2-lg">{getHeaderTitle()}</h1>
                       <ErrandButtonGroup isNewErrand={registerNewErrand} />
                     </div>
                   )}
                   <Main>
                     {registerNewErrand || submittedView ?
-                      // Utan rubrikraden ovanför saknar kvittot det toppavstånd raden gav,
-                      // och kortet klistrar sig mot sidhuvudet.
-                      <div className={submittedView ? `${ERRAND_CARD_CLASS} mt-16 md:mt-32` : ERRAND_CARD_CLASS}>
-                        <div className={ERRAND_PANEL_CLASS}>{children}</div>
+                      <div className={ERRAND_CONTENT_CLASS}>
+                        <div className={submittedView ? RECEIPT_PANEL_CLASS : ERRAND_PANEL_CLASS}>{children}</div>
                       </div>
                     : <Tabs
-                        className={`${ERRAND_CARD_CLASS} pt-22 pl-5`}
+                        className={`${ERRAND_CONTENT_CLASS} pt-22`}
                         tabslistClassName="border-0 -m-b-12 flex-wrap ml-10 overflow-x-auto"
                         panelsClassName="border-t-1"
                         size="sm"

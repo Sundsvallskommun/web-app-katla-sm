@@ -446,7 +446,7 @@ describe('SchemaForm accessibility contract', () => {
     expect(list).not.toHaveTextContent('IAF VUX SFI SO och Grl');
   });
 
-  it('visar anläggning och avdelning med en enda åtgärd som öppnar platsväljaren igen', async () => {
+  it('visar den valda platsen i väljaren utan ett extra avdelningsval', () => {
     const schema: RJSFSchema = {
       type: 'object',
       properties: {
@@ -468,7 +468,6 @@ describe('SchemaForm accessibility contract', () => {
 
     useMetadataStore.setState({ metadata: { labels: { labelStructure: placeLabelStructure } } });
 
-    const user = userEvent.setup();
     render(
       <SchemaForm
         schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
@@ -484,32 +483,17 @@ describe('SchemaForm accessibility contract', () => {
       />
     );
 
-    expect(document.querySelector('[data-cy="facility-name"]')).toHaveTextContent('Solhaga');
-    expect(document.querySelector('[data-cy="facility-department"]')).toHaveTextContent(
-      'facility_search.department_label: Blå'
-    );
+    // Valet bärs av väljaren själv, inte av ett kort under den.
+    const placeInput = screen.getByRole('textbox', { name: 'facility_search.search_label' });
+    expect(placeInput).toHaveValue('Solhaga — facility_search.department_label: Blå');
+    expect(document.querySelector('[data-cy="facility-card"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-label-preview"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-confirm-button"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-remove-button"]')).not.toBeInTheDocument();
 
-    const subPlaceOptions = document.querySelector('[data-cy="facility-sub-place-options"]');
-    expect(subPlaceOptions).toBeInTheDocument();
-    expect(within(subPlaceOptions as HTMLElement).getByRole('radio', { name: 'Blå' })).toBeChecked();
-    expect(within(subPlaceOptions as HTMLElement).getByRole('radio', { name: 'Gul' })).not.toBeChecked();
-
-    await user.click(within(subPlaceOptions as HTMLElement).getByRole('radio', { name: 'Gul' }));
-
-    expect(document.querySelector('[data-cy="facility-department"]')).toHaveTextContent(
-      'facility_search.department_label: Gul'
-    );
-    expect(document.querySelector('[data-cy="facility-sub-place-options"]')).toBeInTheDocument();
-
-    const changeButton = screen.getByRole('button', { name: 'facility_search.change' });
-    expect(changeButton).not.toHaveClass('flex-1');
-
-    await user.click(changeButton);
-
-    expect(await screen.findByRole('textbox', { name: 'facility_search.search_label' })).toBeInTheDocument();
+    // Avdelningen ligger med i alternativet man valde, så valet är redan färdigt – ett extra
+    // avdelningsval hade bara upprepat det.
+    expect(document.querySelector('[data-cy="facility-sub-place-options"]')).not.toBeInTheDocument();
   });
 
   it('visar bara anläggningen för ett val på nivå 6 utan avdelning', () => {
@@ -549,8 +533,10 @@ describe('SchemaForm accessibility contract', () => {
       />
     );
 
-    expect(document.querySelector('[data-cy="facility-name"]')).toHaveTextContent('Anläggning utan avdelning');
-    expect(document.querySelector('[data-cy="facility-department"]')).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'facility_search.search_label' })).toHaveValue(
+      'Anläggning utan avdelning'
+    );
+    expect(document.querySelector('[data-cy="facility-card"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-sub-place-options"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-label-preview"]')).not.toBeInTheDocument();
   });

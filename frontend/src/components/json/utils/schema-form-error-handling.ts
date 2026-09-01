@@ -71,6 +71,22 @@ function propertySchemaOf(schema: RJSFSchema, property: string): RJSFSchema | un
  * Översätter en felsökväg (t.ex. `.facility.orgName`) till fältets rubrik i schemat,
  * så att ett sammanfattande felmeddelande kan peka ut fältet med samma namn som formuläret visar.
  */
+/**
+ * Ett fält kan ha fel både på sig självt och i underliggande egenskaper. Egna ui:field-fält
+ * renderar hela objektet som en kontroll, så felen där hör till fältet man ser — hela grenen
+ * gås därför igenom.
+ */
+export function collectFieldErrors(node: unknown): string[] {
+  if (typeof node !== 'object' || node === null) return [];
+
+  const branch = node as Record<string, unknown>;
+  const own = Array.isArray(branch.__errors) ? (branch.__errors as string[]) : [];
+
+  return Object.entries(branch)
+    .filter(([key]) => key !== '__errors')
+    .reduce<string[]>((errors, [, value]) => [...errors, ...collectFieldErrors(value)], own);
+}
+
 export function fieldTitleFromSchema(schema: RJSFSchema, property: string | undefined): string | undefined {
   const path = (property ?? '').split('.').filter(Boolean);
   if (path.length === 0) return undefined;

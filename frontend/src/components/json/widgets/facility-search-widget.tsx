@@ -1,12 +1,12 @@
 'use client';
 import { FacilityInfoDTO, UserEmploymentDTO } from '@data-contracts/backend/data-contracts';
-import { ariaDescribedByIds, type FieldProps } from '@rjsf/utils';
+import { ariaDescribedByIds, errorId, type FieldProps } from '@rjsf/utils';
 import { getUserEmployments } from '@services/employee-service/employee-service';
-import { Button, Combobox, FormControl, FormLabel, RadioButton } from '@sk-web-gui/react';
+import { Combobox, FormControl, FormErrorMessage, FormLabel, RadioButton } from '@sk-web-gui/react';
+import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import {
   findPlaceNode,
   findPlaceNodeByKey,
-  getParentPlaceNode,
   getPlaceNodes,
   getPlaceSelectionPresentation,
   getSubPlaceNodes,
@@ -19,12 +19,11 @@ import {
   PlaceNode,
   placeParentName,
 } from '@utils/label-structure';
-// Check används av det bortkommenterade förhandsvalet nedan
-import { Pen } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
+import { collectFieldErrors } from '../utils/schema-form-error-handling';
 import { requiredProps } from './types';
 
 /** Fler underenheter än så blir en ohanterlig radioknappsgrupp — då används sökning istället */
@@ -32,12 +31,30 @@ const MAX_RADIO_SUB_PLACES = 6;
 
 export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
   const { t } = useTranslation('forms');
-  const { idSchema, formData, disabled, readonly, required, rawErrors, onBlur, onChange, onFocus, uiSchema } = props;
+  const {
+    idSchema,
+    formData,
+    disabled,
+    readonly,
+    required,
+    errorSchema,
+    rawErrors,
+    onBlur,
+    onChange,
+    onFocus,
+    uiSchema,
+  } = props;
   const id = idSchema.$id;
   const searchLabelId = `${id}__search-label`;
   const subPlaceLabelId = `${id}__sub-place-label`;
   const describedBy = ariaDescribedByIds(id);
-  const invalid = Boolean(rawErrors?.length);
+  // Kravet på en vald plats ligger på objektets orgName, så felet hamnar en nivå ned i stället
+  // för på fältet självt. Widgeten renderar hela objektet som en kontroll och äger därför båda.
+  const fieldErrors = useMemo(
+    () => [...(rawErrors ?? []), ...collectFieldErrors(errorSchema)],
+    [errorSchema, rawErrors]
+  );
+  const invalid = fieldErrors.length > 0;
 
   const uiOptions = (uiSchema?.['ui:options'] ?? {}) as Record<string, unknown>;
   const className = (uiOptions.className as string) || 'w-full';
@@ -58,19 +75,19 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
     () => findPlaceNode(placeNodes, formData?.orgName, formData?.parentOrgName),
     [placeNodes, formData?.orgName, formData?.parentOrgName]
   );
-  const selectedPlacePresentation = useMemo(
-    () => (selectedNode ? getPlaceSelectionPresentation(selectedNode) : undefined),
-    [selectedNode]
-  );
   const filteredSelectablePlaceNodes = useMemo(
     () => selectablePlaceNodes.filter((node) => matchesPlaceSearch(node, placeSearchValue)),
     [placeSearchValue, selectablePlaceNodes]
   );
-  const subPlaceParentNode = useMemo(() => {
-    if (!selectedNode) return undefined;
-    if (hasSubPlaces(selectedNode)) return selectedNode;
-    return selectedPlacePresentation?.department ? getParentPlaceNode(placeNodes, selectedNode) : undefined;
-  }, [placeNodes, selectedNode, selectedPlacePresentation?.department]);
+  /**
+   * Väljaren listar bara platser utan underenheter, så ett val därifrån är alltid färdigt –
+   * avdelningen ligger med i alternativet. Underenhetsvalet behövs bara för en sparad plats som
+   * pekar högre upp i strukturen och därför inte är vald hela vägen ner.
+   */
+  const subPlaceParentNode = useMemo(
+    () => (selectedNode && hasSubPlaces(selectedNode) ? selectedNode : undefined),
+    [selectedNode]
+  );
   const subPlaceNodes = useMemo(
     () => (subPlaceParentNode ? getSubPlaceNodes(placeNodes, subPlaceParentNode) : []),
     [placeNodes, subPlaceParentNode]
@@ -83,8 +100,6 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
     [selectedNode, subPlaceNodes]
   );
   const mustChooseSubPlace = Boolean(selectedNode && hasSubPlaces(selectedNode));
-  const showSubPlaceChoice =
-    mustChooseSubPlace || Boolean(selectedPlacePresentation?.department && subPlaceNodes.length > 1);
 
   const selectPlace = useCallback(
     (node: PlaceNode) => {
@@ -157,13 +172,17 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
     [placeNodes, selectPlace]
   );
 
-  const handleChangePlace = useCallback(() => {
-    onChange(undefined);
-    setPlaceSearchValue('');
-    // Förslaget kommer inte tillbaka. Har användaren aktivt rensat platsen är anställningen
-    // inte längre en rimlig gissning.
-    // setSuggestedNode(null);
-  }, [onChange]);
+  const selectedPlaceKey = selectedNode ? placeKey(selectedNode) : '';
+
+  /**
+   * Comboboxen visar sitt valda värde genom att slå upp alternativet med samma nyckel. Söktexten
+   * filtrerar listan, så utan det här hade valet blivit osynligt så snart filtret inte träffar det.
+   */
+  const selectablePlaceOptionNodes = useMemo(() => {
+    if (!selectedNode) return filteredSelectablePlaceNodes;
+    const alreadyListed = filteredSelectablePlaceNodes.some((node) => isSameLabel(node.label, selectedNode.label));
+    return alreadyListed ? filteredSelectablePlaceNodes : [selectedNode, ...filteredSelectablePlaceNodes];
+  }, [filteredSelectablePlaceNodes, selectedNode]);
 
   if (!metadata) {
     return (
@@ -185,73 +204,83 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
 
   return (
     <div className={className}>
-      {!selectedNode && (
-        <FormControl disabled={!isEditable} invalid={invalid} required={required} className="w-full">
-          <span className="text-dark-secondary mb-8">{t('facility_search.description')}</span>
-          <FormLabel id={searchLabelId} htmlFor={id} className="font-bold">
-            {t('facility_search.search_label')}
-          </FormLabel>
-          <Combobox
-            id={`${id}__combobox`}
+      {/* Fältet renderas av ett eget ui:field och passerar därför inte FieldTemplate, som annars
+          märker felaktiga fält och skriver ut deras meddelande. Båda görs här i stället. */}
+      <FormControl
+        disabled={!isEditable}
+        invalid={invalid}
+        required={required}
+        className="w-full"
+        {...(invalid ? { [INVALID_FIELD_ATTRIBUTE]: id } : {})}
+      >
+        <FormLabel id={searchLabelId} htmlFor={id} className="font-bold">
+          {t('facility_search.search_label')}
+        </FormLabel>
+        <Combobox
+          id={`${id}__combobox`}
+          className="w-[60rem]"
+          size="md"
+          value={selectedPlaceKey}
+          autofilter={false}
+          aria-labelledby={searchLabelId}
+          aria-describedby={describedBy}
+          onChangeSearch={(e) => {
+            setPlaceSearchValue(e.target.value);
+          }}
+          onChange={(e: { target: { value: unknown } }) => {
+            handleSelectPlace(String(e.target.value));
+          }}
+          data-cy="facility-search"
+        >
+          <Combobox.Input
+            id={id}
+            placeholder={t('facility_search.placeholder')}
             className="w-full"
-            size="md"
-            value=""
-            autofilter={false}
+            disabled={!isEditable}
+            readOnly={!!readonly}
+            {...requiredProps(Boolean(required))}
             aria-labelledby={searchLabelId}
             aria-describedby={describedBy}
-            onChangeSearch={(e) => {
-              setPlaceSearchValue(e.target.value);
+            aria-invalid={invalid}
+            onBlur={() => {
+              onBlur(id, formData);
             }}
-            onChange={(e: { target: { value: unknown } }) => {
-              handleSelectPlace(String(e.target.value));
+            onFocus={() => {
+              onFocus(id, formData);
             }}
-            data-cy="facility-search"
-          >
-            <Combobox.Input
-              id={id}
-              placeholder={t('facility_search.placeholder')}
-              className="w-full"
-              disabled={!isEditable}
-              readOnly={!!readonly}
-              {...requiredProps(Boolean(required))}
-              aria-labelledby={searchLabelId}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              onBlur={() => {
-                onBlur(id, formData);
-              }}
-              onFocus={() => {
-                onFocus(id, formData);
-              }}
-            />
-            <Combobox.List style={{ maxHeight: '32rem' }}>
-              {filteredSelectablePlaceNodes.map((node) => {
-                const presentation = getPlaceSelectionPresentation(node);
-                const optionText =
-                  presentation.department ?
-                    `${presentation.place} — ${t('facility_search.department_label')}: ${presentation.department}`
-                  : presentation.place;
+          />
+          <Combobox.List style={{ maxHeight: '32rem' }}>
+            {selectablePlaceOptionNodes.map((node) => {
+              const presentation = getPlaceSelectionPresentation(node);
+              const optionText =
+                presentation.department ?
+                  `${presentation.place} — ${t('facility_search.department_label')}: ${presentation.department}`
+                : presentation.place;
 
-                return (
-                  <Combobox.Option
-                    key={placeKey(node)}
-                    value={placeKey(node)}
-                    style={{
-                      alignItems: 'flex-start',
-                      lineHeight: 1.4,
-                      overflowWrap: 'anywhere',
-                      paddingBlock: '0.75rem',
-                      whiteSpace: 'normal',
-                    }}
-                  >
-                    {optionText}
-                  </Combobox.Option>
-                );
-              })}
-            </Combobox.List>
-          </Combobox>
-        </FormControl>
-      )}
+              return (
+                <Combobox.Option
+                  key={placeKey(node)}
+                  value={placeKey(node)}
+                  style={{
+                    alignItems: 'flex-start',
+                    lineHeight: 1.4,
+                    overflowWrap: 'anywhere',
+                    paddingBlock: '0.75rem',
+                    whiteSpace: 'normal',
+                  }}
+                >
+                  {optionText}
+                </Combobox.Option>
+              );
+            })}
+          </Combobox.List>
+        </Combobox>
+        {invalid && (
+          <FormErrorMessage id={errorId(id)} className="text-error">
+            {fieldErrors[0]}
+          </FormErrorMessage>
+        )}
+      </FormControl>
 
       {/* Förhandsvalet av plats är bortkommenterat tills vidare – användaren söker fram platsen själv.
       {!selectedNode && suggestedNode && (
@@ -292,97 +321,58 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
       )}
       */}
 
-      {selectedNode && (
-        <div className="border-1 rounded-12 bg-background-content w-full mt-16" data-cy="facility-card">
-          <div className="rounded-t-12 bg-vattjom-background-200 px-16 py-12">
-            <strong>{t('facility_search.card_header')}</strong>
-          </div>
-          <div className="p-16">
-            <div className="flex flex-col gap-16">
-              <div className="min-w-0">
-                <p className="text-[1.6rem] font-semibold break-words" data-cy="facility-name">
-                  {selectedPlacePresentation?.place}
-                </p>
-                {selectedPlacePresentation?.department && (
-                  <p className="text-small text-text-secondary break-words" data-cy="facility-department">
-                    <span className="font-semibold">{t('facility_search.department_label')}:</span>{' '}
-                    {selectedPlacePresentation.department}
-                  </p>
-                )}
-              </div>
-
-              {showSubPlaceChoice && subPlaceParentNode ?
-                <FormControl disabled={!isEditable} required={mustChooseSubPlace} className="w-full">
-                  <FormLabel id={subPlaceLabelId} className="font-bold">
-                    {t('facility_search.select_sub_place', { place: placeName(subPlaceParentNode) })}
-                  </FormLabel>
-                  {subPlaceNodes.length <= MAX_RADIO_SUB_PLACES ?
-                    <RadioButton.Group aria-labelledby={subPlaceLabelId} data-cy="facility-sub-place-options">
-                      {subPlaceNodes.map((node) => (
-                        <RadioButton
-                          key={placeKey(node)}
-                          name="facility-sub-place"
-                          value={placeKey(node)}
-                          checked={isSameLabel(node.label, selectedNode.label)}
-                          disabled={!isEditable}
-                          onChange={(e) => {
-                            handleSelectPlace(e.target.value);
-                          }}
-                        >
-                          {placeName(node)}
-                        </RadioButton>
-                      ))}
-                    </RadioButton.Group>
-                  : <Combobox
-                      className="w-full"
-                      value={selectedSubPlaceKey}
-                      aria-labelledby={subPlaceLabelId}
-                      onChange={(e: { target: { value: unknown } }) => {
-                        handleSelectPlace(String(e.target.value));
-                      }}
-                      data-cy="facility-sub-place-options"
-                    >
-                      <Combobox.Input placeholder={t('facility_search.placeholder')} className="w-full" />
-                      <Combobox.List style={{ maxHeight: '32rem' }}>
-                        {subPlaceNodes.map((node) => (
-                          <Combobox.Option
-                            key={placeKey(node)}
-                            value={placeKey(node)}
-                            style={{ overflowWrap: 'anywhere', whiteSpace: 'normal' }}
-                          >
-                            {placeName(node)}
-                          </Combobox.Option>
-                        ))}
-                      </Combobox.List>
-                    </Combobox>
-                  }
-                  {mustChooseSubPlace && (
-                    <span className="text-small mt-4" data-cy="facility-sub-place-required">
-                      {t('facility_search.sub_place_required')}
-                    </span>
-                  )}
-                </FormControl>
-              : null}
-
-              {isEditable && (
-                <div className="flex flex-wrap border-t-1 border-divider pt-12">
-                  <Button
-                    type="button"
-                    variant="tertiary"
-                    color="vattjom"
-                    size="sm"
-                    leftIcon={<Pen size={16} aria-hidden="true" />}
-                    onClick={handleChangePlace}
-                    data-cy="facility-change-button"
+      {mustChooseSubPlace && subPlaceParentNode && selectedNode ?
+        <FormControl disabled={!isEditable} required={mustChooseSubPlace} className="mt-16 w-full">
+          <FormLabel id={subPlaceLabelId} className="font-bold">
+            {t('facility_search.select_sub_place', { place: placeName(subPlaceParentNode) })}
+          </FormLabel>
+          {subPlaceNodes.length <= MAX_RADIO_SUB_PLACES ?
+            <RadioButton.Group aria-labelledby={subPlaceLabelId} data-cy="facility-sub-place-options">
+              {subPlaceNodes.map((node) => (
+                <RadioButton
+                  key={placeKey(node)}
+                  name="facility-sub-place"
+                  value={placeKey(node)}
+                  checked={isSameLabel(node.label, selectedNode.label)}
+                  disabled={!isEditable}
+                  onChange={(e) => {
+                    handleSelectPlace(e.target.value);
+                  }}
+                >
+                  {placeName(node)}
+                </RadioButton>
+              ))}
+            </RadioButton.Group>
+          : <Combobox
+              className="w-full"
+              value={selectedSubPlaceKey}
+              aria-labelledby={subPlaceLabelId}
+              onChange={(e: { target: { value: unknown } }) => {
+                handleSelectPlace(String(e.target.value));
+              }}
+              data-cy="facility-sub-place-options"
+            >
+              <Combobox.Input placeholder={t('facility_search.placeholder')} className="w-full" />
+              <Combobox.List style={{ maxHeight: '32rem' }}>
+                {subPlaceNodes.map((node) => (
+                  <Combobox.Option
+                    key={placeKey(node)}
+                    value={placeKey(node)}
+                    style={{ overflowWrap: 'anywhere', whiteSpace: 'normal' }}
                   >
-                    {t('facility_search.change')}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+                    {placeName(node)}
+                  </Combobox.Option>
+                ))}
+              </Combobox.List>
+            </Combobox>
+          }
+          {mustChooseSubPlace && (
+            <span className="text-small mt-4" data-cy="facility-sub-place-required">
+              {t('facility_search.sub_place_required')}
+            </span>
+          )}
+        </FormControl>
+      : null}
     </div>
   );
 }

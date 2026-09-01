@@ -1,15 +1,17 @@
 import i18nConfig from '@app/i18nConfig';
 import { CancelErrandDialog } from '@components/cancel-errand-dialog.component';
+import { COLLEAGUE_FIELD_ID, FACILITY_FIELD_ID, USER_FIELD_ID } from '@components/errand-sections/section-field-ids';
 import {
+  collectErrandFormDataErrors,
   errandFormDataContractErrorMessage,
+  ErrandFormValidationError,
   jsonParametersToErrandFormData,
-  validateErrandFormData,
 } from '@components/json/utils/schema-utils';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
-import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
-import { Inbox } from 'lucide-react';
+import { Button, Dialog, Link, useSnackbar } from '@sk-web-gui/react';
+import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -17,11 +19,12 @@ import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
 import { usePrepareErrand } from 'src/hooks/use-prepare-errand';
 
-import { CenterDiv } from './center-div.component';
-
 interface ErrandButtonGroupProps {
   isNewErrand: boolean;
 }
+
+/** Rollerna en kollega kan ha när rapporten skrivs åt någon annan. */
+const COLLEAGUE_ROLES = ['CONTACT', 'SUBSTITUTEASSIGNMENT'];
 
 export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErrand }) => {
   const { t } = useTranslation();
@@ -31,7 +34,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   const router = useRouter();
   const context = useFormContext<ErrandFormDTO>();
   const { getValues, reset, watch } = context;
-  const { setShowValidation, focusFirstError } = useFormValidation();
+  const { setShowValidation, setErrors } = useFormValidation();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isCancelOpen, setIsCancelOpen] = useState<boolean>(false);
   const { prepareErrandForApi, getFacilityStatus } = usePrepareErrand();
@@ -63,7 +66,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
     }
   };
 
-  const onRegister = async (logout?: boolean) => {
+  const onRegister = async () => {
     setIsOpen(false);
 
     try {
@@ -73,13 +76,9 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.register') });
       reset({ ...errand, errandFormData });
 
-      if (logout) {
-        router.push(`/logout`);
-      } else {
-        // Kvittosidan, inte ärendet: rapportören är klar och ska inte landa i ett formulär
-        // som inte längre går att ändra.
-        router.push('/arende/inskickad');
-      }
+      // Kvittosidan, inte ärendet: rapportören är klar och ska inte landa i ett formulär
+      // som inte längre går att ändra.
+      router.push('/arende/inskickad');
     } catch (error: unknown) {
       toastMessage({
         position: 'bottom',
@@ -89,45 +88,59 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
     }
   };
 
-  // Felmeddelandet berättar vad som saknas och fokus flyttas till fältet, så att det går att
-  // åtgärda direkt även när fältet ligger långt ner eller i ett hopfällt avsnitt.
-  const reportValidationError = (message: string) => {
-    toastMessage({ position: 'bottom', status: 'error', message });
-    focusFirstError();
-  };
-
+  /**
+   * Allt som saknas samlas in i ett svep och visas i sammanfattningen överst. Tidigare stoppade
+   * kontrollen vid första felet och rapporterade det i en toast, vilket krävde en inskickning per
+   * fel innan man visste vad som återstod.
+   *
+   * Ordningen följer formuläret uppifrån och ner, så att raderna i sammanfattningen står i samma
+   * ordning som fälten de pekar på.
+   */
   const onValidateBeforeRegister = async () => {
     // Aktivera validering för JSON-formulär
     setShowValidation(true);
 
-    // Validera att eventType och eventConcerns är valda
     const values = getValues();
     const eventType = values.parameters?.find((p) => p.key === 'eventType')?.values?.[0];
     const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
+    const validationErrors: ErrandFormValidationError[] = [];
+
     if (!eventType) {
-      reportValidationError(t('errand-information:about.event_type_required'));
-      return;
+      validationErrors.push({ message: t('errand-information:about.event_type_required'), fieldId: 'event-type' });
     }
     if (!eventConcerns) {
-      reportValidationError(t('errand-information:about.event_concerns_required'));
-      return;
+      validationErrors.push({
+        message: t('errand-information:about.event_concerns_required'),
+        fieldId: 'event-concerns',
+      });
     }
+
+    // Ett utlovat men tomt avsnitt är inte samma sak som ett avsnitt man hoppat över: kryssrutan
+    // och valet av vem rapporten berör lovar en person som ännu inte finns i ärendet.
+    const stakeholders = values.stakeholders ?? [];
+    if (values.reportingForColleague && !stakeholders.some((s) => COLLEAGUE_ROLES.includes(s.role ?? ''))) {
+      validationErrors.push({
+        message: t('errand-information:other_reporter.required'),
+        fieldId: COLLEAGUE_FIELD_ID,
+      });
+    }
+    if (eventConcerns === EVENT_CONCERNS_INDIVIDUAL && !stakeholders.some((s) => s.role === 'PRIMARY')) {
+      validationErrors.push({ message: t('errand-information:user.required'), fieldId: USER_FIELD_ID });
+    }
+
     // Validera errandFormData innan affärsregler läser värden ur JSON-strukturen.
-    const formDataErrors = await validateErrandFormData(values.errandFormData, tForms, locale);
+    validationErrors.push(...(await collectErrandFormDataErrors(values.errandFormData, tForms, locale)));
 
-    if (formDataErrors.length > 0) {
-      reportValidationError(formDataErrors[0]);
-      return;
-    }
-
+    // En saknad plats fångas av schemat, som kräver den för alla rapporttyper. Kvar här är
+    // bara det schemat inte kan se: att valet inte är fört hela vägen ner till en enhet.
     const facilityStatus = getFacilityStatus(values.errandFormData);
-    if (eventConcerns === 'GRUPP_VERKSAMHET' && facilityStatus === 'NONE') {
-      reportValidationError(t('errand-information:about.event_concerns_group_facility_required'));
-      return;
-    }
     // En plats som inte är vald hela vägen ner ger fel label, och därmed fel behörighet
     if (facilityStatus === 'INCOMPLETE') {
-      reportValidationError(t('errand-information:about.facility_incomplete'));
+      validationErrors.push({ message: t('errand-information:about.facility_incomplete'), fieldId: FACILITY_FIELD_ID });
+    }
+
+    setErrors(validationErrors);
+    if (validationErrors.length > 0) {
       return;
     }
 
@@ -139,38 +152,45 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   }
 
   return (
-    <div className="flex flex-wrap gap-8 md:gap-[1.8rem]">
-      {isNewErrand && (
+    // Dialogerna ligger utanför knappraden: som flexbarn där lade radens gap ut ett tomrum
+    // efter sista knappen, ett för varje osynlig dialog.
+    <div>
+      <div className="flex flex-wrap items-center gap-16 md:gap-24">
+        {/* Avbryt är utgången ur formuläret, inte en av dess åtgärder. Som understruken länk
+            konkurrerar den inte visuellt med Skicka rapport, som är det man är här för att göra. */}
+        {isNewErrand && (
+          <Link
+            as="button"
+            type="button"
+            onClick={() => {
+              setIsCancelOpen(true);
+            }}
+          >
+            {t('errand-information:cancel')}
+          </Link>
+        )}
+        {draftEnabled && (
+          <Button
+            data-cy="save-draft-errand"
+            variant="primary"
+            onClick={() => {
+              void onSaveDraft();
+            }}
+          >
+            {t('errand-information:save_draft')}
+          </Button>
+        )}
         <Button
-          variant="secondary"
-          onClick={() => {
-            setIsCancelOpen(true);
-          }}
-        >
-          {t('errand-information:cancel')}
-        </Button>
-      )}
-      {draftEnabled && (
-        <Button
-          data-cy="save-draft-errand"
+          data-cy="register-errand"
           variant="primary"
+          color="vattjom"
           onClick={() => {
-            void onSaveDraft();
+            void onValidateBeforeRegister();
           }}
         >
-          {t('errand-information:save_draft')}
+          {t('errand-information:register')}
         </Button>
-      )}
-      <Button
-        data-cy="register-errand"
-        variant="primary"
-        color="vattjom"
-        onClick={() => {
-          void onValidateBeforeRegister();
-        }}
-      >
-        {t('errand-information:register')}
-      </Button>
+      </div>
       <CancelErrandDialog
         show={isCancelOpen}
         onClose={() => {
@@ -180,42 +200,32 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
           router.push('/oversikt');
         }}
       />
+      {/* Beskedet står vänsterställt som en fråga med sitt svar, inte som en centrerad notis:
+          det är ett beslut som ska läsas innan knapparna, inte en bekräftelse i efterhand. */}
       <Dialog show={isOpen}>
-        <Dialog.Content className="-mt-20">
-          <CenterDiv>
-            <Inbox size={32} className="mb-[1.6rem] text-vattjom-surface-primary" />
-            <h3 className="text-h3-md">{t('errand-information:register')}</h3>
-            <span className="text-dark-secondary text-md">{t('errand-information:submit_confirm.question')}</span>
-          </CenterDiv>
+        <Dialog.Content className="flex flex-col items-start gap-12 text-left">
+          <h2 className="text-h4-sm text-dark-primary">{t('errand-information:submit_confirm.title')}</h2>
+          <p>{t('errand-information:submit_confirm.question')}</p>
         </Dialog.Content>
 
-        <Dialog.Buttons className="justify-center flex-col sm:flex-row gap-8">
+        <Dialog.Buttons className="flex-col items-start gap-16 sm:flex-row sm:items-center sm:justify-start">
           <Button
             variant="secondary"
             onClick={() => {
               setIsOpen(false);
             }}
           >
-            {t('errand-information:submit_confirm.no')}
+            {t('errand-information:cancel')}
           </Button>
           <Button
             data-cy="submit-button"
             variant="primary"
+            color="vattjom"
             onClick={() => {
               void onRegister();
             }}
           >
             {t('errand-information:submit_confirm.submit')}
-          </Button>
-          <Button
-            data-cy="submit-logout-button"
-            variant="primary"
-            color="vattjom"
-            onClick={() => {
-              void onRegister(true);
-            }}
-          >
-            {t('errand-information:submit_confirm.submit_and_logout')}
           </Button>
         </Dialog.Buttons>
       </Dialog>

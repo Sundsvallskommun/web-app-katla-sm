@@ -50,7 +50,6 @@ const openRegistrationConfirmation = async (page: Page) => {
   const registerButton = page.getByTestId('register-errand');
   await expect(registerButton).toBeEnabled();
   await registerButton.click();
-  await expect(page.getByTestId('submit-logout-button')).toBeEnabled();
   const submitButton = page.getByTestId('submit-button');
   await expect(submitButton).toBeEnabled();
   return submitButton;
@@ -79,7 +78,7 @@ const registerErrandAndExpectDraft = async (page: Page, expectedStakeholderCount
 
   // En inskickad rapport landar på kvittot, inte i det inlämnade ärendets formulär.
   await expect(page).toHaveURL(/\/arende\/inskickad$/);
-  await expect(page.getByRole('heading', { name: 'Rapporten är inskickad.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Rapporten är inskickad' })).toBeVisible();
 };
 
 const selectRequiredErrandParameters = async (page: Page) => {
@@ -151,6 +150,9 @@ test.describe('Register new errand page', () => {
     await page.route('**/supportmanagement/errand/create', jsonRoute({ message: 'Upstream unavailable' }, 502));
     await expect(sectionByTitle(page, 'Rapportör').getByTestId('stakeholder-card')).toHaveCount(1);
     await completeRequiredErrandForm(page);
+    // En rapport som berör en enskild brukare kräver att brukaren finns, annars stoppas den
+    // av valideringen innan anropet som testet vill se misslyckas.
+    await addStakeholder(page, sectionByTitle(page, 'Enskild brukare'), 'PRIMARY');
 
     const submitButton = await openRegistrationConfirmation(page);
     const failedResponse = page.waitForResponse(
@@ -244,7 +246,8 @@ test.describe('Register new errand page', () => {
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
 
-    await expect(stakeholderCard.getByTestId('stakeholder-role')).toContainText('Ärendeägare');
+    // Avsnittet rymmer bara brukaren, så kortet bär ingen rollrad – rubriken säger redan rollen.
+    await expect(stakeholderCard.getByTestId('stakeholder-role')).toHaveCount(0);
     await expect(stakeholderCard.getByTestId('stakeholder-name')).toContainText(
       `${mockStakeholder.firstName ?? ''} ${mockStakeholder.lastName ?? ''}`
     );
@@ -264,7 +267,8 @@ test.describe('Register new errand page', () => {
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
 
-    await expect(stakeholderCard.getByTestId('stakeholder-role')).toContainText('Ärendeägare');
+    // Avsnittet rymmer bara brukaren, så kortet bär ingen rollrad – rubriken säger redan rollen.
+    await expect(stakeholderCard.getByTestId('stakeholder-role')).toHaveCount(0);
     await expect(stakeholderCard.getByTestId('stakeholder-name')).toContainText(
       `${mockManualEditStakeholder.firstName ?? ''} ${mockManualEditStakeholder.lastName ?? ''}`
     );
@@ -344,7 +348,8 @@ test.describe('Register new errand page', () => {
   test('Reporter information should be displayed', async ({ page }) => {
     const rapportor = sectionByTitle(page, 'Rapportör');
     const stakeholderCard = rapportor.getByTestId('stakeholder-card');
-    await expect(stakeholderCard.getByTestId('stakeholder-role')).toContainText('Rapportör');
+    // Rollraden på kortet upprepade bara avsnittsrubriken och är borttagen där.
+    await expect(stakeholderCard.getByTestId('stakeholder-role')).toHaveCount(0);
     await expect(stakeholderCard.getByTestId('stakeholder-title')).toContainText(mockReporterStakeholder.title ?? '');
     await expect(stakeholderCard.getByTestId('stakeholder-department')).toContainText(
       mockReporterStakeholder.department ?? ''
@@ -366,13 +371,13 @@ test.describe('Register new errand page', () => {
   test('Sections are ordered with the reporter first and Brukare follows the event scope', async ({ page }) => {
     // Rapportören står först, och brukaren finns inte alls innan händelsen berör en
     // enskild brukare. Uppgifter kring avvikelsen renderas som schemaformulär med egna
-    // underrubriker och ingår därför inte i listan.
-    await expect(page.locator('section > h2')).toHaveText(['Rapportör', 'Om ärendet', 'Övriga parter']);
+    // underrubriker (h3) och ingår därför inte i listan.
+    await expect(page.locator('section h2')).toHaveText(['Rapportör', 'Om rapporten', 'Övriga parter']);
 
     await page.getByTestId('event-concerns-individual').check();
-    await expect(page.locator('section > h2')).toHaveText([
+    await expect(page.locator('section h2')).toHaveText([
       'Rapportör',
-      'Om ärendet',
+      'Om rapporten',
       'Enskild brukare',
       'Övriga parter',
     ]);
@@ -391,13 +396,13 @@ test.describe('Register new errand page', () => {
       )
     ).toBeVisible();
 
-    // Hjälptexten för Om ärendet står före radioknapparna, och båda fälten har sina rubriker
+    // Hjälptexten för Om rapporten står före radioknapparna, och båda fälten har sina rubriker
     const aboutDescription = page.getByText('Ange vilken typ av händelse det gäller och vem eller vilka som berörs.');
     await expect(aboutDescription).toBeVisible();
     // Etiketterna matchas via klassen, eftersom obligatoriska fält får en asterisk efter texten
     const formLabels = page.locator('.sk-form-label');
-    await expect(formLabels.filter({ hasText: 'Typ av händelse' })).toBeVisible();
-    await expect(formLabels.filter({ hasText: 'Vem eller vilka berör händelsen?' })).toBeVisible();
+    await expect(formLabels.filter({ hasText: 'Typ av rapport' })).toBeVisible();
+    await expect(formLabels.filter({ hasText: 'Vem eller vilka berör rapporten?' })).toBeVisible();
 
     const aboutDescriptionBox = await aboutDescription.boundingBox();
     const eventTypeGroupBox = await page.getByTestId('event-type-group').boundingBox();
@@ -441,7 +446,9 @@ test.describe('Register new errand page', () => {
 
   test('The submitted report page leads back to the overview', async ({ page }) => {
     await completeRequiredErrandForm(page);
-    await registerErrandAndExpectDraft(page, 1);
+    // Brukaren krävs när rapporten berör en enskild brukare, och räknas med bland parterna.
+    await addStakeholder(page, sectionByTitle(page, 'Enskild brukare'), 'PRIMARY');
+    await registerErrandAndExpectDraft(page, 2);
 
     await page.getByTestId('back-to-overview').click();
 

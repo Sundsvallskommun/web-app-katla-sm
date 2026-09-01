@@ -10,7 +10,7 @@ export const CreatedErrand: React.FC = () => {
   const isLocked = useErrandLockedByStatus();
 
   return (
-    <div className="flex flex-col gap-32">
+    <div className="flex flex-col gap-48">
       {/* Avsnitten nedan är inaktiverade när ärendet är inlämnat. Utan en
           förklaring syns bara att ingenting går att ändra, inte varför. */}
       {isLocked && (

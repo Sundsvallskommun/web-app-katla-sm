@@ -118,7 +118,7 @@ export function usePrepareErrand() {
   };
 
   const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
-    const { errandFormData, ...errandWithoutFormData } = values;
+    const { errandFormData, reportingForColleague: _reportingForColleague, ...errandWithoutFormData } = values;
     const eventType = values.parameters?.find((p) => p.key === 'eventType')?.values?.[0] ?? '';
     const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
 

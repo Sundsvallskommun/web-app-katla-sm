@@ -202,7 +202,7 @@ describe('JSON schema adapter contracts', () => {
 
         const described = ['eventDescription', 'actionsTaken', 'suggestedActions'] as const;
         const titles = described.map(field => (uiSchema[field] as Record<string, unknown>)['ui:title']);
-        expect(titles).toEqual(['Händelseförlopp', 'Omedelbart vidtagna åtgärder', 'Förslag på åtgärder']);
+        expect(titles).toEqual(['Händelse', 'Åtgärder som vidtogs direkt', 'Förslag på förbättringar']);
 
         for (const field of described) {
           const fieldUiSchema = uiSchema[field] as Record<string, unknown>;

@@ -231,28 +231,100 @@ function requiredFormDataError(schemaName: string, t?: TFunction): string {
 }
 
 /**
+ * Fel som visas för användaren. Fältets id följer med när felet hör till ett enskilt fält, så att
+ * felsammanfattningen kan länka dit — det är samma id som fältet märks med i formuläret.
+ */
+export interface ErrandFormValidationError {
+  message: string;
+  fieldId?: string;
+}
+
+/**
+ * AJV rapporterar toppnivåns saknade fält före fel inuti ett underobjekt, oavsett var fälten
+ * står på skärmen. Sammanfattningen sorteras därför om efter formulärets egen ordning, så att
+ * raderna står i samma följd som fälten de pekar på.
+ */
+function sortByFormOrder(
+  errors: RJSFValidationError[],
+  uiSchema: UiSchema<Record<string, unknown>> | undefined
+): RJSFValidationError[] {
+  const order = uiSchema?.['ui:order'];
+  if (!Array.isArray(order)) return errors;
+
+  const positionOf = (error: RJSFValidationError) => {
+    const [field] = (error.property ?? '').split('.').filter(Boolean);
+    const index = order.indexOf(field);
+    // Fält utanför ordningen hamnar sist i stället för först, som index -1 annars ger.
+    return index === -1 ? order.length : index;
+  };
+
+  return [...errors].sort((first, second) => positionOf(first) - positionOf(second));
+}
+
+/**
+ * Fältens rubriker ligger i ui-schemat, inte i JSON-schemat, eftersom de kan ändras utan en ny
+ * schemaversion. Utan det här uppslaget blir varje obligatoriskt fält bara "Obligatoriskt fält"
+ * i sammanfattningen, utan att säga vilket fält det gäller.
+ */
+function uiFieldTitle(
+  uiSchema: UiSchema<Record<string, unknown>> | undefined,
+  property: string | undefined
+): string | undefined {
+  const [field] = (property ?? '').split('.').filter(Boolean);
+  if (!field || !uiSchema) return undefined;
+
+  const fieldUiSchema = uiSchema[field] as Record<string, unknown> | undefined;
+  const title = fieldUiSchema?.['ui:title'];
+  return typeof title === 'string' ? title : undefined;
+}
+
+/**
+ * RJSF namnger sina fält `root_<egenskap>`, och felets `property` är samma egenskap med en
+ * inledande punkt. Nästlade egenskaper skiljs med punkt i property och med understreck i id.
+ */
+function fieldIdFromProperty(property: string | undefined): string | undefined {
+  const path = (property ?? '').replace(/^\./, '');
+  return path ? `root_${path.split('.').join('_')}` : undefined;
+}
+
+/**
  * AJV formulerar sina fel på engelska och namnger fältet med nyckeln ur schemat. Sammanfattningen
  * som visas för användaren återanvänder därför formulärets översatta meddelanden och fältrubriker,
  * så att felet går att koppla till fältet på skärmen.
+ *
+ * Varje fältfel blir en egen post: sammanfattningen listar dem ett och ett, och den som fyller i
+ * ska kunna se allt som återstår utan att skicka in en gång per fel.
  */
-function schemaFieldValidationError(
+function schemaFieldValidationErrors(
   schema: RJSFSchema,
+  uiSchema: UiSchema<Record<string, unknown>> | undefined,
   schemaName: string,
   validationErrors: RJSFValidationError[],
   t?: TFunction
-): string {
+): ErrandFormValidationError[] {
   const schemaTitle = schema.title ?? schemaName;
-  const [firstError] = t ? createJsonErrorTransformer(schema, t)(validationErrors) : validationErrors;
-  const message = firstError.message ?? '';
-  const fieldTitle = fieldTitleFromSchema(schema, firstError.property);
+  const transformed = t ? createJsonErrorTransformer(schema, t)(validationErrors) : validationErrors;
 
-  if (!t) {
-    return fieldTitle ? `${schemaTitle} – ${fieldTitle}: ${message}` : `${schemaTitle}: ${message}`;
-  }
+  return sortByFormOrder(transformed, uiSchema).map((error) => {
+    const message = error.message ?? '';
+    const fieldTitle = fieldTitleFromSchema(schema, error.property) ?? uiFieldTitle(uiSchema, error.property);
+    const fieldId = fieldIdFromProperty(error.property);
 
-  return fieldTitle ?
-      t('form_field_error', { schemaTitle, fieldTitle, message })
-    : t('form_error', { schemaTitle, message });
+    if (!t) {
+      return {
+        fieldId,
+        message: fieldTitle ? `${schemaTitle} – ${fieldTitle}: ${message}` : `${schemaTitle}: ${message}`,
+      };
+    }
+
+    return {
+      fieldId,
+      message:
+        fieldTitle ?
+          t('form_field_error', { schemaTitle, fieldTitle, message })
+        : t('form_error', { schemaTitle, message }),
+    };
+  });
 }
 
 /**
@@ -261,53 +333,70 @@ function schemaFieldValidationError(
  * @param formDataEntries - Posterna som ska valideras
  * @param t - Valfri översättningsfunktion för felmeddelanden
  */
-export async function validateErrandFormData(
+export async function collectErrandFormDataErrors(
   formDataEntries: ErrandFormDataItem[] | undefined,
   t?: TFunction,
   // Måste följa det aktiva språket. Annars valideras mot schemat i standardspråket medan
   // formuläret renderas i ett annat, vilket ger både en onödig extra hämtning och
   // fältrubriker på fel språk i felsammanfattningen.
   locale = i18nConfig.defaultLocale
-): Promise<string[]> {
-  const errors: string[] = [];
+): Promise<ErrandFormValidationError[]> {
+  const errors: ErrandFormValidationError[] = [];
   const entries = formDataEntries ?? [];
   const missingSchemaNames = ERRAND_FORM_SCHEMA_NAMES.filter(
     (schemaName) => !entries.some((entry) => entry.schemaName === schemaName)
   );
 
   for (const schemaName of missingSchemaNames) {
-    errors.push(requiredFormDataError(schemaName, t));
+    errors.push({ message: requiredFormDataError(schemaName, t) });
   }
 
   for (const entry of entries) {
     if (!entry.schemaName.trim()) {
       const contractError = new ErrandFormDataContractError('missing-schema-name', entry.schemaName);
-      errors.push(errandFormDataContractErrorMessage(contractError, t) ?? schemaValidationError(entry.schemaName, t));
+      errors.push({
+        message: errandFormDataContractErrorMessage(contractError, t) ?? schemaValidationError(entry.schemaName, t),
+      });
       continue;
     }
 
     const parsedData = parseErrandFormData(entry.data, entry.schemaName);
     if (!parsedData.valid) {
-      errors.push(
-        errandFormDataContractErrorMessage(parsedData.error, t) ?? schemaValidationError(entry.schemaName, t)
-      );
+      errors.push({
+        message: errandFormDataContractErrorMessage(parsedData.error, t) ?? schemaValidationError(entry.schemaName, t),
+      });
       continue;
     }
 
     try {
-      const { schema, schemaId } = await loadFormSchemaForEntry(entry.schemaName, entry.schemaId, t, locale);
+      const { schema, uiSchema, schemaId } = await loadFormSchemaForEntry(entry.schemaName, entry.schemaId, t, locale);
       const validator = getJsonValueSchemaValidator(schemaId);
       const { errors: validationErrors } = validator.validateFormData(parsedData.value, schema);
 
       if (validationErrors.length > 0) {
-        errors.push(schemaFieldValidationError(schema, entry.schemaName, validationErrors, t));
+        errors.push(...schemaFieldValidationErrors(schema, uiSchema, entry.schemaName, validationErrors, t));
       }
     } catch (error: unknown) {
-      errors.push(errandFormDataContractErrorMessage(error, t) ?? schemaValidationError(entry.schemaName, t));
+      errors.push({
+        message: errandFormDataContractErrorMessage(error, t) ?? schemaValidationError(entry.schemaName, t),
+      });
     }
   }
 
   return errors;
+}
+
+/**
+ * Samma validering, men bara meddelandena. Används där felen visas ett i taget och fältmålet
+ * inte tillför något — wizardens steg och kontrollen innan sparning.
+ */
+export async function validateErrandFormData(
+  formDataEntries: ErrandFormDataItem[] | undefined,
+  t?: TFunction,
+  locale = i18nConfig.defaultLocale
+): Promise<string[]> {
+  const errors = await collectErrandFormDataErrors(formDataEntries, t, locale);
+  return errors.map((error) => error.message);
 }
 
 export function upsertErrandFormDataItem(

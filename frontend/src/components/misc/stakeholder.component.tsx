@@ -1,5 +1,6 @@
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
 import { useIsContentLocked } from '@contexts/errand-content-lock-context';
+import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { getStakeholderUsingPersonNumber } from '@services/citizen/citizen-service';
@@ -15,6 +16,7 @@ import {
   SearchField,
   Select,
 } from '@sk-web-gui/react';
+import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import {
   createStakeholderSchema,
   emptyStakeholder,
@@ -35,7 +37,25 @@ export const StakeholderList: React.FC<{
   autoDetectSearch?: boolean;
   maxCount?: number;
   hideRoleSelect?: boolean;
-}> = ({ roles, employeeSearch = false, autoDetectSearch = false, maxCount, hideRoleSelect = false }) => {
+  /**
+   * Korten ritas som rapportörens: utan rollrad och i avsnittets fulla bredd. Används där
+   * avsnittet bara rymmer en roll, så att rollraden bara skulle upprepa rubriken ovanför.
+   */
+  sectionCards?: boolean;
+  /**
+   * Listans id i valideringen. Med det visar listan sitt eget fel och märker ut sig, så att
+   * felsammanfattningen kan länka hit — samma sätt som fälten i schemaformuläret.
+   */
+  fieldId?: string;
+}> = ({
+  roles,
+  employeeSearch = false,
+  autoDetectSearch = false,
+  maxCount,
+  hideRoleSelect = false,
+  sectionCards = false,
+  fieldId,
+}) => {
   const [searchMode, setSearchMode] = useState<string>('PERSON');
   const [query, setQuery] = useState<string>('');
   const [searchResult, setSearchResult] = useState<boolean>(false);
@@ -43,6 +63,8 @@ export const StakeholderList: React.FC<{
   const [manualEntryOpen, setManualEntryOpen] = useState<boolean>(false);
   const { metadata } = useMetadataStore();
   const { t } = useTranslation();
+  const { errors } = useFormValidation();
+  const fieldError = fieldId ? errors.find((error) => error.fieldId === fieldId) : undefined;
   const isLocked = useIsContentLocked();
 
   const context = useFormContext<ErrandDTO>();
@@ -142,7 +164,12 @@ export const StakeholderList: React.FC<{
   };
 
   return (
-    <div>
+    <div {...(fieldError ? { [INVALID_FIELD_ATTRIBUTE]: fieldId } : {})}>
+      {fieldError && (
+        <FormErrorMessage className="text-error mb-16" data-cy={`${fieldId ?? 'stakeholder'}-error`}>
+          {fieldError.message}
+        </FormErrorMessage>
+      )}
       <FormProvider {...method}>
         {showAddButton && (
           <FormControl className="w-full">
@@ -298,6 +325,8 @@ export const StakeholderList: React.FC<{
             key={index}
             stakeholder={stakeholder}
             isEditable
+            hideRole={sectionCards}
+            wide={sectionCards}
             roles={roles}
             onRemove={() => {
               remove(index);
@@ -330,7 +359,7 @@ export const StakeholderList: React.FC<{
           setManualEntryOpen(false);
         }}
         editableFields={
-          roles.includes('EMPLOYEE') || roles.includes('SUBSTITUTEASSIGNMENT') ?
+          !hideRoleSelect && (roles.includes('EMPLOYEE') || roles.includes('SUBSTITUTEASSIGNMENT')) ?
             ['personNumber', 'firstName', 'lastName', 'emails', 'phoneNumbers', 'role']
           : ['personNumber', 'firstName', 'lastName', 'emails', 'phoneNumbers']
         }

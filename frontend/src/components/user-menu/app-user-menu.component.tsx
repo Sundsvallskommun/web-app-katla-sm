@@ -1,17 +1,26 @@
 'use client';
 
 import { Avatar, cx, PopupMenu, UserMenuProps } from '@sk-web-gui/react';
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface AppUserMenuProps extends UserMenuProps {
   buttonLabel?: string;
+  /** Sidhuvudet i ärendevyn är mörkt; knappen måste då rita sig ljus för att synas. */
+  buttonInverted?: boolean;
+  /**
+   * Ersätter avataren i knappen. Används där namnet redan står utskrivet bredvid menyn –
+   * avataren upprepar då bara det som redan syns, och knappen behöver bara visa att den öppnar.
+   */
+  buttonIcon?: ReactNode;
 }
 
 export const AppUserMenu = forwardRef<HTMLDivElement, AppUserMenuProps>((props, ref) => {
   const { t } = useTranslation();
   const {
     buttonLabel = t('layout:controls.open_user_menu'),
+    buttonIcon,
+    buttonInverted = false,
     buttonRounded = true,
     buttonSize = 'lg',
     className,
@@ -35,18 +44,21 @@ export const AppUserMenu = forwardRef<HTMLDivElement, AppUserMenuProps>((props, 
           showBackground={false}
           className="sk-usermenu-button"
           rounded={buttonRounded}
+          inverted={buttonInverted}
           variant="tertiary"
           iconButton
         >
-          <Avatar
-            size={buttonSize}
-            rounded={buttonRounded}
-            initials={initials}
-            imageUrl={image}
-            imageAlt={imageAlt}
-            placeholderImage={placeholderImage}
-            imageElement={imageElem}
-          />
+          {buttonIcon ?? (
+            <Avatar
+              size={buttonSize}
+              rounded={buttonRounded}
+              initials={initials}
+              imageUrl={image}
+              imageAlt={imageAlt}
+              placeholderImage={placeholderImage}
+              imageElement={imageElem}
+            />
+          )}
         </PopupMenu.Button>
         <PopupMenu.Panel>
           {[menuTitle, menuSubTitle].some(Boolean) && (

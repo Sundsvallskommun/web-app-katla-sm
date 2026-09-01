@@ -95,7 +95,7 @@ interface DeviationInformationProps {
 
 export const DeviationInformation: React.FC<DeviationInformationProps> = ({ compact }) => {
   return (
-    <div className="flex flex-col gap-24">
+    <div className="flex flex-col gap-48">
       {ERRAND_FORM_SCHEMA_NAMES.map((schemaName) => (
         <SchemaFormField key={schemaName} schemaName={schemaName} compact={compact} />
       ))}

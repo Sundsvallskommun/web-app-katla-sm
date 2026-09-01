@@ -10,6 +10,7 @@ import { RadiobuttonWidget } from '@components/json/widgets/radio-widget';
 import { RADIO_WIDGET_NAMES } from '@components/json/widgets/radio-widget-names';
 import { SelectWidget } from '@components/json/widgets/select-widget';
 import { TextWidget } from '@components/json/widgets/text-widget';
+import { TextareaWidget } from '@components/json/widgets/textarea-widget';
 import { TexteditorWidget } from '@components/json/widgets/texteditor-widget';
 import { TimeWidget } from '@components/json/widgets/time-widget';
 import Form, { IChangeEvent } from '@rjsf/core';
@@ -23,6 +24,8 @@ import { getFormSchemaValidator } from './form-schema-validator';
 const widgets: RegistryWidgetsType = {
   TextWidget,
   text: TextWidget,
+  TextareaWidget,
+  textarea: TextareaWidget,
   SelectWidget,
   select: SelectWidget,
   ...Object.fromEntries(RADIO_WIDGET_NAMES.map((name) => [name, RadiobuttonWidget])),

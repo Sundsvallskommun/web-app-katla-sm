@@ -7,10 +7,9 @@ import {
 } from '@components/json/utils/schema-utils';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { CenterDiv } from '@layouts/center-div.component';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
-import { ChevronLeft, ChevronRight, Inbox } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -58,7 +57,7 @@ export const WizardBottomBar: React.FC = () => {
     }
   };
 
-  const onRegister = async (logout?: boolean) => {
+  const onRegister = async () => {
     setIsOpen(false);
     try {
       const errandData = prepareErrandForApi(getValues(), 'NEW');
@@ -70,13 +69,9 @@ export const WizardBottomBar: React.FC = () => {
         message: t('errand-information:save_message.register'),
       });
       reset({ ...errand, errandFormData });
-      if (logout) {
-        router.push('/logout');
-      } else {
-        // Kvittosidan, inte ärendet: rapportören är klar och ska inte landa i ett formulär
-        // som inte längre går att ändra.
-        router.push('/arende/inskickad');
-      }
+      // Kvittosidan, inte ärendet: rapportören är klar och ska inte landa i ett formulär
+      // som inte längre går att ändra.
+      router.push('/arende/inskickad');
     } catch (error: unknown) {
       toastMessage({
         position: 'bottom',
@@ -219,41 +214,30 @@ export const WizardBottomBar: React.FC = () => {
         }}
       />
 
+      {/* Samma besked som på stor skärm, så att frågan lyder likadant var man än fyller i. */}
       <Dialog show={isOpen}>
-        <Dialog.Content className="-mt-20">
-          <CenterDiv>
-            <Inbox size={32} className="mb-[1.6rem] text-vattjom-surface-primary" />
-            <h3 className="text-h3-md">{t('errand-information:register')}</h3>
-            <span className="text-dark-secondary text-md">{t('errand-information:submit_confirm.question')}</span>
-          </CenterDiv>
+        <Dialog.Content className="flex flex-col items-start gap-12 text-left">
+          <h2 className="text-h4-sm text-dark-primary">{t('errand-information:submit_confirm.title')}</h2>
+          <p>{t('errand-information:submit_confirm.question')}</p>
         </Dialog.Content>
-        <Dialog.Buttons className="justify-center flex-col sm:flex-row gap-8">
+        <Dialog.Buttons className="flex-col items-start gap-16 sm:flex-row sm:items-center sm:justify-start">
           <Button
             variant="secondary"
             onClick={() => {
               setIsOpen(false);
             }}
           >
-            {t('errand-information:submit_confirm.no')}
+            {t('errand-information:cancel')}
           </Button>
           <Button
             data-cy="submit-button"
             variant="primary"
+            color="vattjom"
             onClick={() => {
               void onRegister();
             }}
           >
             {t('errand-information:submit_confirm.submit')}
-          </Button>
-          <Button
-            data-cy="submit-logout-button"
-            variant="primary"
-            color="vattjom"
-            onClick={() => {
-              void onRegister(true);
-            }}
-          >
-            {t('errand-information:submit_confirm.submit_and_logout')}
           </Button>
         </Dialog.Buttons>
       </Dialog>

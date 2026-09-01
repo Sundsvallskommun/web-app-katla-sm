@@ -4,103 +4,89 @@
   "value": {
     "facilityInfo": {
       "ui:field": "FacilitySearchWidget",
-      "ui:title": "Plats",
+      "ui:title": "Enhet eller avdelning",
       "x-i18n": {
         "en": {
-          "ui:title": "Location"
+          "ui:title": "Unit or department"
         }
       }
     },
     "eventDate": {
       "ui:widget": "date",
       "ui:title": "När upptäcktes händelsen?",
-      "ui:description": "Vilket datum upptäcktes händelsen?",
       "ui:placeholder": "Välj datum",
-      "ui:options": {
-        "descriptionBelow": true
-      },
       "x-i18n": {
         "en": {
           "ui:title": "When was the event discovered?",
-          "ui:description": "On what date was the event discovered?",
           "ui:placeholder": "Select a date"
         }
       }
     },
     "eventTime": {
       "ui:widget": "time",
-      "ui:title": "Tid",
-      "ui:description": "Ungefär vilken tid upptäcktes händelsen?",
-      "ui:options": {
-        "descriptionBelow": true
-      },
+      "ui:title": "Vilken tid upptäcktes händelsen?",
+      "ui:description": "Ange ungefärlig tid då händelsen upptäcktes?",
       "x-i18n": {
         "en": {
-          "ui:title": "Time",
-          "ui:description": "Roughly what time was the event discovered?"
+          "ui:title": "What time was the event discovered?",
+          "ui:description": "State the approximate time the event was discovered?"
         }
       }
     },
     "occurredDate": {
       "ui:widget": "date",
       "ui:title": "När inträffade händelsen?",
-      "ui:description": "Ange när händelsen bedöms ha inträffat. Lämna tomt om du inte vet den här uppgiften",
+      "ui:description": "Lämna tomt om du inte vet den här uppgiften",
       "ui:placeholder": "Välj datum",
-      "ui:options": {
-        "descriptionBelow": true
-      },
       "x-i18n": {
         "en": {
           "ui:title": "When did the event occur?",
-          "ui:description": "State when the event is judged to have occurred. Leave blank if you do not know.",
+          "ui:description": "Leave blank if you do not know.",
           "ui:placeholder": "Select a date"
         }
       }
     },
     "occurredTime": {
       "ui:widget": "time",
-      "ui:title": "Tid",
-      "ui:description": "Ange när händelsen bedöms ha inträffat. Lämna tomt om du inte vet den här uppgiften",
-      "ui:options": {
-        "descriptionBelow": true
-      },
+      "ui:title": "Vilken tid inträffade händelsen?",
+      "ui:description": "Lämna tomt om du inte vet den här uppgiften",
       "x-i18n": {
         "en": {
-          "ui:title": "Time",
-          "ui:description": "State when the event is judged to have occurred. Leave blank if you do not know."
+          "ui:title": "What time did the event occur?",
+          "ui:description": "Leave blank if you do not know."
         }
       }
     },
     "eventDescription": {
-      "ui:widget": "texteditor",
-      "ui:title": "Händelseförlopp",
-      "ui:description": "Beskriv vad som hände steg för steg, från det att händelsen började tills den avslutades.",
+      "ui:widget": "textarea",
+      "ui:title": "Händelse",
+      "ui:description": "Beskriv vad som hände, steg för steg.",
       "x-i18n": {
         "en": {
-          "ui:title": "Sequence of events",
-          "ui:description": "Describe what happened step by step, from when the event began until it ended."
+          "ui:title": "Event",
+          "ui:description": "Describe what happened, step by step."
         }
       }
     },
     "actionsTaken": {
-      "ui:widget": "texteditor",
-      "ui:title": "Omedelbart vidtagna åtgärder",
-      "ui:description": "Beskriv vilka åtgärder som vidtogs direkt efter händelsen.",
+      "ui:widget": "textarea",
+      "ui:title": "Åtgärder som vidtogs direkt",
+      "ui:description": "Beskriv vilka åtgärder som vidtogs direkt vid händelsen.",
       "x-i18n": {
         "en": {
-          "ui:title": "Immediate actions taken",
-          "ui:description": "Describe what actions were taken immediately after the event."
+          "ui:title": "Actions taken immediately",
+          "ui:description": "Describe what actions were taken immediately at the time of the event."
         }
       }
     },
     "suggestedActions": {
-      "ui:widget": "texteditor",
-      "ui:title": "Förslag på åtgärder",
-      "ui:description": "Beskriv vilka åtgärder som kan förhindra att händelsen upprepas.",
+      "ui:widget": "textarea",
+      "ui:title": "Förslag på förbättringar",
+      "ui:description": "Beskriv vilka förbättringar eller åtgärder som kan minska risken för att händelsen upprepas.",
       "x-i18n": {
         "en": {
-          "ui:title": "Suggested actions",
-          "ui:description": "Describe what actions could prevent the event from happening again."
+          "ui:title": "Suggested improvements",
+          "ui:description": "Describe what improvements or actions could reduce the risk of the event happening again."
         }
       }
     },
@@ -108,21 +94,23 @@
     "ui:rows": [
       {
         "fields": ["eventDate", "eventTime"],
-        "gap": "gap-16"
+        "layout": "narrow"
       },
       {
         "fields": ["occurredDate", "occurredTime"],
-        "gap": "gap-16"
+        "layout": "narrow"
       }
     ],
     "ui:sections": [
       {
         "id": "plats",
         "title": "Plats",
+        "description": "Ange vilken enhet eller avdelning händelsen inträffade på.",
         "fields": ["facilityInfo"],
         "x-i18n": {
           "en": {
-            "title": "Location"
+            "title": "Location",
+            "description": "State which unit or department the event occurred in."
           }
         }
       },

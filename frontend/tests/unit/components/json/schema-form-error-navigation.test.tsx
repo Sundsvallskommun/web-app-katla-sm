@@ -5,14 +5,9 @@ import { focusFirstInvalidField, INVALID_FIELD_ATTRIBUTE } from '@utils/focus-fi
 import { FormProvider, useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
 
-const translations: Record<string, string> = {
-  section_incomplete: 'Ofullständig',
-  section_complete: 'Komplett',
-};
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => translations[key] ?? key,
+    t: (key: string) => key,
   }),
 }));
 
@@ -62,15 +57,6 @@ describe('felnavigering i schemaformuläret', () => {
     render(<ErrorNavigationForm />);
 
     expect(document.querySelector(`[${INVALID_FIELD_ATTRIBUTE}]`)).not.toBeInTheDocument();
-    expect(screen.queryByText('Ofullständig')).not.toBeInTheDocument();
-    expect(screen.queryByText('Komplett')).not.toBeInTheDocument();
-  });
-
-  it('märker ifyllda avsnitt som kompletta och avsnitt med fel som ofullständiga', () => {
-    render(<ErrorNavigationForm showValidation formData={{ eventDate: '2026-08-13' }} />);
-
-    expect(document.querySelector('[data-cy="section-status-event"]')).toHaveTextContent('Komplett');
-    expect(document.querySelector('[data-cy="section-status-details"]')).toHaveTextContent('Ofullständig');
   });
 
   it('flyttar fokus till första fältet som saknas', () => {
@@ -80,7 +66,6 @@ describe('felnavigering i schemaformuläret', () => {
     const markedFields = document.querySelectorAll(`[${INVALID_FIELD_ATTRIBUTE}]`);
     expect(markedFields).toHaveLength(2);
     expect(markedFields[0].getAttribute(INVALID_FIELD_ATTRIBUTE)).toBe('root_eventDate');
-    expect(screen.getAllByText('Ofullständig')).toHaveLength(2);
 
     let navigated = false;
     act(() => {

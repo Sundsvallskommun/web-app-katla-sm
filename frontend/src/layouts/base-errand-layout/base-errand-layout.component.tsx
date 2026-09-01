@@ -2,6 +2,8 @@ import { pathWithoutLocale } from '@app/locale-path';
 import { LanguageSwitchButton } from '@components/misc/language-switch-button.component';
 import { StatusLabel } from '@components/misc/status-label.component';
 import { LinkButton } from '@components/navigation/link-button.component';
+import { NotificationsBell } from '@components/notifications/notification-bell';
+import { NotificationsWrapper } from '@components/notifications/notification-wrapper';
 import { AppUserMenu } from '@components/user-menu/app-user-menu.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { PageHeader } from '@layouts/page-header.component';
@@ -9,9 +11,9 @@ import { createUserMenuGroups } from '@layouts/userMenuGroup';
 import { useUserStore } from '@services/user-service/user-service';
 import { Divider, Link, Logo, PopupMenu } from '@sk-web-gui/react';
 import { storeErrandFormHandover } from '@utils/errand-form-handover';
-import { Menu } from 'lucide-react';
+import { ChevronDown, Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useWizardStore } from 'src/stores/wizard-store';
@@ -21,11 +23,24 @@ interface BaseErrandLayoutProps {
   registerNewErrand: boolean;
 }
 
+const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? '';
+
+/**
+ * Sidhuvudet är mörkt, till skillnad från designsystemets ljusa standardhuvud. Utseendet sätts
+ * här i stället för i .sk-header eftersom det gäller den här appen, inte alla appar som använder
+ * komponenten. Klasserna ligger i utility-lagret och vinner därför över komponentlagrets egna.
+ */
+// PageHeader sätter själv py-2 på .sk-header och py-4 på innehållsraden, så designens
+// lodräta mått måste ta över båda.
+const HEADER_CLASS =
+  'bg-inverted-background-100 border-b-1 border-inverted-divider shadow-none px-24 !py-16 [&_.sk-header-top-content]:!py-0';
+
 export default function BaseErrandLayout({ children, registerNewErrand }: BaseErrandLayoutProps) {
   const user = useUserStore((s) => s.user);
   const { getValues, watch } = useFormContext<ErrandFormDTO>();
   const { t } = useTranslation();
   const pathname = usePathname();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   // Sidhuvudet är det enda stället som både äger språkvalen och ser formuläret, så det är
   // här överlämningen måste skrivas. Nyckeln är sökvägen utan språkprefix – samma sida på
@@ -43,43 +58,70 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
   const errandNumber = watch('errandNumber');
   const status = watch('status');
 
+  // Andra raden bär sidans sammanhang: under registreringen finns inget ärende att peka ut,
+  // och då står appens undertitel där i stället för ärendets status och nummer.
+  const brandSubtitle = registerNewErrand ? t('layout:header.subtitle') : errandNumber;
+
+  // Designsystemets service-logotyp är både högre och bredare än designens rad – den har en
+  // avdelare mellan symbol och text som designen inte har. Blocket byggs därför av symbolen
+  // och de två textraderna, i designens mått.
+  const brandBlock = (
+    <div className="flex h-[4.6rem] items-center gap-6">
+      <Logo variant="symbol" inverted className="h-[4.3rem]" />
+      <div className="flex flex-col justify-center">
+        <span className="font-header text-inverted-dark-primary text-h4-md font-bold leading-[2.8rem]">{APP_NAME}</span>
+        <span className="text-inverted-dark-secondary text-small leading-[1.8rem]">{brandSubtitle}</span>
+      </div>
+    </div>
+  );
+
   // Bugfix (static-components): JSX-variabel i stället för komponent skapad under rendering
   const singleErrandTitle = (
-    <div className="flex items-center gap-12 md:gap-24 py-8 md:py-10">
+    <div className="flex items-center gap-12 md:gap-16">
       {registerNewErrand ?
-        <Logo variant="symbol" className="h-32 md:h-40" />
-      : <a
-          href={`${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
-          title={t('layout:controls.go_to_start', { app: process.env.NEXT_PUBLIC_APP_NAME })}
-        >
-          <Logo variant="symbol" className="h-32 md:h-40" />
-        </a>
+        brandBlock
+      : <>
+          <a
+            href={`${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
+            title={t('layout:controls.go_to_start', { app: process.env.NEXT_PUBLIC_APP_NAME })}
+          >
+            {brandBlock}
+          </a>
+          <StatusLabel status={status} />
+        </>
       }
-      <span className="text-large">
-        {registerNewErrand ?
-          <strong className="text-large ml-8 font-bold">{t('filtering:new_errand')}</strong>
-        : <>
-            <StatusLabel status={status} />
-            <span className="ml-8 text-small">{errandNumber}</span>
-          </>
-        }
-      </span>
     </div>
   );
 
   return (
     <>
-      <div className="bg-background-100 h-screen min-h-screen max-h-screen overflow-hidden w-full flex flex-col">
-        <div className="relative z-[15] bg-background-content">
+      <div className="bg-background-content h-screen min-h-screen max-h-screen overflow-hidden w-full flex flex-col">
+        <div className="relative z-[15]">
           <PageHeader
+            className={HEADER_CLASS}
             logo={singleErrandTitle}
             userMenu={
               <div className="flex items-center h-fit">
-                <LanguageSwitchButton onBeforeSwitch={saveFormBeforeLanguageSwitch} />
+                <NotificationsBell
+                  inverted
+                  expanded={showNotifications}
+                  toggleShow={() => {
+                    setShowNotifications((shown) => !shown);
+                  }}
+                />
+                <LanguageSwitchButton inverted onBeforeSwitch={saveFormBeforeLanguageSwitch} />
                 <Divider orientation="vertical" className="mx-16" />
-                <div data-cy="usermenu">
+                {/* Namn och användarnamn står utskrivna bredvid menyn, så att man ser vem man är
+                    inloggad som utan att öppna den. Knappen bär då bara chevronen. */}
+                <div className="flex flex-col items-start justify-center whitespace-nowrap">
+                  <span className="text-inverted-dark-primary text-base font-bold">{user.name}</span>
+                  <span className="text-inverted-dark-secondary text-small">{user.username}</span>
+                </div>
+                <div data-cy="usermenu" className="ml-12">
                   <AppUserMenu
                     initials={user.initials}
+                    buttonInverted
+                    buttonIcon={<ChevronDown aria-hidden="true" />}
                     menuTitle={`${user.name} (${user.username})`}
                     menuSubTitle=""
                     menuGroups={userMenuGroups}
@@ -88,15 +130,22 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
                   />
                 </div>
 
-                <Divider orientation="vertical" className="mx-24" />
-                <LinkButton
-                  href="/arende/registrera"
-                  data-cy="register-new-errand-button"
-                  color="primary"
-                  variant="tertiary"
-                >
-                  {t('filtering:new_errand')}
-                </LinkButton>
+                {/* Genvägen till registreringen döljs på registreringssidan – där leder den
+                    tillbaka till sidan man redan står på. */}
+                {!registerNewErrand && (
+                  <>
+                    <Divider orientation="vertical" className="mx-24" />
+                    <LinkButton
+                      href="/arende/registrera"
+                      data-cy="register-new-errand-button"
+                      color="primary"
+                      variant="tertiary"
+                      inverted
+                    >
+                      {t('filtering:new_errand')}
+                    </LinkButton>
+                  </>
+                )}
               </div>
             }
             mobileMenu={
@@ -104,14 +153,21 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
               // med flit – den ska inte erbjuda vägar bort från formuläret – men språket
               // är inget man ska behöva lämna sidan för att byta.
               <div className="flex items-center gap-8">
-                <LanguageSwitchButton onBeforeSwitch={saveFormBeforeLanguageSwitch} />
+                <NotificationsBell
+                  inverted
+                  expanded={showNotifications}
+                  toggleShow={() => {
+                    setShowNotifications((shown) => !shown);
+                  }}
+                />
+                <LanguageSwitchButton inverted onBeforeSwitch={saveFormBeforeLanguageSwitch} />
                 {!registerNewErrand && (
                   // Eget block, av samma skäl som i LanguageSwitchButton: panelen placeras
                   // utifrån sin statiska position, och raden runt omkring är en flex-container
                   // som annars centrerar den över knappen.
                   <div className="relative">
                     <PopupMenu align="end">
-                      <PopupMenu.Button iconButton aria-label={t('layout:controls.open_menu')}>
+                      <PopupMenu.Button inverted iconButton aria-label={t('layout:controls.open_menu')}>
                         <Menu />
                       </PopupMenu.Button>
                       <PopupMenu.Panel>
@@ -148,6 +204,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
 
         {children}
       </div>
+      <NotificationsWrapper show={showNotifications} setShow={setShowNotifications} />
     </>
   );
 }

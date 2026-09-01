@@ -1,6 +1,7 @@
 {
   "header": {
-    "goto_content": "Hoppa till innehåll"
+    "goto_content": "Hoppa till innehåll",
+    "subtitle": "Avvikelserapportering"
   },
   "controls": {
     "open_user_menu": "Öppna användarmeny",

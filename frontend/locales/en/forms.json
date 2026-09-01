@@ -11,13 +11,10 @@
   "required_form_data": "Fill in the details under {{schemaName}} before continuing.",
   "form_field_error": "{{schemaTitle}} – {{fieldTitle}}: {{message}}",
   "form_error": "{{schemaTitle}}: {{message}}",
-  "section_incomplete": "Incomplete",
-  "section_complete": "Complete",
   "field_description": {
     "new_tab_announcement": "Opens in a new tab"
   },
   "facility_search": {
-    "description": "State where the event occurred.",
     "search_label": "Unit or department",
     "card_header": "Location where the deviation occurred",
     "label": "Location",

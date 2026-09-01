@@ -10,7 +10,14 @@
     "required": ["facilityInfo", "eventDate", "eventDescription", "actionsTaken"],
     "properties": {
       "facilityInfo": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "orgName": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["orgName"]
       },
       "eventDate": {
         "type": "string",

@@ -188,10 +188,16 @@ export const StakeholderFormModal: React.FC<{
         )}
       </Modal.Content>
 
+      {/* Avbryt står först och spara sist, som i formulärets övriga beslut: den bekräftande
+          åtgärden ligger där blicken slutar. */}
       <Modal.Footer className="max-sm:flex-col max-sm:gap-8">
+        <Button data-cy="modal-cancel-person-button" variant="secondary" onClick={onClose} className="max-sm:w-full">
+          {t('errand-information:stakeholder.modal.cancel')}
+        </Button>
         <Button
           data-cy="modal-add-person-button"
           variant="primary"
+          color="vattjom"
           onClick={(e) => {
             void handleSubmit(onSave)(e);
           }}
@@ -200,9 +206,6 @@ export const StakeholderFormModal: React.FC<{
           {edit ?
             t('errand-information:stakeholder.modal.save_edit')
           : t('errand-information:stakeholder.modal.save_add')}
-        </Button>
-        <Button data-cy="modal-cancel-person-button" variant="secondary" onClick={onClose} className="max-sm:w-full">
-          {t('errand-information:stakeholder.modal.cancel')}
         </Button>
       </Modal.Footer>
     </Modal>

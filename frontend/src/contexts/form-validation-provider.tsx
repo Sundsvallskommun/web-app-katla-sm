@@ -1,5 +1,6 @@
 'use client';
 
+import { ErrandFormValidationError } from '@components/json/utils/schema-utils';
 import { FormValidationContext } from '@contexts/form-validation-context';
 import { focusFirstInvalidField } from '@utils/focus-first-error';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
@@ -7,6 +8,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 // Utbruten till egen fil så att kontextfilen bara exporterar icke-komponenter (react-refresh/only-export-components)
 export function FormValidationProvider({ children }: { children: ReactNode }) {
   const [showValidation, setShowValidation] = useState(false);
+  const [errors, setErrors] = useState<ErrandFormValidationError[]>([]);
   const [focusRequest, setFocusRequest] = useState(0);
 
   const focusFirstError = useCallback(() => {
@@ -28,8 +30,8 @@ export function FormValidationProvider({ children }: { children: ReactNode }) {
   }, [focusRequest]);
 
   const value = useMemo(
-    () => ({ showValidation, setShowValidation, focusFirstError }),
-    [showValidation, focusFirstError]
+    () => ({ showValidation, setShowValidation, errors, setErrors, focusFirstError }),
+    [showValidation, errors, focusFirstError]
   );
 
   return <FormValidationContext.Provider value={value}>{children}</FormValidationContext.Provider>;

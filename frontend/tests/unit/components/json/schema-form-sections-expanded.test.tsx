@@ -64,10 +64,10 @@ describe('SchemaForm sections', () => {
   });
 
   /**
-   * Avdelaren skiljer ett avsnitt från nästa. Under det sista finns inget att skilja från,
-   * och en avdelare där ser ut som en avklippt sida.
+   * Avsnitten skiljs åt av varsitt kort. En avdelare ovanpå kortkanten upprepar bara den
+   * gränsen, så det ska inte finnas några.
    */
-  it('divides the sections from each other but leaves nothing hanging under the last one', () => {
+  it('gives every section its own card instead of dividers between them', () => {
     const multiSectionSchema: RJSFSchema = {
       type: 'object',
       properties: {
@@ -98,11 +98,12 @@ describe('SchemaForm sections', () => {
 
     const { container } = render(<MultiSectionForm />);
 
-    expect(container.querySelectorAll('hr.sk-divider')).toHaveLength(1);
-    const divider = container.querySelector('hr.sk-divider');
-    const lastField = screen.getByRole('textbox', { name: /Åtgärder/ });
-    if (!divider) throw new Error('Saknar avdelare');
-    expect(Boolean(divider.compareDocumentPosition(lastField) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(container.querySelectorAll('hr.sk-divider')).toHaveLength(0);
+    const sections = container.querySelectorAll('section.bg-background-color-mixin-1');
+    expect(sections).toHaveLength(2);
+    for (const section of sections) {
+      expect(section.querySelector('h3')).toBeVisible();
+    }
   });
 
   it('ignores a leftover icon instead of drawing one next to the heading', () => {
