@@ -4,11 +4,11 @@ import { ErrandTable } from '@components/errand-table/errand-table.component';
 import { MobileOverviewLayout } from '@components/mobile/mobile-overview-layout.component';
 import { useIsOverviewMobile } from '@contexts/overview-mobile-context';
 import Main from '@layouts/main/main.component';
-import { useStatusButtons } from 'src/hooks/use-status-buttons';
+import { useActiveStatusLabel } from 'src/hooks/use-status-buttons';
 
 export default function Oversikt() {
   const isMobile = useIsOverviewMobile();
-  const { activeStatusLabel } = useStatusButtons();
+  const activeStatusLabel = useActiveStatusLabel();
 
   if (isMobile) {
     return <MobileOverviewLayout />;

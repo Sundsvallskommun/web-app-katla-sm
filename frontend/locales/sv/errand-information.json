@@ -97,7 +97,10 @@
       "save_edit": "Spara",
       "save_add": "Lägg till",
       "cancel": "Avbryt"
-    }
+    },
+    "employment_type": "Anställningsform",
+    "employment_type_tillsvidareanstalld": "Tillsvidareanställd",
+    "employment_type_vikarie": "Vikarie"
   },
   "submit_confirm": {
     "question": "När du skickar rapporten registreras den och kan inte längre ändras.",

@@ -288,6 +288,9 @@ test.describe('Register new errand page', () => {
     //Om ärendet
     await completeRequiredErrandForm(page);
 
+    // Brukaren krävs när rapporten berör en enskild brukare, och räknas med bland parterna.
+    await addStakeholder(page, sectionByTitle(page, 'Enskild brukare'), 'PRIMARY');
+
     //Övriga parter
     const ovrigaParter = sectionByTitle(page, 'Övriga parter');
     await addEmployeeStakeholder(page, ovrigaParter, 'CONTACT');
@@ -342,7 +345,7 @@ test.describe('Register new errand page', () => {
     await expect(stakeholderCard.getByTestId('stakeholder-email')).toContainText('');
     await expect(stakeholderCard.getByTestId('stakeholder-phonenumber')).toContainText(MOCK_COUNTRY_CODE_PHONE_NUMBER);
 
-    await registerErrandAndExpectDraft(page, 2);
+    await registerErrandAndExpectDraft(page, 3);
   });
 
   test('Reporter information should be displayed', async ({ page }) => {
@@ -452,7 +455,9 @@ test.describe('Register new errand page', () => {
 
     await page.getByTestId('back-to-overview').click();
 
-    await expect(page).toHaveURL(/\/oversikt$/);
+    // Översikten är en egen route som dev-servern kompilerar vid första besöket, och det tar
+    // längre tid än standardväntan. Testet gäller att länken leder rätt, inte hur snabbt.
+    await expect(page).toHaveURL(/\/oversikt$/, { timeout: 20_000 });
   });
 
   // TODO: Add test for registering complete errand when frontend functionality is ready

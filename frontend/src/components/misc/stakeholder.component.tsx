@@ -47,6 +47,8 @@ export const StakeholderList: React.FC<{
    * felsammanfattningen kan länka hit — samma sätt som fälten i schemaformuläret.
    */
   fieldId?: string;
+  /** Innehåll att visa inuti varje parts kort, till exempel val som hör till just den parten. */
+  renderCardExtra?: (index: number) => React.ReactNode;
 }> = ({
   roles,
   employeeSearch = false,
@@ -55,6 +57,7 @@ export const StakeholderList: React.FC<{
   hideRoleSelect = false,
   sectionCards = false,
   fieldId,
+  renderCardExtra,
 }) => {
   const [searchMode, setSearchMode] = useState<string>('PERSON');
   const [query, setQuery] = useState<string>('');
@@ -331,7 +334,9 @@ export const StakeholderList: React.FC<{
             onRemove={() => {
               remove(index);
             }}
-          />
+          >
+            {renderCardExtra?.(index)}
+          </StakeholderCard>
         );
       })}
 

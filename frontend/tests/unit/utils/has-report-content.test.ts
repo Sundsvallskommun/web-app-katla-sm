@@ -25,13 +25,22 @@ describe('hasReportContent', () => {
     expect(hasReportContent(errand({ stakeholders: [{ role: 'REPORTER', firstName: 'Test' }] }))).toBe(false);
   });
 
-  it('does not count the empty entry the schema form writes on mount', () => {
-    expect(hasReportContent(errand({ errandFormData: [{ schemaName: 'avvikelse', data: '{}' }] }))).toBe(false);
+  it.each([
+    ['an empty object', '{}'],
+    // Objektfält som platsen ligger i posten redan vid montering, med ett tomt objekt som värde.
+    ['the structure the schema form writes for object fields', '{"facilityInfo":{}}'],
+    ['blank strings', '{"eventDescription":"   ","actionsTaken":""}'],
+  ])('does not count %s as content', (_label, data) => {
+    expect(hasReportContent(errand({ errandFormData: [{ schemaName: 'avvikelse', data }] }))).toBe(false);
   });
 
   it.each([
     ['a chosen event type', { parameters: [{ key: 'eventType', values: ['AVVIKELSE'] }] }],
     ['filled-in form data', { errandFormData: [{ schemaName: 'avvikelse', data: '{"eventDate":"2026-09-01"}' }] }],
+    [
+      'a chosen place inside an object field',
+      { errandFormData: [{ schemaName: 'avvikelse', data: '{"facilityInfo":{"orgName":"Solhaga"}}' }] },
+    ],
     ['an added client', { stakeholders: [{ role: 'REPORTER' }, { role: 'PRIMARY', firstName: 'Brukare' }] }],
   ])('counts %s as content worth warning about', (_label, values) => {
     expect(hasReportContent(errand(values))).toBe(true);

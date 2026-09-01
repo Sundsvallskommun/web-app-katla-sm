@@ -162,10 +162,12 @@ describe('JSON schema adapter contracts', () => {
     });
 
     /**
-     * Avvikelseformuläret hålls lokalt i repot tills vidare. Det ska aldrig gå till API:t, och
-     * det ska ändå passera samma x-i18n-upplösning som API-svaren.
+     * Avvikelseformuläret hämtas från API:t igen, så inget schema hålls lokalt just nu och de
+     * här kontrollerna har inget att beskriva. De är pausade i stället för borttagna: filerna
+     * under src/local-schemas/ är kvar, och testerna gäller igen så snart ett schema läggs
+     * tillbaka i listan i local-schemas.ts.
      */
-    describe('locally held schema', () => {
+    describe.skip('locally held schema', () => {
       const LOCAL_SCHEMA_NAME = 'avvikelse-plats-handelse';
       const LOCAL_SCHEMA_ID = '2281_avvikelse-plats-handelse_1.3';
 

@@ -19,7 +19,26 @@ export interface StatusButton {
 }
 
 const DEFAULT_STATUS_KEY = 'NEW';
-const STATUS_KEYS = [DEFAULT_STATUS_KEY, 'DRAFT', 'SOLVED'];
+
+/** Listornas namn, samlat så att både knapparna och rubriken hämtar dem från samma ställe. */
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  NEW: 'filtering:errands.open',
+  DRAFT: 'filtering:errands.draft',
+  SOLVED: 'filtering:errands.closed',
+};
+const STATUS_KEYS = Object.keys(STATUS_LABEL_KEYS);
+
+/**
+ * Namnet på listan man tittar på. Egen hook eftersom useStatusButtons hämtar antal: en rubrik
+ * som bara vill ha namnet ska inte utlösa en omgång räkneanrop till.
+ */
+export function useActiveStatusLabel(): string {
+  const { t } = useTranslation();
+  const activeStatus = useFilterStore((state) => state.activeStatus);
+  const labelKey = activeStatus ? STATUS_LABEL_KEYS[activeStatus] : undefined;
+
+  return labelKey ? t(labelKey) : '';
+}
 
 export function useStatusButtons() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -49,21 +68,21 @@ export function useStatusButtons() {
   const allStatusButtons: StatusButton[] = [
     {
       key: 'NEW',
-      label: t('filtering:errands.open'),
+      label: t(STATUS_LABEL_KEYS.NEW),
       statuses: ['NEW'],
       icon: createElement(ClipboardPen),
       errandsCount: newErrandCount,
     },
     {
       key: 'DRAFT',
-      label: t('filtering:errands.draft'),
+      label: t(STATUS_LABEL_KEYS.DRAFT),
       statuses: ['DRAFT'],
       icon: createElement(SquarePen),
       errandsCount: draftErrandCount,
     },
     {
       key: 'SOLVED',
-      label: t('filtering:errands.closed'),
+      label: t(STATUS_LABEL_KEYS.SOLVED),
       statuses: ['SOLVED'],
       icon: createElement(CircleCheckBig),
       errandsCount: closedErrandCount,

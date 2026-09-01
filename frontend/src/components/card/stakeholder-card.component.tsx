@@ -4,7 +4,7 @@ import { StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { Button, cx } from '@sk-web-gui/react';
 import { getStakeholderRoleDisplayName, shouldShowContactDetails } from '@utils/stakeholder';
 import { Pen, X } from 'lucide-react';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
@@ -23,7 +23,9 @@ export const StakeholderCard: React.FC<{
   hideRole?: boolean;
   /** Kortet fyller avsnittets bredd i stället för att hålla läsbredd bland flera kort. */
   wide?: boolean;
-}> = ({ stakeholder, isEditable, hideRemove, editableFields, onRemove, index, roles, hideRole, wide }) => {
+  /** Innehåll som hör till just den här parten och står under uppgifterna, före knapparna. */
+  children?: ReactNode;
+}> = ({ stakeholder, isEditable, hideRemove, editableFields, onRemove, index, roles, hideRole, wide, children }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { metadata } = useMetadataStore();
@@ -83,6 +85,8 @@ export const StakeholderCard: React.FC<{
               </div>
             </div>
           )}
+
+          {children && <div className="mt-16">{children}</div>}
 
           {isEditable && !isLocked && (
             <div className="flex flex-col sm:flex-row gap-[1rem] mt-16">

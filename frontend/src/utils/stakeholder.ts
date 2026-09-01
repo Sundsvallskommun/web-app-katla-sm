@@ -88,6 +88,32 @@ export const createStakeholderSchema = (t: TFunction) =>
 
 export type StakeholderSchema = ReturnType<typeof createStakeholderSchema>;
 
+/**
+ * Anställningsformen sparas som en parameter på parten själv, inte på ärendet: den beskriver
+ * personen, och både rapportören och kollegan man rapporterar åt har var sin.
+ */
+export const EMPLOYMENT_TYPE_KEY = 'employmentType';
+export const EMPLOYMENT_TYPE_PERMANENT = 'TILLSVIDAREANSTALLD';
+export const EMPLOYMENT_TYPE_SUBSTITUTE = 'VIKARIE';
+export const EMPLOYMENT_TYPES = [EMPLOYMENT_TYPE_PERMANENT, EMPLOYMENT_TYPE_SUBSTITUTE] as const;
+
+/** Tillsvidareanställd är förvalet, så en part utan sparat val läses som det. */
+export const getEmploymentType = (stakeholder: StakeholderDTO | undefined): string =>
+  stakeholder?.parameters?.find((parameter) => parameter.key === EMPLOYMENT_TYPE_KEY)?.values?.[0] ??
+  EMPLOYMENT_TYPE_PERMANENT;
+
+/** Rollerna som har en anställningsform: rapportören och kollegan hen rapporterar åt. */
+export const hasEmploymentType = (role: string | undefined): boolean =>
+  ['REPORTER', 'CONTACT', 'SUBSTITUTEASSIGNMENT'].includes(role ?? '');
+
+export const withEmploymentType = (stakeholder: StakeholderDTO, employmentType: string): StakeholderDTO => ({
+  ...stakeholder,
+  parameters: [
+    ...(stakeholder.parameters ?? []).filter((parameter) => parameter.key !== EMPLOYMENT_TYPE_KEY),
+    { key: EMPLOYMENT_TYPE_KEY, values: [employmentType] },
+  ],
+});
+
 export const getReporterStakeholder: (stakeholders: StakeholderDTO[] | undefined) => StakeholderDTO | undefined = (
   stakeholders
 ) => stakeholders?.find((s) => s.role?.includes('REPORTER'));

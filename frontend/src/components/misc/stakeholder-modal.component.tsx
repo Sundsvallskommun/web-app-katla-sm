@@ -55,8 +55,11 @@ export const StakeholderFormModal: React.FC<{
   const onSave = (data: StakeholderDTO) => {
     const merged = editableFields ? { ...initialValues, ...data } : data;
     const stakeholder: StakeholderDTO = { ...merged, phoneNumbers: [phoneNumberFormatter(merged?.phoneNumbers?.[0])] };
+    // Går rollen inte att välja får parten avsnittets roll. Tidigare lämnades den tom så snart
+    // avsnittet rymde flera roller, och en part utan roll filtreras bort ur listan – den såg
+    // ut att aldrig ha lagts till.
     if (!editableFields?.includes('role') && !stakeholder.role) {
-      stakeholder.role = roles.length === 1 ? roles[0] : undefined;
+      stakeholder.role = roles[0];
     }
     if (edit && index !== undefined) {
       update(index, stakeholder);

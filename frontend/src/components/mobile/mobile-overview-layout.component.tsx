@@ -9,7 +9,7 @@ import { Menu, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useOverviewErrands } from 'src/hooks/use-overview-errands';
-import { useStatusButtons } from 'src/hooks/use-status-buttons';
+import { useActiveStatusLabel } from 'src/hooks/use-status-buttons';
 
 import { MainPageMobileHeader } from './main-page-mobile-header.component';
 import { MobileErrandsList } from './mobile-errands-list.component';
@@ -21,7 +21,7 @@ export const MobileOverviewLayout: React.FC = () => {
   const { t } = useTranslation();
   const [overlay, setOverlay] = useState<OverlayType>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const { activeStatusLabel } = useStatusButtons();
+  const activeStatusLabel = useActiveStatusLabel();
   const { rows, isLoading, hasMore, loadMore, totalElements, errandsError, metadataError } = useOverviewErrands({
     mode: 'mobile',
   });

@@ -56,7 +56,7 @@ describe('SchemaForm time widget', () => {
     expect(input).toHaveClass('sk-form-input');
   });
 
-  it('kompletterar med sekunder bara när schemat kräver time-format', () => {
+  it('kompletterar med sekunder och offset bara när schemat kräver time-format', () => {
     const { input: timeFormatInput, onChange: onTimeFormatChange } = renderTimeField({
       type: 'object',
       properties: {
@@ -65,7 +65,46 @@ describe('SchemaForm time widget', () => {
     });
 
     fireEvent.change(timeFormatInput, { target: { value: '12:11' } });
-    expect(onTimeFormatChange).toHaveBeenLastCalledWith({ discoveredTime: '12:11:00' }, expect.anything());
+
+    // Offseten är miljöns egen, så testet låser formen och inte den exakta zonen.
+    const [[values]] = onTimeFormatChange.mock.calls.slice(-1) as [[Record<string, unknown>]];
+    expect(values.discoveredTime).toMatch(/^12:11:00([+-]\d{2}:\d{2}|Z)$/);
+  });
+
+  /**
+   * API:ts validator läser format: time som RFC 3339 full-time, där offseten är obligatorisk.
+   * Ett värde utan den avvisas med "does not match the time pattern".
+   */
+  it('lämnar en tid som bär tidszon, inte bara sekunder', () => {
+    const { input, onChange } = renderTimeField({
+      type: 'object',
+      properties: {
+        discoveredTime: { type: 'string', format: 'time', title: 'Tid' },
+      },
+    });
+
+    fireEvent.change(input, { target: { value: '17:05' } });
+
+    const [[values]] = onChange.mock.calls.slice(-1) as [[Record<string, unknown>]];
+    expect(values.discoveredTime).not.toBe('17:05:00');
+    expect(String(values.discoveredTime)).toMatch(/([+-]\d{2}:\d{2}|Z)$/);
+  });
+
+  /** Ett sparat värde bär offseten; det nativa fältet visar bara HH:mm. */
+  it('visar ett sparat värde med tidszon i tidsfältet', () => {
+    render(
+      <SchemaForm
+        schemaId="time-widget-saved:1"
+        schema={{
+          type: 'object',
+          properties: { discoveredTime: { type: 'string', format: 'time', title: 'Tid' } },
+        }}
+        formData={{ discoveredTime: '17:05:00+02:00' }}
+        hideSubmitButton
+      />
+    );
+
+    expect(screen.getByLabelText('Tid')).toHaveValue('17:05');
   });
 
   it('behåller HH:mm för fält utan time-format', () => {

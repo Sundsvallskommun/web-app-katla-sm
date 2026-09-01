@@ -128,6 +128,8 @@ export interface StakeholderDTO {
   phoneNumbers?: string[];
   title?: string;
   department?: string;
+  /** Parameters for the stakeholder */
+  parameters?: ParameterDTO[];
 }
 
 export interface ClassificationDTO {

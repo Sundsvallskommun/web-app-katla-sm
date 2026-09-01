@@ -1,4 +1,5 @@
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
+import { EmploymentTypeChoice } from '@components/errand-sections/employment-type-choice.component';
 import { ErrandSection } from '@components/errand-sections/errand-section.component';
 import { COLLEAGUE_FIELD_ID } from '@components/errand-sections/section-field-ids';
 import { SectionHeader } from '@components/misc/section-header.component';
@@ -64,7 +65,9 @@ export const ReporterContent: React.FC = () => {
             editableFields={['emails', 'phoneNumbers']}
             index={reporterIndex}
             roles={['REPORTER']}
-          />
+          >
+            <EmploymentTypeChoice index={reporterIndex} name="reporter" />
+          </StakeholderCard>
           <Checkbox checked={otherReporter} onChange={handleOtherReporterChange}>
             {t('errand-information:stakeholder.reporting_for_colleague')}
           </Checkbox>
@@ -82,6 +85,8 @@ export const ReporterContent: React.FC = () => {
                 fieldId={COLLEAGUE_FIELD_ID}
                 hideRoleSelect
                 sectionCards
+                // Anställningsformen hör till kollegan och står därför i hens eget kort.
+                renderCardExtra={(index) => <EmploymentTypeChoice index={index} name="colleague" />}
               />
             </div>
           )}

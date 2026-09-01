@@ -97,7 +97,10 @@
       "save_edit": "Save",
       "save_add": "Add",
       "cancel": "Cancel"
-    }
+    },
+    "employment_type": "Form of employment",
+    "employment_type_tillsvidareanstalld": "Permanent employee",
+    "employment_type_vikarie": "Substitute"
   },
   "submit_confirm": {
     "question": "Once you submit the report it is registered and can no longer be changed.",

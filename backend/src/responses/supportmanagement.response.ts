@@ -92,8 +92,12 @@ export class StakeholderDTO implements Partial<Stakeholder> {
   @IsString()
   @IsOptional()
   department?: string;
-  // /** Parameters for the stakeholder */
-  // parameters?: Parameter[];
+  /** Parameters for the stakeholder, till exempel anställningsform för rapportören. */
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParameterDTO)
+  parameters?: Parameter[];
 }
 
 export class ClassificationDTO implements Classification {
