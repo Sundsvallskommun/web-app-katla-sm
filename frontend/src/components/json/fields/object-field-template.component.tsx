@@ -34,9 +34,12 @@ const NARROW_ROW_GAP_CLASS = 'gap-40';
  *
  * Höjden är satt, inte växande: ett felmeddelande under fältet gör annars den kolumnen högre,
  * och grannens etikettblock skulle svälla lika mycket och flytta ned dess fält igen.
+ *
+ * Innehållet ligger i blockets nederkant, så att avståndet ned till fältet är detsamma vare sig
+ * det sista som står där är en rubrik eller en hjälptext. Utfyllnaden hamnar ovanför i stället.
  */
 const NARROW_ROW_FIELD_CLASS =
-  'flex w-[32rem] max-w-full [&>.form-row]:flex [&>.form-row]:flex-col [&_.field-label-block]:min-h-[5rem]';
+  'flex w-[32rem] max-w-full [&>.form-row]:flex [&>.form-row]:flex-col [&_.field-label-block]:min-h-[5rem] [&_.field-label-block]:justify-end';
 
 interface SectionDefinition {
   id: string;

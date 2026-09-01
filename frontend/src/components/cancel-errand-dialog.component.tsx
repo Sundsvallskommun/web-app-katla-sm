@@ -27,7 +27,7 @@ export const CancelErrandDialog: React.FC<CancelErrandDialogProps> = ({ show, on
         <Button variant="secondary" onClick={onClose}>
           {t('errand-information:cancel_confirm.back')}
         </Button>
-        <Button variant="primary" onClick={onConfirm}>
+        <Button variant="primary" color="vattjom" onClick={onConfirm}>
           {t('errand-information:cancel_confirm.confirm')}
         </Button>
       </Dialog.Buttons>
