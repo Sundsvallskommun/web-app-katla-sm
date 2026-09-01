@@ -5,11 +5,11 @@ import { NotificationsBell } from '@components/notifications/notification-bell';
 import { NotificationsWrapper } from '@components/notifications/notification-wrapper';
 import { Button } from '@sk-web-gui/react';
 import { capitalize } from 'lodash';
-import { Menu } from 'lucide-react';
+import { Menu, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useOverviewErrands } from 'src/hooks/use-overview-errands';
-import { useFilterStore } from 'src/stores/filter-store';
+import { useStatusButtons } from 'src/hooks/use-status-buttons';
 
 import { MainPageMobileHeader } from './main-page-mobile-header.component';
 import { MobileErrandsList } from './mobile-errands-list.component';
@@ -21,13 +21,13 @@ export const MobileOverviewLayout: React.FC = () => {
   const { t } = useTranslation();
   const [overlay, setOverlay] = useState<OverlayType>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const { activeStatus } = useFilterStore();
+  const { activeStatusLabel } = useStatusButtons();
   const { rows, isLoading, hasMore, loadMore, totalElements, errandsError, metadataError } = useOverviewErrands({
     mode: 'mobile',
   });
   const errors = [metadataError, errandsError].filter((message): message is string => message !== null);
 
-  const statusLabel = activeStatus ? capitalize(activeStatus) : capitalize(t('filtering:errands.open'));
+  const statusLabel = capitalize(activeStatusLabel);
 
   return (
     <>
@@ -36,6 +36,7 @@ export const MobileOverviewLayout: React.FC = () => {
           <div className="flex items-center gap-12">
             <div className="[&>button]:!mx-0">
               <NotificationsBell
+                inverted
                 expanded={showNotifications}
                 toggleShow={() => {
                   setShowNotifications((current) => !current);
@@ -43,6 +44,7 @@ export const MobileOverviewLayout: React.FC = () => {
               />
             </div>
             <Button
+              inverted
               iconButton
               variant="tertiary"
               aria-label={t('layout:controls.open_menu')}
@@ -58,7 +60,13 @@ export const MobileOverviewLayout: React.FC = () => {
         }
       >
         <div className="px-24 py-12">
-          <LinkButton href="/arende/registrera" color="vattjom" variant="primary" className="w-full">
+          <LinkButton
+            href="/arende/registrera"
+            color="vattjom"
+            variant="primary"
+            className="w-full"
+            leftIcon={<Plus aria-hidden="true" />}
+          >
             {t('filtering:new_errand_mobile')}
           </LinkButton>
         </div>
@@ -67,7 +75,7 @@ export const MobileOverviewLayout: React.FC = () => {
           <h2 className="text-h3-md">{statusLabel}</h2>
           {rows.length < totalElements && (
             <span className="text-small text-dark-secondary">
-              Visar {rows.length} av {totalElements} {activeStatus ?? t('filtering:errands.open')}
+              {t('filtering:showing_of', { shown: rows.length, total: totalElements })}
             </span>
           )}
         </div>

@@ -18,6 +18,7 @@ export const StatusLabel: React.FC<{ status?: string }> = ({ status }) => {
       break;
     case 'NEW':
       color = 'vattjom';
+      inverted = true;
       break;
     case 'DRAFT':
       color = 'tertiary';

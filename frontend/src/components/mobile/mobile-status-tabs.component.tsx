@@ -13,7 +13,7 @@ export const MobileStatusTabs: React.FC = () => {
       {error && <ErrorAlert className="mx-16 mt-8" message={error} />}
       <div className="flex gap-8 overflow-x-auto px-16 py-8 no-scrollbar">
         {statusButtons.map((button) => {
-          const isActive = activeStatus === button.label;
+          const isActive = activeStatus === button.key;
           return (
             <Button
               key={button.label}

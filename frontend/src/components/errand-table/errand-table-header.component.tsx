@@ -11,13 +11,22 @@ export const ErrandTableHeader: React.FC = () => {
   const { t } = useTranslation();
   const { sortColumn, sortOrder, setSort } = useSortStore();
 
+  // Kolumnordningen följer designen. Sista kolumnen bär pilen som öppnar ärendet och har
+  // därför ingen synlig rubrik – bara en för uppläsning.
   const headers = [
+    {
+      label: t('errand-table.header.classificationType'),
+      property: 'classification.type',
+      sortable: true,
+      screenReaderOnly: false,
+      sticky: true,
+    },
     {
       label: t('errand-table.header.status'),
       property: 'status',
       sortable: true,
       screenReaderOnly: false,
-      sticky: true,
+      sticky: false,
     },
     {
       label: t('errand-table.header.errandNumber'),
@@ -27,17 +36,17 @@ export const ErrandTableHeader: React.FC = () => {
       sticky: false,
     },
     {
-      label: t('errand-table.header.classificationType'),
-      property: 'classification.type',
+      label: t('errand-table.header.created'),
+      property: 'created',
       sortable: true,
       screenReaderOnly: false,
       sticky: false,
     },
     {
-      label: t('errand-table.header.created'),
-      property: 'created',
-      sortable: true,
-      screenReaderOnly: false,
+      label: t('errand-table.header.open'),
+      property: 'open',
+      sortable: false,
+      screenReaderOnly: true,
       sticky: false,
     },
   ];

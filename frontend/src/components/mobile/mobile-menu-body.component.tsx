@@ -3,7 +3,7 @@
 import { LogoutButton } from '@components/buttons/logout-button.component';
 import { colorSchemeOptions } from '@components/misc/color-scheme-options';
 import { languageOptions } from '@components/misc/language-options';
-import { FilterOverviewSidebarStatusSelector } from '@components/sidebars/filter-overview-sidebar-status-selector.component';
+import { OverviewStatusNav } from '@components/sidebars/overview-status-nav.component';
 import { useUserStore } from '@services/user-service/user-service';
 import { Avatar, Button, Divider, RadioButton } from '@sk-web-gui/react';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
@@ -32,7 +32,7 @@ export const MobileMenuBody: React.FC<MobileMenuBodyProps> = ({ onClose }) => {
     >
       <MainPageMobileHeader
         actions={
-          <Button iconButton variant="tertiary" aria-label={t('layout:controls.close_menu')} onClick={onClose}>
+          <Button inverted iconButton variant="tertiary" aria-label={t('layout:controls.close_menu')} onClick={onClose}>
             <X />
           </Button>
         }
@@ -49,7 +49,7 @@ export const MobileMenuBody: React.FC<MobileMenuBodyProps> = ({ onClose }) => {
           <Divider />
 
           <div className="flex flex-col gap-8">
-            <FilterOverviewSidebarStatusSelector smallSideBar={false} />
+            <OverviewStatusNav />
           </div>
 
           <Divider />

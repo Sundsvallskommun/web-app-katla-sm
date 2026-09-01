@@ -40,7 +40,8 @@
       "status": "Status",
       "errandNumber": "Case number",
       "classificationType": "Report type",
-      "created": "Reported"
+      "created": "Registered",
+      "open": "Open"
     }
   },
   "status": {

@@ -7,13 +7,21 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import commonSv from '../../../locales/sv/common.json';
 
-type ErrandTableData = Pick<ReturnType<typeof useOverviewErrands>, 'rows' | 'isLoading' | 'totalPages'>;
+type ErrandTableData = Pick<
+  ReturnType<typeof useOverviewErrands>,
+  'rows' | 'isLoading' | 'totalPages' | 'totalElements'
+>;
 
 const useOverviewErrandsMock = vi.fn<() => ErrandTableData>();
 const i18n = createInstance();
 
 vi.mock('src/hooks/use-overview-errands', () => ({
   useOverviewErrands: () => useOverviewErrandsMock(),
+}));
+
+// Raden navigerar med routern för den som pekar; testet bryr sig bara om att den finns.
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 vi.mock('@components/errand-table/errand-table-footer.component', () => ({
@@ -46,6 +54,7 @@ describe('ErrandTable', () => {
       ],
       isLoading: false,
       totalPages: 1,
+      totalElements: 1,
     });
 
     const { container } = render(
@@ -61,7 +70,7 @@ describe('ErrandTable', () => {
   });
 
   it('announces the initial loading state', () => {
-    useOverviewErrandsMock.mockReturnValue({ rows: [], isLoading: true, totalPages: 1 });
+    useOverviewErrandsMock.mockReturnValue({ rows: [], isLoading: true, totalPages: 1, totalElements: 0 });
 
     render(
       <I18nextProvider i18n={i18n}>

@@ -10,11 +10,16 @@ import { useFilterStore } from 'src/stores/filter-store';
 import { useSortStore } from 'src/stores/sort-store';
 
 export interface StatusButton {
+  /** Stabil identitet för listan. Etiketten duger inte: den byter form med språket. */
+  key: string;
   label: string;
   statuses: string[];
   icon: ReactElement;
   errandsCount: number;
 }
+
+const DEFAULT_STATUS_KEY = 'NEW';
+const STATUS_KEYS = [DEFAULT_STATUS_KEY, 'DRAFT', 'SOLVED'];
 
 export function useStatusButtons() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -32,26 +37,32 @@ export function useStatusButtons() {
   const { reset } = useSortStore();
   const draftEnabled = appConfig.features.draftEnabled;
 
+  // Ett sparat val från en tidigare version är en översatt etikett och matchar ingen lista.
+  // Det, och ett tomt val, faller tillbaka på den första listan.
   useEffect(() => {
-    if (!activeStatus) {
-      setActiveStatus(t('filtering:errands.open'));
+    if (!activeStatus || !STATUS_KEYS.includes(activeStatus)) {
+      setActiveStatus(DEFAULT_STATUS_KEY);
+      setStatuses([DEFAULT_STATUS_KEY]);
     }
-  }, [t, activeStatus, setActiveStatus]);
+  }, [activeStatus, setActiveStatus, setStatuses]);
 
   const allStatusButtons: StatusButton[] = [
     {
+      key: 'NEW',
       label: t('filtering:errands.open'),
       statuses: ['NEW'],
       icon: createElement(ClipboardPen),
       errandsCount: newErrandCount,
     },
     {
+      key: 'DRAFT',
       label: t('filtering:errands.draft'),
       statuses: ['DRAFT'],
       icon: createElement(SquarePen),
       errandsCount: draftErrandCount,
     },
     {
+      key: 'SOLVED',
       label: t('filtering:errands.closed'),
       statuses: ['SOLVED'],
       icon: createElement(CircleCheckBig),
@@ -91,10 +102,13 @@ export function useStatusButtons() {
   }, [draftEnabled, setClosedErrandCount, setDraftErrandCount, setNewErrandCount, t]);
 
   const onSelectStatus = (button: StatusButton) => {
-    setActiveStatus(button.label);
+    setActiveStatus(button.key);
     setStatuses(button.statuses);
     reset();
   };
 
-  return { statusButtons, activeStatus, onSelectStatus, isLoading, error };
+  /** Den valda listans namn, för rubriker. Etiketten härleds ur nyckeln och följer språket. */
+  const activeStatusLabel = statusButtons.find((button) => button.key === activeStatus)?.label ?? '';
+
+  return { statusButtons, activeStatus, activeStatusLabel, onSelectStatus, isLoading, error };
 }

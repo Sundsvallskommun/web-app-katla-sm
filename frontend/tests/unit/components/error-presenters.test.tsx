@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { ErrandTable } from 'src/components/errand-table/errand-table.component';
 import { MobileErrandsList } from 'src/components/mobile/mobile-errands-list.component';
 import { MobileStatusTabs } from 'src/components/mobile/mobile-status-tabs.component';
-import { FilterOverviewSidebarStatusSelector } from 'src/components/sidebars/filter-overview-sidebar-status-selector.component';
+import { OverviewStatusNav } from 'src/components/sidebars/overview-status-nav.component';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('react-i18next', () => ({
@@ -65,12 +65,12 @@ describe('API error presenters', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('api_errors.counts');
     unmount();
 
-    render(<FilterOverviewSidebarStatusSelector smallSideBar={false} />);
+    render(<OverviewStatusNav />);
     expect(screen.getByRole('alert')).toHaveTextContent('api_errors.counts');
   });
 
   it('keeps a visible and accessible error indicator in the collapsed desktop selector', () => {
-    render(<FilterOverviewSidebarStatusSelector smallSideBar />);
+    render(<OverviewStatusNav collapsed />);
 
     expect(screen.getByRole('alert')).toHaveAttribute('title', 'api_errors.counts');
     expect(screen.getByRole('alert')).toHaveTextContent('api_errors.counts');

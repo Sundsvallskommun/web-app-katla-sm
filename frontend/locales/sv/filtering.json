@@ -1,8 +1,8 @@
 {
   "errands": {
-    "open": "öppna ärenden",
-    "draft": "utkast",
-    "closed": "avslutade ärenden"
+    "open": "Inskickade",
+    "draft": "Utkast",
+    "closed": "Avslutade"
   },
   "search": "Sök",
   "new_errand": "Rapportera",
@@ -13,5 +13,9 @@
   "my_errands": "Mina ärenden",
   "load_more": "Läs in fler",
   "search_title": "Sök och filtrera",
-  "menu_title": "Meny"
+  "menu_title": "Meny",
+  "reports_heading": "Rapporter",
+  "showing_of": "Visar {{shown}} av {{total}}",
+  "showing_count_one": "Visar {{count}} ärende",
+  "showing_count_other": "Visar {{count}} ärenden"
 }

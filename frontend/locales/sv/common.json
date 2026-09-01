@@ -40,7 +40,8 @@
       "status": "Status",
       "errandNumber": "Ärendenummer",
       "classificationType": "Typ av rapport",
-      "created": "Rapporterat"
+      "created": "Registrerat",
+      "open": "Öppna"
     }
   },
   "status": {

@@ -28,22 +28,18 @@ test.describe('Overview page', () => {
     await page.goto(appUrl('/oversikt'));
   });
 
-  test('Show sidebar filter buttons with errand count', async ({ page }) => {
+  // Antalen står inte längre bredvid listorna i sidopanelen utan i rubriken över tabellen,
+  // där de gäller den lista man faktiskt tittar på.
+  test('Lists the report views in the sidebar and names the selected one above the table', async ({ page }) => {
     await expect(page.locator('main').first()).toBeVisible();
-    const openErrandsButton = page.locator('[aria-label="status-button-öppna ärenden"]');
-    await expect(openErrandsButton).toBeEnabled();
-    await expect(openErrandsButton).toContainText(`Öppna ärenden${mockCountNewErrands.count}`);
-    //Note: Not in use right now
-    // const draftsButton = page.locator('[aria-label="status-button-utkast"]');
-    // await expect(draftsButton).toBeEnabled();
-    // await expect(draftsButton).toContainText(`Utkast${mockCountDraftErrands.count}`);
-    const solvedErrandsButton = page.locator('[aria-label="status-button-avslutade ärenden"]');
-    await expect(solvedErrandsButton).toBeEnabled();
-    await expect(solvedErrandsButton).toContainText(`Avslutade ärenden${mockCountSolvedErrands.count}`);
-    const logoutButton = page.getByTestId('logout-button');
-    await expect(logoutButton).toBeEnabled();
-    await expect(logoutButton).toContainText('Logga ut');
-    await logoutButton.click();
+
+    const submittedButton = page.locator('[aria-label="status-button-Inskickade"]');
+    await expect(submittedButton).toBeEnabled();
+    await expect(submittedButton).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('[aria-label="status-button-Avslutade"]')).toBeEnabled();
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inskickade');
+    await expect(page.getByTestId('errand-count')).toHaveText(`Visar ${mockErrands.totalElements ?? 0} ärenden`);
   });
 
   test('Show correct errand table header and correct ammount of errands', async ({ page }) => {
@@ -51,10 +47,10 @@ test.describe('Overview page', () => {
     await expect(table).toBeVisible();
 
     const headerCells = table.locator('.sk-table-thead-tr').first().locator('th');
-    await expect(headerCells.nth(0).locator('span').first()).toHaveText('Status');
-    await expect(headerCells.nth(1).locator('span').first()).toHaveText('Ärendenummer');
-    await expect(headerCells.nth(2).locator('span').first()).toHaveText('Typ av rapport');
-    await expect(headerCells.nth(3).locator('span').first()).toHaveText('Rapporterat');
+    await expect(headerCells.nth(0).locator('span').first()).toHaveText('Typ av rapport');
+    await expect(headerCells.nth(1).locator('span').first()).toHaveText('Status');
+    await expect(headerCells.nth(2).locator('span').first()).toHaveText('Ärendenummer');
+    await expect(headerCells.nth(3).locator('span').first()).toHaveText('Registrerat');
 
     await expect(table.locator('.sk-table-tbody-tr')).toHaveCount(mockErrands?.content?.length ?? 0);
   });
@@ -67,6 +63,16 @@ test.describe('Overview page', () => {
       'href',
       `${basePath}/arende/registrera`
     );
+  });
+
+  test('Opens the errand from anywhere on the row', async ({ page }) => {
+    const firstRow = page.getByTestId('errand-table').locator('.sk-table-tbody-tr').first();
+    await expect(firstRow).toBeVisible();
+
+    // Klicket läggs på ärendenumret, alltså utanför pilknappen, för att visa att hela raden bär det.
+    await firstRow.getByText('AIA-25120019').click();
+
+    await expect(page).toHaveURL(/\/arende\/AIA-25120019\/grundinformation$/);
   });
 
   // TODO: Add test for search field when frontend functionality is ready

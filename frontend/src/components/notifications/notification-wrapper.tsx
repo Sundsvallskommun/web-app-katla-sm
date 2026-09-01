@@ -108,6 +108,7 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
         <MainPageMobileHeader
           actions={
             <Button
+              inverted
               aria-label={t('layout:notifications.close')}
               iconButton
               variant="tertiary"
