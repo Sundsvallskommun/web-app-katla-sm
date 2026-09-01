@@ -23,12 +23,19 @@ import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
 import { useAutoInitReporter } from 'src/hooks/use-auto-init-reporter';
 import { useLoadMetadata } from 'src/hooks/use-load-metadata';
 import { useMediaQuery } from 'src/hooks/use-media-query';
+import { useUnsavedReportWarning } from 'src/hooks/use-unsaved-report-warning';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { useWizardStore } from 'src/stores/wizard-store';
 import * as yup from 'yup';
 
 const ReporterInit: React.FC = () => {
   useAutoInitReporter();
+  return null;
+};
+
+/** Måste ligga innanför FormProvider för att se formuläret, precis som ReporterInit. */
+const UnsavedReportWarning: React.FC = () => {
+  useUnsavedReportWarning();
   return null;
 };
 
@@ -222,6 +229,9 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
           {t('layout:header.goto_content')}
         </NextLink>
         {registerNewErrand && <ReporterInit />}
+        {/* Bara registreringen: där är allt innehåll osparat. Ett laddat utkast bär redan
+            sparade värden, så "har innehåll" skulle varna för att lämna en orörd sida. */}
+        {registerNewErrand && <UnsavedReportWarning />}
         <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
           {showMobileWizard ?
             <MobileWizard />
@@ -230,8 +240,12 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                 <div className="mb-xl">
                   {/* Kvittot bär sitt eget besked i kortet och har inga åtgärder kvar, så hela
                       raden med rubrik och knappar utgår där. */}
+                  {/* Raden följer med vid skroll så att åtgärderna alltid är nåbara — rapporten
+                      är lång, och utan detta måste man skrolla tillbaka upp för att skicka in.
+                      Egen bakgrund krävs: kortet skulle annars synas rakt igenom raden.
+                      Klistrar mot skrollytan (.grow.shrink.overflow-y-auto), inte mot fönstret. */}
                   {!submittedView && (
-                    <div className="mx-auto max-w-[108rem] flex flex-col md:flex-row justify-between pt-16 md:pt-32 pb-12 px-16 md:px-0 gap-12">
+                    <div className="sticky top-0 z-10 bg-background-100 mx-auto max-w-[108rem] flex flex-col md:flex-row justify-between pt-16 md:pt-32 pb-12 px-16 md:px-0 gap-12">
                       <h1 className="text-h2-sm md:text-h2-lg">{getHeaderTitle()}</h1>
                       <ErrandButtonGroup isNewErrand={registerNewErrand} />
                     </div>
