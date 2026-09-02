@@ -1,5 +1,4 @@
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
-import { EmploymentTypeChoice } from '@components/errand-sections/employment-type-choice.component';
 import { ErrandSection } from '@components/errand-sections/errand-section.component';
 import { COLLEAGUE_FIELD_ID } from '@components/errand-sections/section-field-ids';
 import { SectionHeader } from '@components/misc/section-header.component';
@@ -18,8 +17,6 @@ export const ReporterContent: React.FC = () => {
   // Valet ligger i formuläret, inte i komponenten: valideringen måste kunna se att en kollega
   // utlovats men inte fyllts i, och den läser bara formulärets värden.
   const otherReporter = watch('reportingForColleague') ?? false;
-
-  const reporterIndex = stakeholders?.findIndex((s) => s.role === 'REPORTER') ?? -1;
 
   const { remove } = useFieldArray({
     control,
@@ -61,9 +58,7 @@ export const ReporterContent: React.FC = () => {
             hideRole
             wide
             roles={['REPORTER']}
-          >
-            <EmploymentTypeChoice index={reporterIndex} name="reporter" />
-          </StakeholderCard>
+          />
           <Checkbox checked={otherReporter} onChange={handleOtherReporterChange}>
             {t('errand-information:stakeholder.reporting_for_colleague')}
           </Checkbox>
@@ -81,8 +76,6 @@ export const ReporterContent: React.FC = () => {
                 fieldId={COLLEAGUE_FIELD_ID}
                 hideRoleSelect
                 sectionCards
-                // Anställningsformen hör till kollegan och står därför i hens eget kort.
-                renderCardExtra={(index) => <EmploymentTypeChoice index={index} name="colleague" />}
               />
             </div>
           )}

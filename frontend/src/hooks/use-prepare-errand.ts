@@ -2,7 +2,6 @@ import { errandFormDataToJsonParameters, isJsonObject, parseErrandFormData } fro
 import { FacilityInfoDTO, LabelDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { ErrandFormDataItem, ErrandFormDTO } from '@interfaces/errand-form';
 import { findPlaceNode, getPlaceNodes, hasSubPlaces, qualifiedPlaceName, toErrandLabels } from '@utils/label-structure';
-import { getEmploymentType, hasEmploymentType, withEmploymentType } from '@utils/stakeholder';
 import { useMemo } from 'react';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
@@ -138,14 +137,7 @@ export function usePrepareErrand() {
 
     return {
       ...errandWithoutFormData,
-      // Anställningsformen har ett förval som gäller tills något annat väljs. Det skrivs in här
-      // i stället för vid renderingen, så att även ett utkast från innan valet fanns får med sig
-      // det när det skickas.
-      stakeholders: stakeholders.map((stakeholder) =>
-        hasEmploymentType(stakeholder.role) ?
-          withEmploymentType(stakeholder, getEmploymentType(stakeholder))
-        : stakeholder
-      ),
+      stakeholders,
       status,
       labels: buildLabels(eventType, errandFormData),
       jsonParameters: errandFormDataToJsonParameters(errandFormData),
