@@ -1,20 +1,15 @@
-import { StakeholderFormModal } from '@components/misc/stakeholder-modal.component';
 import { useIsContentLocked } from '@contexts/errand-content-lock-context';
 import { StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { Button, cx } from '@sk-web-gui/react';
 import { getStakeholderRoleDisplayName, shouldShowContactDetails } from '@utils/stakeholder';
-import { Pen, X } from 'lucide-react';
-import { ReactNode, useState } from 'react';
+import { X } from 'lucide-react';
+import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
 export const StakeholderCard: React.FC<{
   stakeholder: StakeholderDTO;
-  isEditable?: boolean;
-  hideRemove?: boolean;
-  editableFields?: (keyof StakeholderDTO)[];
   onRemove?: () => void;
-  index?: number;
   roles?: string[];
   /**
    * Rollraden namnger vem kortet gäller när flera parter med olika roller står under samma
@@ -25,9 +20,8 @@ export const StakeholderCard: React.FC<{
   wide?: boolean;
   /** Innehåll som hör till just den här parten och står under uppgifterna, före knapparna. */
   children?: ReactNode;
-}> = ({ stakeholder, isEditable, hideRemove, editableFields, onRemove, index, roles, hideRole, wide, children }) => {
+}> = ({ stakeholder, onRemove, roles, hideRole, wide, children }) => {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const { metadata } = useMetadataStore();
   const isLocked = useIsContentLocked();
 
@@ -88,45 +82,20 @@ export const StakeholderCard: React.FC<{
 
           {children && <div className="mt-16">{children}</div>}
 
-          {isEditable && !isLocked && (
-            <div className="flex flex-col sm:flex-row gap-[1rem] mt-16">
-              <Button
-                data-cy="edit-card-button"
-                leftIcon={<Pen size={16} />}
-                variant="tertiary"
-                size="sm"
-                onClick={() => {
-                  setIsOpen(true);
-                }}
-              >
-                {t('errand-information:stakeholder.edit_details')}
-              </Button>
-              {!hideRemove && (
-                <Button
-                  data-cy="remove-card-button"
-                  leftIcon={<X size={16} />}
-                  variant="tertiary"
-                  size="sm"
-                  onClick={onRemove}
-                >
-                  {t('errand-information:stakeholder.remove')}
-                </Button>
-              )}
-            </div>
+          {onRemove && !isLocked && (
+            <Button
+              data-cy="remove-card-button"
+              leftIcon={<X size={16} />}
+              variant="tertiary"
+              size="sm"
+              className="mt-16"
+              onClick={onRemove}
+            >
+              {t('errand-information:stakeholder.remove')}
+            </Button>
           )}
         </div>
       </div>
-      <StakeholderFormModal
-        edit
-        index={index}
-        initialValues={stakeholder}
-        show={isOpen}
-        roles={roles ?? []}
-        editableFields={editableFields}
-        onClose={() => {
-          setIsOpen(false);
-        }}
-      />
     </div>
   );
 };

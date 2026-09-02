@@ -3,7 +3,7 @@
 import { ErrorAlert } from '@components/misc/error-alert.component';
 import { MainPageMobileHeader } from '@components/mobile/main-page-mobile-header.component';
 import { getNotifications } from '@services/errand-service/errand-service';
-import { Button, cx, Divider, Header, Spinner } from '@sk-web-gui/react';
+import { Button, Divider, Header, Spinner } from '@sk-web-gui/react';
 import { Mail, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,10 +13,9 @@ import { useNotificationStore } from 'src/stores/notification-store';
 
 import { NotificationItem } from './notification-item';
 
-export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boolean) => void; open?: boolean }> = ({
+export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boolean) => void }> = ({
   show,
   setShow,
-  open = false,
 }) => {
   const { t } = useTranslation();
   const { activeNotifications, acknowledgedNotifications, setNotifications } = useNotificationStore();
@@ -129,20 +128,11 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
 
   return (
     <>
-      <div
-        className={cx(
-          'sk-modal-wrapper',
-          open ? 'left-[32rem] w-[calc(100vw-32rem)]' : 'left-[5.6rem] w-[calc(100vw-5.6rem)]'
-        )}
-      ></div>
+      <div aria-hidden="true" className="sk-modal-wrapper fixed inset-0 z-[19]" />
       <section
         id="notifications-panel"
         aria-label={t('layout:notifications.panel')}
-        className={cx(
-          open ? 'left-[32rem]' : 'left-[5.6rem]',
-          `border-1 border-t-0 absolute bottom-0 top-0 bg-background-content transition-all ease-in-out duration-150 overflow-auto z-[20] shadow-100`,
-          'w-full md:min-w-[50rem] md:w-[50vw] lg:w-[38vw]'
-        )}
+        className="border-1 border-y-0 border-r-0 fixed inset-y-0 right-0 bg-background-content transition-all ease-in-out duration-150 overflow-auto z-[20] shadow-100 w-full md:min-w-[50rem] md:w-[50vw] lg:w-[38vw]"
       >
         <Header className="h-[64px] flex justify-between" wrapperClasses="py-4 px-40">
           <div className="text-h4-sm flex items-center gap-12">

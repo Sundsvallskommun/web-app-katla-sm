@@ -56,14 +56,10 @@ export const ReporterContent: React.FC = () => {
         <>
           <StakeholderCard
             stakeholder={getReporterStakeholder(stakeholders) ?? {}}
-            isEditable
-            hideRemove
             // Avsnittet heter Rapportör och rymmer bara rapportören, så rollraden på kortet
             // upprepar rubriken. Kortet får i stället ligga i avsnittets fulla bredd.
             hideRole
             wide
-            editableFields={['emails', 'phoneNumbers']}
-            index={reporterIndex}
             roles={['REPORTER']}
           >
             <EmploymentTypeChoice index={reporterIndex} name="reporter" />

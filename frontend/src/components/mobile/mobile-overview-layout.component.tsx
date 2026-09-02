@@ -91,7 +91,7 @@ export const MobileOverviewLayout: React.FC = () => {
         />
       )}
 
-      <NotificationsWrapper show={showNotifications} setShow={setShowNotifications} open={false} />
+      <NotificationsWrapper show={showNotifications} setShow={setShowNotifications} />
     </>
   );
 };

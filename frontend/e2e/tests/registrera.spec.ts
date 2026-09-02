@@ -2,16 +2,10 @@ import type { Page } from '@playwright/test';
 
 import { mockErrand } from '../fixtures/mockErrand';
 import { mockMetadata } from '../fixtures/mockMetadata';
-import { mockManualEditStakeholder, mockReporterStakeholder, mockStakeholder } from '../fixtures/mockStakeholder';
+import { mockReporterStakeholder, mockStakeholder } from '../fixtures/mockStakeholder';
 import { MOCK_COUNTRY_CODE_PHONE_NUMBER, MOCK_EMAIL, MOCK_HYPHEN_PERSON_NUMBER } from '../utils/constants';
 import { jsonRoute } from '../utils/routes';
-import {
-  addEmployeeStakeholder,
-  addStakeholder,
-  manuallyAddStakeholder,
-  manuallyEditStakeholder,
-  sectionByTitle,
-} from '../utils/stakeholder';
+import { addEmployeeStakeholder, addStakeholder, manuallyAddStakeholder, sectionByTitle } from '../utils/stakeholder';
 import { expect, test } from '../utils/test';
 
 const MOCK_FORM_SCHEMA_NAME = 'avvikelse-plats-handelse';
@@ -130,7 +124,7 @@ test.describe('Register new errand page', () => {
     //Brukare
     const brukare = sectionByTitle(page, 'Enskild brukare');
     await addStakeholder(page, brukare, 'PRIMARY');
-    await expect(brukare.getByTestId('edit-card-button')).toBeVisible();
+    await expect(brukare.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
 
@@ -138,7 +132,7 @@ test.describe('Register new errand page', () => {
     const ovrigaParter = sectionByTitle(page, 'Övriga parter');
     for (const role of ['CONTACT', 'CONTACT']) {
       await addStakeholder(page, ovrigaParter, role);
-      await expect(ovrigaParter.getByTestId('edit-card-button').first()).toBeVisible();
+      await expect(ovrigaParter.getByTestId('edit-card-button')).toHaveCount(0);
       await expect(ovrigaParter.getByTestId('remove-card-button').first()).toBeVisible();
       await expect(ovrigaParter.getByTestId('add-manual-person-button')).toBeVisible();
     }
@@ -191,7 +185,7 @@ test.describe('Register new errand page', () => {
     await page.getByTestId('modal-add-person-button').click();
     await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
 
-    await expect(brukare.getByTestId('edit-card-button')).toBeVisible();
+    await expect(brukare.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
 
@@ -210,14 +204,14 @@ test.describe('Register new errand page', () => {
     await page.getByTestId('modal-add-person-button').click();
     await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
 
-    await expect(ovrigaParter.getByTestId('edit-card-button')).toBeVisible();
+    await expect(ovrigaParter.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(ovrigaParter.getByTestId('remove-card-button')).toBeVisible();
     await expect(ovrigaParter.getByTestId('add-manual-person-button')).toBeVisible();
 
     await registerErrandAndExpectDraft(page, 3);
   });
 
-  test('Manually edit stakeholder and remove stakeholder', async ({ page }) => {
+  test('Keeps a stakeholder removable without exposing card editing', async ({ page }) => {
     await expect(page.locator('main').first()).toBeVisible();
 
     //Om ärendet
@@ -226,26 +220,17 @@ test.describe('Register new errand page', () => {
     //Brukare
     const brukare = sectionByTitle(page, 'Enskild brukare');
     await addStakeholder(page, brukare, 'PRIMARY');
-    await expect(brukare.getByTestId('edit-card-button')).toBeVisible();
+    await expect(brukare.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
     await brukare.getByTestId('remove-card-button').dispatchEvent('click');
     await expect(brukare.getByTestId('add-manual-person-button')).toBeVisible();
     await addStakeholder(page, brukare, 'PRIMARY');
-    await expect(brukare.getByTestId('edit-card-button')).toBeVisible();
+    await expect(brukare.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
-    await brukare.getByTestId('edit-card-button').dispatchEvent('click');
-
-    await manuallyEditStakeholder(page, mockStakeholder);
-    await page.getByTestId('modal-cancel-person-button').click();
-    await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
 
     const stakeholderCard = brukare.getByTestId('stakeholder-card');
-    await expect(brukare.getByTestId('edit-card-button')).toBeVisible();
-    await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
-    await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
-
     // Avsnittet rymmer bara brukaren, så kortet bär ingen rollrad – rubriken säger redan rollen.
     await expect(stakeholderCard.getByTestId('stakeholder-role')).toHaveCount(0);
     await expect(stakeholderCard.getByTestId('stakeholder-name')).toContainText(
@@ -257,32 +242,11 @@ test.describe('Register new errand page', () => {
     );
     await expect(stakeholderCard.getByTestId('stakeholder-email')).toContainText(MOCK_EMAIL);
     await expect(stakeholderCard.getByTestId('stakeholder-phonenumber')).toContainText(MOCK_COUNTRY_CODE_PHONE_NUMBER);
-    await brukare.getByTestId('edit-card-button').dispatchEvent('click');
-
-    await manuallyEditStakeholder(page, mockStakeholder);
-    await page.getByTestId('modal-add-person-button').click();
-    await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
-
-    await expect(brukare.getByTestId('edit-card-button')).toBeVisible();
-    await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
-    await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
-
-    // Avsnittet rymmer bara brukaren, så kortet bär ingen rollrad – rubriken säger redan rollen.
-    await expect(stakeholderCard.getByTestId('stakeholder-role')).toHaveCount(0);
-    await expect(stakeholderCard.getByTestId('stakeholder-name')).toContainText(
-      `${mockManualEditStakeholder.firstName ?? ''} ${mockManualEditStakeholder.lastName ?? ''}`
-    );
-    await expect(stakeholderCard.getByTestId('stakeholder-personNumber')).toContainText(MOCK_HYPHEN_PERSON_NUMBER);
-    await expect(stakeholderCard.getByTestId('stakeholder-address')).toContainText(
-      `${mockManualEditStakeholder.address ?? ''} ${mockManualEditStakeholder.city ?? ''}`
-    );
-    await expect(stakeholderCard.getByTestId('stakeholder-email')).toContainText('');
-    await expect(stakeholderCard.getByTestId('stakeholder-phonenumber')).toContainText(MOCK_COUNTRY_CODE_PHONE_NUMBER);
 
     await registerErrandAndExpectDraft(page, 2);
   });
 
-  test('Manually edit employee stakeholder and remove stakeholder', async ({ page }) => {
+  test('Keeps an employee stakeholder removable without exposing card editing', async ({ page }) => {
     await expect(page.locator('main').first()).toBeVisible();
 
     //Om ärendet
@@ -294,26 +258,17 @@ test.describe('Register new errand page', () => {
     //Övriga parter
     const ovrigaParter = sectionByTitle(page, 'Övriga parter');
     await addEmployeeStakeholder(page, ovrigaParter, 'CONTACT');
-    await expect(ovrigaParter.getByTestId('edit-card-button')).toBeVisible();
+    await expect(ovrigaParter.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(ovrigaParter.getByTestId('remove-card-button')).toBeVisible();
     await expect(ovrigaParter.getByTestId('add-manual-person-button')).toBeVisible();
     await ovrigaParter.getByTestId('remove-card-button').dispatchEvent('click');
 
     await addEmployeeStakeholder(page, ovrigaParter, 'CONTACT');
-    await expect(ovrigaParter.getByTestId('edit-card-button')).toBeVisible();
+    await expect(ovrigaParter.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(ovrigaParter.getByTestId('remove-card-button')).toBeVisible();
     await expect(ovrigaParter.getByTestId('add-manual-person-button')).toBeVisible();
-    await ovrigaParter.getByTestId('edit-card-button').dispatchEvent('click');
-
-    await manuallyEditStakeholder(page, mockReporterStakeholder);
-    await page.getByTestId('modal-cancel-person-button').click();
-    await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
 
     const stakeholderCard = ovrigaParter.getByTestId('stakeholder-card');
-    await expect(ovrigaParter.getByTestId('edit-card-button')).toBeVisible();
-    await expect(ovrigaParter.getByTestId('remove-card-button')).toBeVisible();
-    await expect(ovrigaParter.getByTestId('add-manual-person-button')).toBeVisible();
-
     await expect(stakeholderCard.getByTestId('stakeholder-role')).toContainText('Kontaktperson');
     await expect(stakeholderCard.getByTestId('stakeholder-name')).toContainText(
       `${mockReporterStakeholder.firstName ?? ''} ${mockReporterStakeholder.lastName ?? ''}`
@@ -323,26 +278,6 @@ test.describe('Register new errand page', () => {
       mockReporterStakeholder.department ?? ''
     );
     await expect(stakeholderCard.getByTestId('stakeholder-email')).toContainText(MOCK_EMAIL);
-    await expect(stakeholderCard.getByTestId('stakeholder-phonenumber')).toContainText(MOCK_COUNTRY_CODE_PHONE_NUMBER);
-    await ovrigaParter.getByTestId('edit-card-button').dispatchEvent('click');
-
-    await manuallyEditStakeholder(page, mockReporterStakeholder);
-    await page.getByTestId('modal-add-person-button').click();
-    await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
-
-    await expect(ovrigaParter.getByTestId('edit-card-button')).toBeVisible();
-    await expect(ovrigaParter.getByTestId('remove-card-button')).toBeVisible();
-    await expect(ovrigaParter.getByTestId('add-manual-person-button')).toBeVisible();
-
-    await expect(stakeholderCard.getByTestId('stakeholder-role')).toContainText('Kontaktperson');
-    await expect(stakeholderCard.getByTestId('stakeholder-name')).toContainText(
-      `${mockManualEditStakeholder.firstName ?? ''} ${mockManualEditStakeholder.lastName ?? ''}`
-    );
-    await expect(stakeholderCard.getByTestId('stakeholder-title')).toContainText(mockReporterStakeholder.title ?? '');
-    await expect(stakeholderCard.getByTestId('stakeholder-department')).toContainText(
-      mockReporterStakeholder.department ?? ''
-    );
-    await expect(stakeholderCard.getByTestId('stakeholder-email')).toContainText('');
     await expect(stakeholderCard.getByTestId('stakeholder-phonenumber')).toContainText(MOCK_COUNTRY_CODE_PHONE_NUMBER);
 
     await registerErrandAndExpectDraft(page, 3);
@@ -365,8 +300,8 @@ test.describe('Register new errand page', () => {
     await expect(stakeholderCard.getByTestId('stakeholder-email')).toContainText(MOCK_EMAIL);
     await expect(stakeholderCard.getByTestId('stakeholder-phonenumber')).toContainText(MOCK_COUNTRY_CODE_PHONE_NUMBER);
 
-    // Rapportörens uppgifter går numera att redigera, men kortet kan inte tas bort
-    await expect(rapportor.getByTestId('edit-card-button')).toBeVisible();
+    // Rapportören är varken redigerbar eller borttagbar från kortet.
+    await expect(rapportor.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(rapportor.getByTestId('remove-card-button')).toHaveCount(0);
     await expect(rapportor.getByTestId('add-manual-person-button')).toHaveCount(0);
   });
