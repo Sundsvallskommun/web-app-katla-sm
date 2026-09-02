@@ -31,9 +31,9 @@
     "description": "Ange vilken typ av händelse det gäller och vem eller vilka som berörs.",
     "event_type_label": "Typ av rapport",
     "event_type_deviation": "Avvikelse",
-    "event_type_deviation_description": "Något har inte blivit som det var tänkt eller planerat i verksamheten. Gäller inom alla områden SoL, LSS och HSL.",
+    "event_type_deviation_description": "Något har inte blivit som det var tänkt eller planerat i verksamheten. Det gäller inom områdena SoL, LSS och HSL.",
     "event_type_misconduct": "Missförhållande",
-    "event_type_misconduct_description": "En brist eller händelse som medfört allvarlig risk för den enskildes liv, säkerhet och hälsa.",
+    "event_type_misconduct_description": "En brist eller händelse som har medfört en allvarlig risk för den enskildes liv, säkerhet eller hälsa.",
     "misconduct_alert_title": "Missförhållande",
     "misconduct_alert_description": "Ärendet skickas till en oberoende utredare. Din chef får veta om ärendet men beslutar inte om resultatet.",
     "event_concerns_label": "Vem eller vilka berör rapporten?",
@@ -46,7 +46,7 @@
   },
   "reporter": {
     "title": "Rapportör",
-    "description": "Rapportören är den person som anmäler händelsen och är kontaktperson för ärendet. Om du rapporterar åt en kollega, markera rutan nedan och ange kollegans uppgifter."
+    "description": "Rapportören är den person som rapporterar händelsen och är kontaktperson för ärendet. Om du rapporterar åt en kollega, markera rutan nedan och ange kollegans uppgifter."
   },
   "user": {
     "title": "Enskild brukare",
@@ -60,7 +60,7 @@
   },
   "other_parties": {
     "title": "Övriga parter",
-    "description": "En part kan vara en kontaktperson, läkare eller en anhörig vars roll är viktig för ärendet. Om du rapporterar åt en kollega så ska du ange kollegan som övrig part."
+    "description": "En part kan vara en kontaktperson, läkare eller anhörig vars roll är viktig för ärendet."
   },
   "deviation_information": {
     "title": "Uppgifter kring avvikelsen",

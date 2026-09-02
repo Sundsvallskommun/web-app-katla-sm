@@ -50,6 +50,17 @@ afterEach(() => {
 });
 
 describe('notification API error state', () => {
+  it('anchors the desktop panel and its overlay to the viewport right edge', () => {
+    getNotificationsMock.mockResolvedValue([]);
+
+    render(<NotificationsWrapper show setShow={vi.fn()} />);
+
+    const panel = screen.getByRole('region', { name: 'layout:notifications.panel' });
+    expect(panel).toHaveClass('fixed', 'inset-y-0', 'right-0');
+    expect(panel).not.toHaveClass('absolute', 'left-[5.6rem]', 'left-[32rem]');
+    expect(panel.previousElementSibling).toHaveClass('fixed', 'inset-0');
+  });
+
   it('keeps stored notifications visible and does not render a false empty state', async () => {
     useNotificationStore.getState().setNotifications([activeNotification]);
     getNotificationsMock.mockRejectedValue(new Error('notifications unavailable'));

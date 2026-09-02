@@ -324,10 +324,8 @@ export const StakeholderList: React.FC<{
         if (!roles.includes(stakeholder.role ?? '')) return null;
         return (
           <StakeholderCard
-            index={index}
             key={index}
             stakeholder={stakeholder}
-            isEditable
             hideRole={sectionCards}
             wide={sectionCards}
             roles={roles}
