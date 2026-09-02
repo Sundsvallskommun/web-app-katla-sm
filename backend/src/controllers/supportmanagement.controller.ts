@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, QueryParams, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { MUNICIPALITY_ID, NAMESPACE } from '@/config';
+import { MUNICIPALITY_ID, NAMESPACE, NODE_ENV } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { Errand, MetadataResponse, Notification, PageErrand } from '@/data-contracts/supportmanagement/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
@@ -56,8 +56,27 @@ export class SupportManagementController {
       stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
     };
 
+    // Felsökning: exakt den JSON som går till SupportManagement. Bara i utvecklingsläge, och bara
+    // till stdout — payloaden bär personuppgifter och ska inte hamna i de roterande loggfilerna.
+    if (NODE_ENV === 'development') {
+      console.warn(`[createErrand] POST ${baseURL}/${url}\n${JSON.stringify(errandInformation, null, 2)}`);
+    }
+
     const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errandInformation, propagateClientError: true }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when creating errand');
+
+    // Felsökning: vad API:t faktiskt sparade. Bara strukturen — antal och labelnamn — så att
+    // svaret går att jämföra med utskriften ovan utan att personuppgifter loggas.
+    if (NODE_ENV === 'development') {
+      const created = res.data;
+      console.warn(
+        `[createErrand] svar ${created.errandNumber ?? '?'}: labels=${created.labels?.length ?? 0} [${
+          created.labels?.map(label => label.resourceName).join(', ') ?? ''
+        }] stakeholders=${created.stakeholders?.length ?? 0} parameters=${created.parameters?.length ?? 0} jsonParameters=${
+          created.jsonParameters?.length ?? 0
+        }`,
+      );
+    }
 
     // Ärendet är skapat när vi kommer hit — svaret kommer från uppföljningen av Location.
     // Saknas parterna där är det inget skäl att rapportera inskickningen som misslyckad: den som

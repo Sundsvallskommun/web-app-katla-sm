@@ -5,6 +5,7 @@ import { Alert } from '@sk-web-gui/alert';
 import { FormControl, FormErrorMessage, FormLabel, RadioButton } from '@sk-web-gui/react';
 import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
+import { EVENT_TYPE_DEVIATION, EVENT_TYPE_MISCONDUCT, EVENT_TYPE_PARAMETER_KEY } from '@utils/report-type';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -28,7 +29,7 @@ export const AboutErrandContent: React.FC = () => {
   const { showValidation } = useFormValidation();
 
   const parameters = watch('parameters') ?? [];
-  const eventType = parameters.find((p) => p.key === 'eventType')?.values?.[0] ?? '';
+  const eventType = parameters.find((p) => p.key === EVENT_TYPE_PARAMETER_KEY)?.values?.[0] ?? '';
   const eventConcerns = parameters.find((p) => p.key === 'eventConcerns')?.values?.[0] ?? '';
 
   const stakeholders = watch('stakeholders') ?? [];
@@ -61,10 +62,10 @@ export const AboutErrandContent: React.FC = () => {
           <RadioButton
             data-cy="event-type-deviation"
             className={RADIO_WITH_DESCRIPTION_CLASS}
-            checked={eventType === 'AVVIKELSE'}
-            value="AVVIKELSE"
+            checked={eventType === EVENT_TYPE_DEVIATION}
+            value={EVENT_TYPE_DEVIATION}
             onChange={() => {
-              setParameter('eventType', 'AVVIKELSE');
+              setParameter(EVENT_TYPE_PARAMETER_KEY, EVENT_TYPE_DEVIATION);
             }}
           >
             <RadioButtonLabelWithDescription
@@ -75,10 +76,10 @@ export const AboutErrandContent: React.FC = () => {
           <RadioButton
             data-cy="event-type-misconduct"
             className={RADIO_WITH_DESCRIPTION_CLASS}
-            checked={eventType === 'MISSFORHALLANDE'}
-            value="MISSFORHALLANDE"
+            checked={eventType === EVENT_TYPE_MISCONDUCT}
+            value={EVENT_TYPE_MISCONDUCT}
             onChange={() => {
-              setParameter('eventType', 'MISSFORHALLANDE');
+              setParameter(EVENT_TYPE_PARAMETER_KEY, EVENT_TYPE_MISCONDUCT);
             }}
           >
             <RadioButtonLabelWithDescription
@@ -88,7 +89,7 @@ export const AboutErrandContent: React.FC = () => {
           </RadioButton>
         </RadioButton.Group>
         {missingEventType && <FormErrorMessage>{t('errand-information:about.event_type_required')}</FormErrorMessage>}
-        {eventType === 'MISSFORHALLANDE' && (
+        {eventType === EVENT_TYPE_MISCONDUCT && (
           <Alert type="info" data-cy="misconduct-alert">
             <Alert.Icon />
             <Alert.Content>
