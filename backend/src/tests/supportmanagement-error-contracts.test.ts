@@ -127,12 +127,25 @@ describe('SupportManagement HTTP error contracts', () => {
     expect(response.body).toEqual({ message: 'SupportManagement unavailable' });
   });
 
-  it('returns 502 when create receives a malformed successful response', async () => {
-    vi.spyOn(ApiService.prototype, 'post').mockResolvedValue({ data: {}, message: 'success' });
+  /**
+   * Ärendet är skapat när svaret läses. Saknas parterna i det är det inte ett skäl att
+   * rapportera inskickningen som misslyckad — den som rapporterat skulle skicka in igen och
+   * skapa en dubblett. Svaret bär då en tom lista, och saknaden loggas som en varning.
+   */
+  it('accepts a created errand whose response carries no stakeholders', async () => {
+    vi.spyOn(ApiService.prototype, 'post').mockResolvedValue({ data: { id: 'errand-id' }, message: 'success' });
+
+    const response = await request(app).post('/api/supportmanagement/errand/create').send({}).expect(200);
+
+    expect(response.body).toMatchObject({ id: 'errand-id', stakeholders: [] });
+  });
+
+  it('returns 502 when create receives no response body at all', async () => {
+    vi.spyOn(ApiService.prototype, 'post').mockResolvedValue({ data: undefined, message: 'success' });
 
     const response = await request(app).post('/api/supportmanagement/errand/create').send({}).expect(502);
 
-    expect(response.body).toEqual({ message: 'No stakeholders in response when creating errand' });
+    expect(response.body).toEqual({ message: 'Invalid response when creating errand' });
   });
 
   it.each([

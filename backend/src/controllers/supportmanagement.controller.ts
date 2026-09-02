@@ -12,6 +12,7 @@ import { NotificationAcknowledgementResponse, NotificationDTO } from '@/response
 import { ErrandCountDTO, ErrandDTO, ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
 import { MetadataResponseDTO } from '@/responses/supportmanagement-metadata.response';
 import ApiService from '@/services/api.service';
+import { logger } from '@/utils/logger';
 import { mapStakeholderDTOToStakeholder, mapStakeholderToStakeholderDTO } from '@/utils/stakeholder-mapping';
 import { apiURL } from '@/utils/util';
 
@@ -58,10 +59,16 @@ export class SupportManagementController {
     const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errandInformation, propagateClientError: true }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when creating errand');
 
+    // Ärendet är skapat när vi kommer hit — svaret kommer från uppföljningen av Location.
+    // Saknas parterna där är det inget skäl att rapportera inskickningen som misslyckad: den som
+    // rapporterat skulle skicka in igen och skapa en dubblett. Det loggas i stället som en varning,
+    // eftersom ett ärende utan parter är något som behöver följas upp.
     const resStakeholders = res.data.stakeholders;
-    if (!resStakeholders) throw new HttpException(502, 'No stakeholders in response when creating errand');
+    if (!resStakeholders) {
+      logger.warn('Created errand came back without stakeholders');
+    }
 
-    const stakeholders = await Promise.all(resStakeholders.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)));
+    const stakeholders = await Promise.all((resStakeholders ?? []).map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)));
 
     return {
       ...res.data,
