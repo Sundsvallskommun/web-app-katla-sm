@@ -330,8 +330,11 @@ test.describe('Register new errand page', () => {
 
     await expect(
       page.getByText(
-        'Rapportören är den person som anmäler händelsen och är kontaktperson för ärendet. Om du rapporterar åt en kollega, markera rutan nedan och ange kollegans uppgifter.'
+        'Rapportören är den person som rapporterar händelsen och är kontaktperson för ärendet. Om du rapporterar åt en kollega, markera rutan nedan och ange kollegans uppgifter.'
       )
+    ).toBeVisible();
+    await expect(
+      page.getByText('En part kan vara en kontaktperson, läkare eller anhörig vars roll är viktig för ärendet.')
     ).toBeVisible();
 
     // Hjälptexten för Om rapporten står före radioknapparna, och båda fälten har sina rubriker
@@ -349,10 +352,10 @@ test.describe('Register new errand page', () => {
 
     // Båda förklaringarna syns samtidigt, så typerna går att jämföra innan valet görs.
     const deviationDescription = page.getByText(
-      'Något har inte blivit som det var tänkt eller planerat i verksamheten. Gäller inom alla områden SoL, LSS och HSL.'
+      'Något har inte blivit som det var tänkt eller planerat i verksamheten. Det gäller inom områdena SoL, LSS och HSL.'
     );
     const misconductDescription = page.getByText(
-      'En brist eller händelse som medfört allvarlig risk för den enskildes liv, säkerhet och hälsa.'
+      'En brist eller händelse som har medfört en allvarlig risk för den enskildes liv, säkerhet eller hälsa.'
     );
     await expect(deviationDescription).toBeVisible();
     await expect(misconductDescription).toBeVisible();
