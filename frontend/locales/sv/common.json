@@ -56,7 +56,8 @@
     "DRAFT": "Utkast"
   },
   "tabs": {
-    "basic_information": "Grundinformation"
+    "basic_information": "Grundinformation",
+    "messages": "Meddelanden"
   },
   "loading_information": "Laddar information"
 }

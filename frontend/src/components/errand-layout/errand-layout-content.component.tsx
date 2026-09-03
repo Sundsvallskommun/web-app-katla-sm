@@ -3,7 +3,7 @@
 import { pathWithoutLocale } from '@app/locale-path';
 import { jsonParametersToErrandFormData } from '@components/json/utils/schema-utils';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
-import { VisibleTabs } from '@components/tabs/tabs';
+import { getVisibleTabs } from '@components/tabs/tabs';
 import { MobileWizard } from '@components/wizard/mobile-wizard.component';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -112,6 +112,13 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
     route.kind === 'register' || route.kind === 'submitted' ? 'ready'
     : route.kind === 'invalid' ? 'error'
     : 'loading'
+  );
+
+  const tabs = getVisibleTabs(requestedErrandNumber ?? '').filter((tab) => tab.visible);
+  const currentPath = pathWithoutLocale(pathname);
+  const activeTabIndex = Math.max(
+    tabs.findIndex((tab) => currentPath.startsWith(tab.path)),
+    0
   );
 
   const setInitalFocus = () => {
@@ -272,15 +279,21 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                         tabslistClassName="border-0 -m-b-12 flex-wrap ml-10 overflow-x-auto"
                         panelsClassName="border-t-1"
                         size="sm"
+                        // Vilken flik som är vald ligger i adressen, inte i komponentens eget läge:
+                        // varje flik är en länk, och en direktlänk ska markera rätt flik.
+                        current={activeTabIndex}
                       >
-                        {VisibleTabs.filter((tab) => tab.visible).map((tab) => {
+                        {tabs.map((tab, index) => {
                           return (
                             <Tabs.Item key={tab.path}>
                               <Tabs.Button {...createLinkTabProps(tab.path)} className="text-base whitespace-nowrap">
                                 {t(tab.labelKey)}
                               </Tabs.Button>
                               <Tabs.Content>
-                                <div className={ERRAND_PANEL_CLASS}>{children}</div>
+                                {/* Varje flik är en egen sida, och children är den sida som just nu
+                                    är laddad. Bara den valda flikens panel får innehållet — annars
+                                    hade sidan renderats en gång per flik. */}
+                                <div className={ERRAND_PANEL_CLASS}>{index === activeTabIndex ? children : null}</div>
                               </Tabs.Content>
                             </Tabs.Item>
                           );

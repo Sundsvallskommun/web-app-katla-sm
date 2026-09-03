@@ -55,7 +55,10 @@ vi.mock('src/stores/wizard-store', () => ({
 }));
 
 vi.mock('@components/tabs/tabs', () => ({
-  VisibleTabs: [{ labelKey: 'common:tabs.basic_information', path: '/grundinformation', visible: true }],
+  getVisibleTabs: (errandNumber: string) => [
+    { labelKey: 'common:tabs.basic_information', path: `/arende/${errandNumber}/grundinformation`, visible: true },
+    { labelKey: 'common:tabs.messages', path: `/arende/${errandNumber}/meddelanden`, visible: true },
+  ],
 }));
 vi.mock('@components/wizard/mobile-wizard.component', () => ({ MobileWizard: () => <div>mobile-wizard</div> }));
 vi.mock('@contexts/form-validation-provider', () => ({

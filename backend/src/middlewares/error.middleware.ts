@@ -9,7 +9,9 @@ function sanitizeLogInput(input: string): string {
 
 const errorMiddleware = (error: HttpException, req: Request, res: Response, next: NextFunction) => {
   try {
-    const status: number = error.status || 500;
+    // Våra egna undantag sätter status; routing-controllers egna fel — till exempel ett avvisat
+    // formulärinnehåll — bär bara httpCode. Utan det senare blev varje valideringsfel en 500:a.
+    const status: number = error.status || error.httpCode || 500;
     const message: string = error.message || 'Something went wrong';
     const errors: string =
       error.errors && error.errors.length > 0

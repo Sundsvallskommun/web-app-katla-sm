@@ -56,7 +56,8 @@
     "DRAFT": "Draft"
   },
   "tabs": {
-    "basic_information": "Basic information"
+    "basic_information": "Basic information",
+    "messages": "Messages"
   },
   "loading_information": "Loading information"
 }

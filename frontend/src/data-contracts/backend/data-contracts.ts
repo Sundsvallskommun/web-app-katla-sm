@@ -160,6 +160,55 @@ export interface JsonParameterDTO {
   schemaId: string;
 }
 
+export type ConversationTypeDTO = 'INTERNAL' | 'EXTERNAL';
+
+export interface IdentifierDTO {
+  type: string;
+  value: string;
+}
+
+export interface KeyValuesDTO {
+  key?: string;
+  values?: string[];
+}
+
+export interface ConversationDTO {
+  id?: string;
+  topic?: string;
+  type?: ConversationTypeDTO;
+  relationIds?: string[];
+  participants?: IdentifierDTO[];
+  metadata?: KeyValuesDTO[];
+}
+
+export interface ConversationMessageAttachmentDTO {
+  attachmentId: string;
+  name?: string;
+  contentType?: string;
+  size?: number;
+}
+
+export type MessageDirectionDTO = 'INBOUND' | 'OUTBOUND';
+
+export interface ConversationMessageDTO {
+  conversationId: string;
+  messageId?: string;
+  sent?: string;
+  message: string;
+  subject?: string;
+  firstName?: string;
+  lastName?: string;
+  direction?: MessageDirectionDTO;
+  viewed: boolean;
+  attachments: ConversationMessageAttachmentDTO[];
+}
+
+export interface ConversationAttachmentDTO {
+  content: string;
+  fileName?: string;
+  mimeType?: string;
+}
+
 export interface ErrandDTO {
   id?: string;
   errandNumber?: string;
