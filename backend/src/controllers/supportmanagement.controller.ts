@@ -37,6 +37,52 @@ const toFilterTerm = (key: string, value: string): string => {
   return `${key}:'${value}'`;
 };
 
+/** Sidnavigering och sortering är egna parametrar uppströms och hör inte hemma i filtret. */
+const ERRAND_QUERY_NON_FILTER_KEYS = ['page', 'size', 'sort'];
+
+/**
+ * Ett värde kan bära flera alternativ, kommaseparerade. Delningen sker före valideringen, så att
+ * varje del prövas för sig — och eftersom komma inte är tillåtet i ett värde kan delningen inte
+ * plocka isär något som var menat som ett enda värde.
+ */
+const toFilterValues = (value: unknown): string[] => {
+  const filterValue = toFilterValue(value);
+  if (filterValue === undefined) return [];
+
+  return filterValue
+    .split(',')
+    .map(part => part.trim())
+    .filter(part => part !== '');
+};
+
+/**
+ * URLSearchParams kodar mellanslag som '+', vilket bara betyder mellanslag i formulärkodad data.
+ * Filteruttrycket behöver mellanslag runt sina or-nyckelord, och '%20' betyder samma sak överallt.
+ */
+const toQueryString = (params: URLSearchParams): string => params.toString().replace(/\+/g, '%20');
+
+/**
+ * Filteruttrycket byggs här, inte av klienten: varje värde valideras för sig och grammatiken ägs
+ * av oss. Flera värden på samma nyckel blir en or-grupp, så att t.ex. alla statusar utom de
+ * avslutade kan hämtas som en och samma sida. Olika nycklar måste alla stämma.
+ */
+const buildErrandFilter = (query: ErrandsQueryDTO): string | undefined => {
+  const queryEntries = query as unknown as Record<string, unknown>;
+  const filterParts: string[] = [];
+
+  for (const key of Object.keys(queryEntries)) {
+    if (ERRAND_QUERY_NON_FILTER_KEYS.includes(key)) continue;
+
+    const terms = toFilterValues(queryEntries[key]).map(value => toFilterTerm(key, value));
+    const [firstTerm, ...remainingTerms] = terms;
+    if (firstTerm === undefined) continue;
+
+    filterParts.push(remainingTerms.length === 0 ? firstTerm : `(${terms.join(' or ')})`);
+  }
+
+  return filterParts.length > 0 ? filterParts.join(' and ') : undefined;
+};
+
 @Controller()
 export class SupportManagementController {
   private apiService = new ApiService();
@@ -192,23 +238,11 @@ export class SupportManagementController {
     if (query.size !== undefined) params.append('size', String(query.size));
     if (query.sort !== undefined) params.append('sort', query.sort);
 
-    const filterParts: string[] = [];
-    const queryEntries = query as unknown as Record<string, unknown>;
+    const filter = buildErrandFilter(query);
+    if (filter) params.append('filter', filter);
 
-    for (const key of Object.keys(queryEntries)) {
-      if (['page', 'size', 'sort'].includes(key)) continue;
-      const value = toFilterValue(queryEntries[key]);
-
-      if (value !== undefined) {
-        filterParts.push(toFilterTerm(key, value));
-      }
-    }
-
-    if (filterParts.length > 0) {
-      params.append('filter', filterParts.join(','));
-    }
-
-    const finalUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+    const queryString = toQueryString(params);
+    const finalUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
 
     const res = await this.apiService.get<PageErrand>({ url: finalUrl }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when reading errands');
@@ -224,22 +258,11 @@ export class SupportManagementController {
     const baseUrl = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands/count`;
     const params = new URLSearchParams();
 
-    const filterParts: string[] = [];
-    const queryEntries = query as unknown as Record<string, unknown>;
+    const filter = buildErrandFilter(query);
+    if (filter) params.append('filter', filter);
 
-    for (const key of Object.keys(queryEntries)) {
-      const value = toFilterValue(queryEntries[key]);
-
-      if (value !== undefined) {
-        filterParts.push(toFilterTerm(key, value));
-      }
-    }
-
-    if (filterParts.length > 0) {
-      params.append('filter', filterParts.join(','));
-    }
-
-    const finalUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+    const queryString = toQueryString(params);
+    const finalUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
 
     const res = await this.apiService.get<{ count: number }>({ url: finalUrl }, req);
     if (!res.data || typeof res.data.count !== 'number') throw new HttpException(502, 'Invalid response when counting errands');

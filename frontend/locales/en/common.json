@@ -46,13 +46,14 @@
   },
   "status": {
     "NEW": "Submitted",
-    "DRAFT": "Draft",
-    "ONGOING": "In progress",
-    "PENDING": "Awaiting completion",
-    "SUSPENDED": "Suspended",
     "ASSIGNED": "Assigned",
-    "SOLVED": "Resolved",
-    "AWAITING_INTERNAL_RESPONSE": "Internal feedback"
+    "REVIEW": "Under review",
+    "INQUIRY": "Under investigation",
+    "DECISION": "Awaiting decision",
+    "FOLLOW_UP": "Under follow-up",
+    "AWAITING_RESPONSE": "Awaiting completion",
+    "SOLVED": "Closed",
+    "DRAFT": "Draft"
   },
   "tabs": {
     "basic_information": "Basic information"

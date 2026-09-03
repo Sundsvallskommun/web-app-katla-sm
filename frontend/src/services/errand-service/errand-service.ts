@@ -13,12 +13,18 @@ export const getErrandUsingErrandNumber = async (errandNumber: string): Promise<
   return apiService.get<ErrandDTO>(`supportmanagement/errand/${errandNumber}`).then((res) => res.data);
 };
 
-export const getErrands = async (q?: ErrandQuery): Promise<PageErrandDTO> => {
-  const params: Record<string, string | number> = {};
+type ErrandParams = Record<string, string | number>;
 
-  if (q?.statuses && q.statuses.length > 0) {
-    params.status = q.statuses.join(',');
-  }
+/**
+ * Statusarna skickas kommaseparerade i en parameter — upprepade parametrar slås ihop av backendens
+ * hpp-skydd. Backend delar upp värdet, validerar varje status för sig och bygger filteruttrycket.
+ * Listan kan innehålla flera statusar, eftersom Inskickade är alla som inte är avslutade.
+ */
+const toStatusParams = (statuses: string[] | undefined): ErrandParams =>
+  statuses && statuses.length > 0 ? { status: statuses.join(',') } : {};
+
+export const getErrands = async (q?: ErrandQuery): Promise<PageErrandDTO> => {
+  const params: ErrandParams = toStatusParams(q?.statuses);
 
   if (q?.page !== undefined) params.page = q.page;
   if (q?.size !== undefined) params.size = q.size;
@@ -26,24 +32,12 @@ export const getErrands = async (q?: ErrandQuery): Promise<PageErrandDTO> => {
     params.sort = `${q.sortColumn},${q.sortOrder ?? 'desc'}`;
   }
 
-  return apiService
-    .get<PageErrandDTO>('supportmanagement/errands', {
-      params: { ...params },
-    })
-    .then((res) => res.data);
+  return apiService.get<PageErrandDTO>('supportmanagement/errands', { params }).then((res) => res.data);
 };
 
 export const getErrandsCount = async (q?: ErrandQuery): Promise<{ count: number }> => {
-  const params: Record<string, string | number> = {};
-
-  if (q?.statuses && q.statuses.length > 0) {
-    params.status = q.statuses.join(',');
-  }
-
   return apiService
-    .get<{ count: number }>('supportmanagement/count', {
-      params: { ...params },
-    })
+    .get<{ count: number }>('supportmanagement/count', { params: toStatusParams(q?.statuses) })
     .then((res) => res.data);
 };
 

@@ -76,7 +76,12 @@ export interface LabelsDTO {
 }
 
 export interface StatusDTO {
+  id?: string;
   name: string;
+  displayName?: string | null;
+  externalDisplayName?: string | null;
+  sortOrder?: number | null;
+  deprecated?: boolean;
   created?: string;
   modified?: string;
 }

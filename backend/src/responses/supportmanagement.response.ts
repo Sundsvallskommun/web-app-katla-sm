@@ -36,6 +36,10 @@ export class ErrandsQueryDTO {
   @IsOptional()
   @IsString()
   sort?: string;
+  /**
+   * Ett eller flera statusvärden, kommaseparerade. Upprepade parametrar går inte att använda:
+   * hpp-middlewaren slår ihop dem och behåller bara den sista.
+   */
   @IsOptional()
   @IsString()
   status?: string;

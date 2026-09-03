@@ -46,13 +46,14 @@
   },
   "status": {
     "NEW": "Inskickat",
-    "DRAFT": "Utkast",
-    "ONGOING": "Pågående",
-    "PENDING": "Komplettering",
-    "SUSPENDED": "Parkerat",
     "ASSIGNED": "Tilldelat",
-    "SOLVED": "Löst",
-    "AWAITING_INTERNAL_RESPONSE": "Intern återkoppling"
+    "REVIEW": "Under granskning",
+    "INQUIRY": "Under utredning",
+    "DECISION": "Under beslut",
+    "FOLLOW_UP": "Under uppföljning",
+    "AWAITING_RESPONSE": "Komplettering",
+    "SOLVED": "Avslutad",
+    "DRAFT": "Utkast"
   },
   "tabs": {
     "basic_information": "Grundinformation"
