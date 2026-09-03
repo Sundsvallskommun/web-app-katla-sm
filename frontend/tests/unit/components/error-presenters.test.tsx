@@ -3,7 +3,7 @@ import { ErrandTable } from 'src/components/errand-table/errand-table.component'
 import { MobileErrandsList } from 'src/components/mobile/mobile-errands-list.component';
 import { MobileStatusTabs } from 'src/components/mobile/mobile-status-tabs.component';
 import { OverviewStatusNav } from 'src/components/sidebars/overview-status-nav.component';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -13,14 +13,19 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock('src/hooks/use-overview-errands', () => ({
-  useOverviewErrands: () => ({
-    rows: [],
+const overviewErrandsMock = vi.hoisted(() => ({
+  state: {
+    rows: [] as unknown[],
     isLoading: false,
     totalPages: 1,
-    errandsError: 'api_errors.errands',
-    metadataError: null,
-  }),
+    totalElements: 0,
+    errandsError: null as string | null,
+    metadataError: null as string | null,
+  },
+}));
+
+vi.mock('src/hooks/use-overview-errands', () => ({
+  useOverviewErrands: () => overviewErrandsMock.state,
 }));
 
 vi.mock('src/hooks/use-status-buttons', () => ({
@@ -32,6 +37,17 @@ vi.mock('src/hooks/use-status-buttons', () => ({
     error: 'api_errors.counts',
   }),
 }));
+
+beforeEach(() => {
+  overviewErrandsMock.state = {
+    rows: [],
+    isLoading: false,
+    totalPages: 1,
+    totalElements: 0,
+    errandsError: 'api_errors.errands',
+    metadataError: null,
+  };
+});
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -58,6 +74,34 @@ describe('API error presenters', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('api_errors.errands');
     expect(screen.queryByText('errand-information:no_errands')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Utan statuslista görs ingen hämtning, så laddläget kan bli stående. Felet som förklarar varför
+   * måste synas ändå — annars möts användaren av en spinner utan slut och utan besked.
+   */
+  it('visar felet i tabellen även medan listan fortfarande laddar', () => {
+    overviewErrandsMock.state = {
+      rows: [],
+      isLoading: true,
+      totalPages: 1,
+      totalElements: 0,
+      errandsError: null,
+      metadataError: 'api_errors.metadata',
+    };
+
+    render(<ErrandTable />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent('api_errors.metadata');
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('visar felet i mobillistan även medan den fortfarande laddar', () => {
+    render(
+      <MobileErrandsList rows={[]} isLoading hasMore={false} loadMore={vi.fn()} errors={['api_errors.metadata']} />
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('api_errors.metadata');
   });
 
   it('shows count errors in the mobile and expanded desktop selectors', () => {

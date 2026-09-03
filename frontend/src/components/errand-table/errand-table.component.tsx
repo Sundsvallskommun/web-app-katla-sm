@@ -24,22 +24,22 @@ export const ErrandTable: React.FC = () => {
 
   const errors = [metadataError, errandsError].filter((message): message is string => message !== null);
 
-  if (isLoading && rows.length === 0)
-    return (
-      <CenterDiv className="mt-[20rem]">
-        <div role="status" aria-live="polite">
-          <Spinner aria-hidden="true" />
-          <span className="sr-only">{t('common:errand-table.loading')}</span>
-        </div>
-      </CenterDiv>
-    );
-
-  if (rows.length === 0 && errors.length === 0)
-    return <CenterDiv className="mt-[20rem]">{t('errand-information:no_errands')}</CenterDiv>;
-
   return (
     <div className="flex flex-col gap-16">
+      {/* Felen står först. Utan statuslista görs ingen hämtning, så laddläget kan bli stående —
+          och då är felet som förklarar varför det enda som får användaren vidare. */}
       <ErrorAlertList messages={errors} />
+      {isLoading && rows.length === 0 && (
+        <CenterDiv className="mt-[20rem]">
+          <div role="status" aria-live="polite">
+            <Spinner aria-hidden="true" />
+            <span className="sr-only">{t('common:errand-table.loading')}</span>
+          </div>
+        </CenterDiv>
+      )}
+      {!isLoading && rows.length === 0 && errors.length === 0 && (
+        <CenterDiv className="mt-[20rem]">{t('errand-information:no_errands')}</CenterDiv>
+      )}
       {rows.length > 0 && (
         <>
           <p className="text-dark-secondary" data-cy="errand-count">

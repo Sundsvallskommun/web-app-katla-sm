@@ -42,7 +42,8 @@ beforeEach(() => {
   getErrandsCountMock.mockReset();
   getMetadataMock.mockReset();
   useSortStore.setState({ sortColumn: 'created', sortOrder: 'desc', page: 0, size: 12, rowHeight: 'normal' });
-  useFilterStore.setState({ activeStatus: 'Öppna', statuses: [] });
+  // En satt statuslista: utan den görs ingen hämtning alls, och testerna nedan mäter hämtningen.
+  useFilterStore.setState({ activeStatus: 'OPEN', statuses: ['REVIEW'] });
   useMetadataStore.setState({ metadata: null });
   useErrandCountStore.setState({ openErrandCount: 0, draftErrandCount: 0, closedErrandCount: 0 });
 });
