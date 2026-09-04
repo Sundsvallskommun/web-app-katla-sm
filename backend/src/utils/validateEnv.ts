@@ -1,10 +1,18 @@
-import { cleanEnv, port, str, url } from 'envalid';
+import { cleanEnv, EnvError, makeValidator, port, str, url } from 'envalid';
+
+const sessionSecret = makeValidator<string>(value => {
+  if (value.length < 32 || /\s/.test(value) || /^<.*>$/.test(value) || /^(?:change[-_]?me|replace[-_]?me|placeholder)+$/i.test(value)) {
+    throw new EnvError('Generera en unik SECRET_KEY med openssl rand -hex 32; exempelvärden är inte tillåtna.');
+  }
+
+  return value;
+});
 
 // NOTE: Make sure we got these in ENV
 const validateEnv = () => {
   cleanEnv(process.env, {
     NODE_ENV: str(),
-    SECRET_KEY: str(),
+    SECRET_KEY: sessionSecret(),
     API_BASE_URL: str(),
     CLIENT_KEY: str(),
     CLIENT_SECRET: str(),

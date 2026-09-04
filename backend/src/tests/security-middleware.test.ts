@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App, { getSessionCookieOptions, getSessionCookiePath } from '@/app';
 import { IndexController } from '@/controllers/index.controller';
@@ -83,5 +83,59 @@ describe('security middleware', () => {
     expect(response.headers['ratelimit-policy']).toContain('1000;w=900');
     expect(response.headers['ratelimit-limit']).toBe('1000');
     expect(response.headers['x-ratelimit-limit']).toBeUndefined();
+  });
+
+  describe('production session cookies', () => {
+    beforeEach(() => {
+      // Konfigurationen läses vid import. Ladda därför om den riktiga appen med
+      // produktionsvärden i stället för att ersätta sessionsmiddlewaren med en mock.
+      vi.resetModules();
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('ENVIRONMENT', '');
+      // En egen riktig Passport-instans hindrar App-importerna från att samla
+      // serialiserare och SAML-strategier i paketets globala instans mellan tester.
+      vi.doMock('passport', async () => {
+        const { Passport } = await vi.importActual<typeof import('passport')>('passport');
+        return { default: new Passport() };
+      });
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+      vi.doUnmock('passport');
+      vi.resetModules();
+    });
+
+    const createSessionTestServer = async () => {
+      const { default: ProductionApp } = await import('@/app');
+      const app = new ProductionApp([]).getServer();
+      app.get('/api/session-test', (req, res) => {
+        req.session.returnTo = '/';
+        res.sendStatus(204);
+      });
+      return app;
+    };
+
+    it('issues a Secure cookie behind the trusted HTTPS proxy', async () => {
+      const app = await createSessionTestServer();
+      const response = await request(app).get('/api/session-test').set('X-Forwarded-Proto', 'https').expect(204);
+
+      expect(response.headers['set-cookie']).toEqual([expect.stringContaining('; Secure')]);
+    });
+
+    it('does not issue a production session cookie over plain HTTP', async () => {
+      const app = await createSessionTestServer();
+      const response = await request(app).get('/api/session-test').expect(204);
+
+      expect(response.headers['set-cookie']).toBeUndefined();
+    });
+
+    it('allows the documented LOCAL exception for a production build over HTTP', async () => {
+      vi.stubEnv('ENVIRONMENT', 'LOCAL');
+      const app = await createSessionTestServer();
+      const response = await request(app).get('/api/session-test').expect(204);
+
+      expect(response.headers['set-cookie']).toEqual([expect.not.stringContaining('; Secure')]);
+    });
   });
 });
