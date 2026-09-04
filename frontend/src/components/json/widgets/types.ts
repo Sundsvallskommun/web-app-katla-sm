@@ -11,6 +11,8 @@ export interface EnumOption {
 export interface WidgetOptions {
   className?: string;
   placeholder?: string;
+  /** Starthöjd för textarea i rem. Fältets min- och maxhöjd gäller fortfarande. */
+  initialHeightRem?: number;
   multiple?: boolean;
   disableToolbar?: boolean;
   enumOptions?: EnumOption[];
@@ -21,6 +23,10 @@ export function getWidgetOptions(options: WidgetProps['options']): WidgetOptions
   return {
     className: opts.className as string | undefined,
     placeholder: opts.placeholder as string | undefined,
+    initialHeightRem:
+      typeof opts.initialHeightRem === 'number' && Number.isFinite(opts.initialHeightRem) && opts.initialHeightRem > 0 ?
+        opts.initialHeightRem
+      : undefined,
     multiple: opts.multiple as boolean | undefined,
     disableToolbar: opts.disableToolbar as boolean | undefined,
     enumOptions: opts.enumOptions as EnumOption[] | undefined,

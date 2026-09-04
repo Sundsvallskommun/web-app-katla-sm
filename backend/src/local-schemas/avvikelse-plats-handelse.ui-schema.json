@@ -1,5 +1,5 @@
 {
-  "id": "5552e93d-337c-4f06-87c6-1d0ca1d0c98a",
+  "id": "663c2d10-5f16-471e-8f65-86ee8c4f46be",
   "description": "UI-schema för avvikelserapportering - plats och händelseförlopp",
   "value": {
     "facilityInfo": {
@@ -59,6 +59,9 @@
     },
     "eventDescription": {
       "ui:widget": "textarea",
+      "ui:options": {
+        "initialHeightRem": 24
+      },
       "ui:title": "Händelse",
       "ui:description": "Beskriv vad som hände, steg för steg.",
       "x-i18n": {

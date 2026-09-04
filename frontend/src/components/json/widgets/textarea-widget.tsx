@@ -5,20 +5,23 @@ import { Textarea } from '@sk-web-gui/react';
 import { getCommonProps, getWidgetOptions, requiredProps } from './types';
 
 /**
- * Designens textruta: tre rader hög från början och dragbar ned till 600px. Höjden sätts här
- * i stället för med `rows`, eftersom både utgångsläget och gränserna kommer ur designen.
+ * Standardhöjden är 9,6rem, med manuell storleksändring upp till 60rem.
+ * UI-schemats initialHeightRem sätts som inline-stil eftersom scheman från API:t
+ * inte kan tillföra nya Tailwind-klasser efter att frontend har byggts.
  */
 const DEFAULT_CLASS = 'w-full h-[9.6rem] min-h-[9.6rem] max-h-[60rem]';
 
 export function TextareaWidget(props: WidgetProps) {
   const { id, value, disabled, readonly, required, invalid, describedBy, className, onChange, onBlur, onFocus } =
     getCommonProps(props, DEFAULT_CLASS);
-  const placeholder = (props.uiSchema?.['ui:placeholder'] ?? '') || getWidgetOptions(props.options).placeholder;
+  const options = getWidgetOptions(props.options);
+  const placeholder = (props.uiSchema?.['ui:placeholder'] ?? '') || options.placeholder;
 
   return (
     <Textarea
       id={id}
       className={className}
+      style={options.initialHeightRem === undefined ? undefined : { height: `${options.initialHeightRem}rem` }}
       placeholder={placeholder}
       value={(value as string) ?? ''}
       disabled={disabled}

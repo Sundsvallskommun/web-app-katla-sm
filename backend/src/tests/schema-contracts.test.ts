@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '@/app';
 import { SchemaController } from '@/controllers/schema.controller';
 import { HttpException } from '@/exceptions/HttpException';
+import schemaReference from '@/local-schemas/avvikelse-plats-handelse.schema.json';
 import { SchemaResponseDTO } from '@/responses/schema.response';
 import ApiService from '@/services/api.service';
 
@@ -168,8 +169,7 @@ describe('JSON schema adapter contracts', () => {
      * tillbaka i listan i local-schemas.ts.
      */
     describe.skip('locally held schema', () => {
-      const LOCAL_SCHEMA_NAME = 'avvikelse-plats-handelse';
-      const LOCAL_SCHEMA_ID = '2281_avvikelse-plats-handelse_1.3';
+      const { name: LOCAL_SCHEMA_NAME, id: LOCAL_SCHEMA_ID } = schemaReference;
 
       it('serves the local schema by name without calling the API', async () => {
         const getSpy = vi.spyOn(ApiService.prototype, 'get');
@@ -209,7 +209,7 @@ describe('JSON schema adapter contracts', () => {
         for (const field of described) {
           const fieldUiSchema = uiSchema[field] as Record<string, unknown>;
           expect(fieldUiSchema['ui:description']).toEqual(expect.stringContaining('Beskriv'));
-          expect(fieldUiSchema['ui:options']).toBeUndefined();
+          expect(fieldUiSchema['ui:options']).not.toEqual(expect.objectContaining({ descriptionBelow: true }));
         }
       });
 

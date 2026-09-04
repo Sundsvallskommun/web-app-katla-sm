@@ -50,7 +50,7 @@
   },
   "user": {
     "title": "Enskild brukare",
-    "description": "En brukare är den individ som berörs av ärendet.",
+    "description": "En brukare är den individ som berörs av rapporten.",
     "required": "Lägg till den brukare rapporten berör"
   },
   "other_reporter": {
