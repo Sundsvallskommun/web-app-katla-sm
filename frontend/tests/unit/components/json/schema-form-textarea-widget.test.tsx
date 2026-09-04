@@ -28,7 +28,7 @@ function renderTextareas(initialHeightRem?: unknown) {
     />
   );
 
-  return screen.getByRole('textbox', { name: 'Beskrivning' });
+  return screen.getByRole('textbox', { name: /^Beskrivning/ });
 }
 
 describe('SchemaForm textarea height', () => {
@@ -37,7 +37,7 @@ describe('SchemaForm textarea height', () => {
 
     expect(description).toHaveStyle({ height: `${height}rem` });
     expect(description).toHaveClass('min-h-[9.6rem]', 'max-h-[60rem]');
-    const actions = screen.getByRole('textbox', { name: 'Åtgärder' });
+    const actions = screen.getByRole('textbox', { name: /^Åtgärder/ });
     expect(actions).not.toHaveAttribute('style');
     expect(actions).toHaveClass('h-[9.6rem]', 'min-h-[9.6rem]', 'max-h-[60rem]');
   });

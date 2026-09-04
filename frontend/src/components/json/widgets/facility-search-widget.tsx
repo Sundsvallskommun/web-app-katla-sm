@@ -1,8 +1,9 @@
 'use client';
+import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { FacilityInfoDTO, UserEmploymentDTO } from '@data-contracts/backend/data-contracts';
 import { ariaDescribedByIds, errorId, type FieldProps } from '@rjsf/utils';
 import { getUserEmployments } from '@services/employee-service/employee-service';
-import { Combobox, FormControl, FormErrorMessage, FormLabel, RadioButton } from '@sk-web-gui/react';
+import { Combobox, FormControl, FormErrorMessage, RadioButton } from '@sk-web-gui/react';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import {
   findPlaceNode,
@@ -213,9 +214,9 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
         className="w-full"
         {...(invalid ? { [INVALID_FIELD_ATTRIBUTE]: id } : {})}
       >
-        <FormLabel id={searchLabelId} htmlFor={id} className="font-bold">
+        <FormFieldLabel id={searchLabelId} htmlFor={id} className="font-bold">
           {t('facility_search.search_label')}
-        </FormLabel>
+        </FormFieldLabel>
         <Combobox
           id={`${id}__combobox`}
           className="w-[60rem]"
@@ -323,9 +324,9 @@ export function FacilitySearchWidget(props: FieldProps<FacilityInfoDTO>) {
 
       {mustChooseSubPlace && subPlaceParentNode && selectedNode ?
         <FormControl disabled={!isEditable} required={mustChooseSubPlace} className="mt-16 w-full">
-          <FormLabel id={subPlaceLabelId} className="font-bold">
+          <FormFieldLabel id={subPlaceLabelId} className="font-bold">
             {t('facility_search.select_sub_place', { place: placeName(subPlaceParentNode) })}
-          </FormLabel>
+          </FormFieldLabel>
           {subPlaceNodes.length <= MAX_RADIO_SUB_PLACES ?
             <RadioButton.Group aria-labelledby={subPlaceLabelId} data-cy="facility-sub-place-options">
               {subPlaceNodes.map((node) => (

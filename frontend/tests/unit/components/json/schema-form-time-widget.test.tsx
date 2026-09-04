@@ -25,7 +25,7 @@ function renderTimeField(schema: RJSFSchema, uiSchema: UiSchema<Record<string, u
     />
   );
 
-  return { input: screen.getByLabelText('Tid'), onChange };
+  return { input: screen.getByLabelText(/^Tid/), onChange };
 }
 
 describe('SchemaForm time widget', () => {
@@ -104,7 +104,7 @@ describe('SchemaForm time widget', () => {
       />
     );
 
-    expect(screen.getByLabelText('Tid')).toHaveValue('17:05');
+    expect(screen.getByLabelText(/^Tid/)).toHaveValue('17:05');
   });
 
   it('behåller HH:mm för fält utan time-format', () => {

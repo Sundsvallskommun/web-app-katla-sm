@@ -1,6 +1,7 @@
+import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { isRadioWidgetName } from '@components/json/widgets/radio-widget-names';
 import { ariaDescribedByIds, descriptionId, errorId, type FieldTemplateProps, titleId } from '@rjsf/utils';
-import { FormControl, FormErrorMessage, FormLabel } from '@sk-web-gui/react';
+import { FormControl, FormErrorMessage } from '@sk-web-gui/react';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import { useTranslation } from 'react-i18next';
 
@@ -54,13 +55,13 @@ export function FieldTemplate(props: FieldTemplateProps) {
 
   const labelElement =
     displayLabel ?
-      <FormLabel
+      <FormFieldLabel
         id={titleId(id)}
         {...(isRadioGroup ? { as: 'legend' } : { htmlFor: id })}
         className={hideLabel ? 'sr-only' : undefined}
       >
         {label}
-      </FormLabel>
+      </FormFieldLabel>
     : null;
 
   const fieldContent = (

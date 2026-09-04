@@ -1,15 +1,7 @@
 'use client';
-
+import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { createConversation, sendConversationMessage } from '@services/conversation-service/conversation-service';
-import {
-  Button,
-  FileUpload,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  UploadFile,
-  useSnackbar,
-} from '@sk-web-gui/react';
+import { Button, FileUpload, FormControl, FormErrorMessage, UploadFile, useSnackbar } from '@sk-web-gui/react';
 import { sanitizeMessage } from '@utils/sanitize-message';
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
@@ -80,7 +72,7 @@ export const MessageComposer: React.FC<{
       }}
     >
       <FormControl id="message-body" className="w-full" required>
-        <FormLabel>{t('messages:compose_label')}</FormLabel>
+        <FormFieldLabel>{t('messages:compose_label')}</FormFieldLabel>
         <Controller
           control={control}
           name="messagePlainText"

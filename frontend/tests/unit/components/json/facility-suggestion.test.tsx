@@ -129,7 +129,7 @@ describe('FacilitySearchWidget employment suggestion is disabled', () => {
     renderForm('facility-suggestion-disabled:1');
 
     // Sökfältet är den observerbara readiness-gränsen; förslaget hann rendera innan det om det fanns.
-    expect(await screen.findByRole('textbox', { name: 'facility_search.search_label' })).toBeInTheDocument();
+    expect(await screen.findByRole('textbox', { name: /^facility_search.search_label/ })).toBeInTheDocument();
     await waitFor(() => {
       expect(employmentsMock).toHaveBeenCalled();
     });

@@ -1,4 +1,5 @@
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
+import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { useIsContentLocked } from '@contexts/errand-content-lock-context';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
@@ -259,7 +260,7 @@ export const StakeholderList: React.FC<{
               {shouldShowContactDetails(roles) && (
                 <div className="flex flex-col sm:flex-row py-10 gap-10 w-full">
                   <FormControl className="w-full">
-                    <FormLabel>{t('errand-information:stakeholder.email')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.email')}</FormFieldLabel>
                     <Input
                       {...register('emails.0')}
                       data-cy="stakeholder-email-input"
@@ -272,7 +273,7 @@ export const StakeholderList: React.FC<{
                     )}
                   </FormControl>
                   <FormControl className="w-full">
-                    <FormLabel>{t('errand-information:stakeholder.phone')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.phone')}</FormFieldLabel>
                     <Input
                       {...register('phoneNumbers.0')}
                       data-cy="stakeholder-mobilephone-input"
@@ -289,7 +290,7 @@ export const StakeholderList: React.FC<{
 
               {!hideRoleSelect && (
                 <FormControl required className="w-full sm:w-[calc(50%-10px)]">
-                  <FormLabel>{t('errand-information:stakeholder.person_role')}</FormLabel>
+                  <FormFieldLabel>{t('errand-information:stakeholder.person_role')}</FormFieldLabel>
                   <Select data-cy="stakeholder-role-select" className="w-full" {...register('role')}>
                     {metadata?.roles?.map(
                       (role) =>

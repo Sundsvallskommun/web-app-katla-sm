@@ -1,4 +1,6 @@
 {
+  "optional_label": "(optional)",
+  "required_label": "(required)",
   "combobox_placeholder": "Search/select…",
   "submit_button_default": "Add",
   "schema_load_error": "Could not load schema: {{schemaName}}",

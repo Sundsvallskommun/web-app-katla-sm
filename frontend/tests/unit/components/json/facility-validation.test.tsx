@@ -86,6 +86,6 @@ describe('FacilitySearchWidget validation', () => {
     renderForm();
 
     expect(focusInvalidField('root_facilityInfo_orgName')).toBe(true);
-    expect(screen.getByRole('textbox', { name: 'facility_search.search_label' })).toHaveFocus();
+    expect(screen.getByRole('textbox', { name: /^facility_search.search_label/ })).toHaveFocus();
   });
 });

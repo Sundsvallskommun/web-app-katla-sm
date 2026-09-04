@@ -101,8 +101,8 @@ export function stripHtml(html: string): string {
  * Designsystemet ritar röd ram på både `[aria-invalid="true"]` och webbläsarens `:invalid`.
  * Ett tomt `required`-fält är `:invalid` redan vid rendering — `noHtml5Validate` stänger av
  * valideringen vid submit men inte pseudoklassen — så fältet såg felmarkerat ut innan
- * användaren rört det. Valideringen sköts ändå av schemavalidatorn, och stjärnan i etiketten
- * kommer från FormControl, så ingetdera går förlorat.
+ * användaren rört det. Valideringen sköts ändå av schemavalidatorn, och kravtexten i etiketten
+ * följer FormControl, så ingetdera går förlorat.
  *
  * `required: false` skickas explicit: utan det ärver kontrollen `required` från FormControl.
  */

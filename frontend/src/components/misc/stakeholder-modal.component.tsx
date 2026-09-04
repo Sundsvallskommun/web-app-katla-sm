@@ -1,6 +1,7 @@
+import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, FormControl, FormErrorMessage, FormLabel, Input, Modal, Select } from '@sk-web-gui/react';
+import { Button, FormControl, FormErrorMessage, Input, Modal, Select } from '@sk-web-gui/react';
 import { createStakeholderSchema, phoneNumberFormatter, shouldShowContactDetails } from '@utils/stakeholder';
 import { useEffect, useMemo } from 'react';
 import { Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
@@ -86,7 +87,7 @@ export const StakeholderFormModal: React.FC<{
           <div className="flex gap-8">
             {showField('firstName') && (
               <FormControl required className="min-w-0 flex-1">
-                <FormLabel>{t('errand-information:stakeholder.modal.first_name')}</FormLabel>
+                <FormFieldLabel>{t('errand-information:stakeholder.modal.first_name')}</FormFieldLabel>
                 <Input data-cy="modal-firstName-input" {...register(`firstName`)} />
                 {formState.errors.firstName && (
                   <FormErrorMessage data-cy="firstName-input-error">
@@ -97,7 +98,7 @@ export const StakeholderFormModal: React.FC<{
             )}
             {showField('lastName') && (
               <FormControl required className="min-w-0 flex-1">
-                <FormLabel>{t('errand-information:stakeholder.modal.last_name')}</FormLabel>
+                <FormFieldLabel>{t('errand-information:stakeholder.modal.last_name')}</FormFieldLabel>
                 <Input data-cy="modal-lastName-input" {...register(`lastName`)} />
                 {formState.errors.lastName && (
                   <FormErrorMessage data-cy="lastName-input-error">
@@ -115,7 +116,7 @@ export const StakeholderFormModal: React.FC<{
               <div className="flex gap-8">
                 {showField('emails') && (
                   <FormControl className="min-w-0 flex-1">
-                    <FormLabel>{t('errand-information:stakeholder.email')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.email')}</FormFieldLabel>
                     <Input data-cy="modal-email-input" {...register('emails.0')} />
                     {formState.errors.emails?.[0]?.message && (
                       <FormErrorMessage data-cy="modal-email-input-error">
@@ -126,7 +127,7 @@ export const StakeholderFormModal: React.FC<{
                 )}
                 {showField('phoneNumbers') && (
                   <FormControl className="min-w-0 flex-1">
-                    <FormLabel>{t('errand-information:stakeholder.phone')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.phone')}</FormFieldLabel>
                     <Input data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
                     {formState.errors.phoneNumbers?.[0]?.message && (
                       <FormErrorMessage data-cy="modal-phone-input-error" className="truncate">
@@ -142,13 +143,13 @@ export const StakeholderFormModal: React.FC<{
               <div className="flex gap-8">
                 {showField('address') && (
                   <FormControl className="min-w-0 flex-1">
-                    <FormLabel>{t('errand-information:stakeholder.modal.address')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.modal.address')}</FormFieldLabel>
                     <Input data-cy="modal-address-input" {...register(`address`)} />
                   </FormControl>
                 )}
                 {showField('careOf') && (
                   <FormControl className="min-w-0 flex-1">
-                    <FormLabel>{t('errand-information:stakeholder.modal.care_of')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.modal.care_of')}</FormFieldLabel>
                     <Input data-cy="modal-careOf-input" {...register(`careOf`)} />
                   </FormControl>
                 )}
@@ -159,13 +160,13 @@ export const StakeholderFormModal: React.FC<{
               <div className="flex gap-8">
                 {showField('zipCode') && (
                   <FormControl className="min-w-0 flex-1">
-                    <FormLabel>{t('errand-information:stakeholder.modal.zip_code')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.modal.zip_code')}</FormFieldLabel>
                     <Input data-cy="modal-zipCode-input" {...register(`zipCode`)} />
                   </FormControl>
                 )}
                 {showField('city') && (
                   <FormControl className="min-w-0 flex-1">
-                    <FormLabel>{t('errand-information:stakeholder.modal.city')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.modal.city')}</FormFieldLabel>
                     <Input data-cy="modal-city-input" {...register(`city`)} />
                   </FormControl>
                 )}
@@ -176,7 +177,7 @@ export const StakeholderFormModal: React.FC<{
 
         {showField('role') && (
           <FormControl required className="w-full">
-            <FormLabel>{t('errand-information:stakeholder.modal.role')}</FormLabel>
+            <FormFieldLabel>{t('errand-information:stakeholder.modal.role')}</FormFieldLabel>
             <Select data-cy="modal-stakeholder-role-select" className="w-full" {...register(`role`)}>
               {metadata?.roles?.map(
                 (role) =>

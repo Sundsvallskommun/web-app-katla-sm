@@ -1,8 +1,9 @@
 import { ErrandSection } from '@components/errand-sections/errand-section.component';
+import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { Alert } from '@sk-web-gui/alert';
-import { FormControl, FormErrorMessage, FormLabel, RadioButton } from '@sk-web-gui/react';
+import { FormControl, FormErrorMessage, RadioButton } from '@sk-web-gui/react';
 import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import { EVENT_TYPE_DEVIATION, EVENT_TYPE_MISCONDUCT, EVENT_TYPE_PARAMETER_KEY } from '@utils/report-type';
@@ -57,7 +58,7 @@ export const AboutErrandContent: React.FC = () => {
   return (
     <div className="flex flex-col gap-40">
       <FormControl required id="event-type" {...(missingEventType ? { [INVALID_FIELD_ATTRIBUTE]: 'event-type' } : {})}>
-        <FormLabel>{t('errand-information:about.event_type_label')}</FormLabel>
+        <FormFieldLabel>{t('errand-information:about.event_type_label')}</FormFieldLabel>
         <RadioButton.Group data-cy="event-type-group" className="gap-16">
           <RadioButton
             data-cy="event-type-deviation"
@@ -107,7 +108,7 @@ export const AboutErrandContent: React.FC = () => {
         id="event-concerns"
         {...(missingEventConcerns ? { [INVALID_FIELD_ATTRIBUTE]: 'event-concerns' } : {})}
       >
-        <FormLabel>{t('errand-information:about.event_concerns_label')}</FormLabel>
+        <FormFieldLabel>{t('errand-information:about.event_concerns_label')}</FormFieldLabel>
         <RadioButton.Group data-cy="event-concerns-group" className="gap-16">
           <RadioButton
             data-cy="event-concerns-individual"

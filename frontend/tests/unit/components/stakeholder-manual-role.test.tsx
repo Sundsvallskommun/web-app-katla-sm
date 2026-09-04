@@ -37,6 +37,16 @@ function ModalHost({ roles }: { roles: string[] }) {
  * ser ut att aldrig ha lagts till.
  */
 describe('manually added stakeholder', () => {
+  it('marks contact details as optional while names remain required', () => {
+    render(<ModalHost roles={['CONTACT']} />);
+
+    expect(screen.getByRole('textbox', { name: /stakeholder.email optional_label/ })).not.toBeRequired();
+    expect(screen.getByRole('textbox', { name: /stakeholder.phone optional_label/ })).not.toBeRequired();
+    expect(screen.getByRole('textbox', { name: /modal.first_name/ })).toBeRequired();
+    expect(screen.getByRole('textbox', { name: /modal.last_name/ })).toBeRequired();
+    expect(screen.getAllByText('optional_label')).toHaveLength(2);
+  });
+
   it.each([
     ['a section with one role', ['CONTACT'], 'CONTACT'],
     ['a section with several roles', ['CONTACT', 'SUBSTITUTEASSIGNMENT'], 'CONTACT'],
