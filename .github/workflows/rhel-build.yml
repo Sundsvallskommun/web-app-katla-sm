@@ -92,3 +92,36 @@ jobs:
       - name: Build
         working-directory: ${{ matrix.package }}
         run: yarn build
+
+      - name: Verify standalone image processing
+        if: matrix.package == 'frontend'
+        working-directory: frontend
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { createRequire } = require('node:module');
+          const path = require('node:path');
+
+          // Start with the packaged module so a previously loaded source libvips cannot hide missing files.
+          const standalone = path.resolve('.next/standalone');
+          const requireStandalone = createRequire(path.join(standalone, 'server.js'));
+          assert.ok(requireStandalone.resolve('sharp').startsWith(`${standalone}${path.sep}`));
+          const sharp = requireStandalone('sharp');
+
+          (async () => {
+            console.log(`Standalone sharp ${sharp.versions.sharp}, libvips ${sharp.versions.vips}`);
+            for (const format of ['avif', 'webp']) {
+              const buffer = await sharp({
+                create: { width: 64, height: 64, channels: 3, background: '#624ee3' },
+              }).resize(32, 32).toFormat(format).toBuffer();
+              const metadata = await sharp(buffer).metadata();
+              assert.equal(metadata.width, 32);
+              assert.equal(metadata.height, 32);
+              assert.equal(metadata.format, format === 'avif' ? 'heif' : 'webp');
+              console.log(`${format}: encoded and decoded 32x32`);
+            }
+          })().catch(error => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE

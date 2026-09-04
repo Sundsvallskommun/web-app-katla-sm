@@ -74,4 +74,7 @@ test('the real editor and attachments are locked while a message is being sent',
   }
   await expect(editor).toHaveAttribute('contenteditable', 'true');
   await expect(editor).toHaveText('');
+  await expect(page.locator('.sk-snackbar-text', { hasText: 'Meddelandet skickades' })).toBeVisible();
+  await editor.fill('Ett till meddelande');
+  await expect(page.getByTestId('send-message-button')).toBeEnabled();
 });
