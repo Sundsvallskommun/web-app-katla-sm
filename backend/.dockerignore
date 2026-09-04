@@ -6,6 +6,7 @@ dist
 # Local environment files can contain OAuth, session and SAML secrets.
 .env
 .env.*
+cert/
 
 # code formatter
 .eslintrc
