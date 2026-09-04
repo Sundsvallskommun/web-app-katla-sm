@@ -24,6 +24,47 @@ interface HistoryState {
 
 const messageKey = (message: ConversationMessageDTO): string => `${message.conversationId}:${message.messageId ?? ''}`;
 
+async function loadConversationPages(
+  errandId: string,
+  conversationId: string,
+  previousPages: ConversationMessagesPageDTO[] | undefined,
+  kind: LoadKind,
+  signal: AbortSignal
+): Promise<ConversationMessagesPageDTO[]> {
+  const lastPage = previousPages?.at(-1);
+  const count = (previousPages?.length ?? 1) + (kind === 'more' && lastPage?.hasMore ? 1 : 0);
+  const loaded: ConversationMessagesPageDTO[] = [];
+  for (let page = 0; page < count; page += 1) {
+    const result = await getConversationMessages(errandId, conversationId, page, signal);
+    signal.throwIfAborted();
+    loaded.push(result);
+    if (!result.hasMore) break;
+  }
+  return loaded;
+}
+
+async function acknowledgeHistory(
+  errandId: string,
+  pages: HistoryPages,
+  messages: ConversationMessageDTO[],
+  read: Set<string>,
+  signal: AbortSignal
+): Promise<void> {
+  for (const [conversationId] of pages) {
+    if (signal.aborted || document.visibilityState !== 'visible') return;
+    const unread = unreadMessageIds(messages.filter((message) => message.conversationId === conversationId));
+    if (unread.length === 0) continue;
+    try {
+      await markMessagesAsRead(errandId, conversationId, unread, signal);
+      if (signal.aborted) return;
+      // Bara kvitterade läsningar spärrar nya försök. Fel provas igen vid nästa uppdatering.
+      unread.forEach((id) => read.add(`${conversationId}:${id}`));
+    } catch {
+      // Historiken är användbar även när läskvittot inte nådde fram.
+    }
+  }
+}
+
 /**
  * Äger historik, sidladdning och läskvitton för ett ärende. Varje uppdatering läser om de sidor
  * som redan visas: nya meddelanden förskjuter sidgränserna, så äldre sidor får inte fogas till
@@ -74,16 +115,13 @@ export function useConversationMessages(errandId: string | undefined) {
       for (const conversation of conversations) {
         if (signal.aborted) return;
         if (!conversation.id) throw new Error('Conversation without id');
-        const oldPages = previous?.pages.get(conversation.id);
-        const lastPage = oldPages?.at(-1);
-        const count = (oldPages?.length ?? 1) + (request.kind === 'more' && lastPage?.hasMore ? 1 : 0);
-        const loaded: ConversationMessagesPageDTO[] = [];
-        for (let page = 0; page < count; page += 1) {
-          const result = await getConversationMessages(errandId, conversation.id, page, signal);
-          if (signal.aborted) return;
-          loaded.push(result);
-          if (!result.hasMore) break;
-        }
+        const loaded = await loadConversationPages(
+          errandId,
+          conversation.id,
+          previous?.pages.get(conversation.id),
+          request.kind,
+          signal
+        );
         pages.set(conversation.id, loaded);
       }
       if (signal.aborted) return;
@@ -105,19 +143,7 @@ export function useConversationMessages(errandId: string | undefined) {
         failed: false,
       });
 
-      for (const [conversationId] of pages) {
-        if (signal.aborted || document.visibilityState !== 'visible') return;
-        const unread = unreadMessageIds(messages.filter((message) => message.conversationId === conversationId));
-        if (unread.length === 0) continue;
-        try {
-          await markMessagesAsRead(errandId, conversationId, unread, signal);
-          if (signal.aborted) return;
-          // Bara kvitterade läsningar spärrar nya försök. Fel provas igen vid nästa uppdatering.
-          unread.forEach((id) => read.add(`${conversationId}:${id}`));
-        } catch {
-          // Historiken är användbar även när läskvittot inte nådde fram.
-        }
-      }
+      await acknowledgeHistory(errandId, pages, messages, read, signal);
     };
 
     void load()

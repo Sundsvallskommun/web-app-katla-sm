@@ -33,6 +33,7 @@ export const ErrandMessages: React.FC = () => {
     useConversationMessages(errandId);
 
   const visibleMessages = filter === 'ALL' ? messages : messages.filter((message) => message.direction === filter);
+  const showEmptyState = visibleMessages.length === 0 && !hasMore && !error;
   const errors = [error, attachmentError].filter((message): message is string => message !== null);
 
   return (
@@ -72,16 +73,19 @@ export const ErrandMessages: React.FC = () => {
         ))}
       </RadioButton.Group>
 
-      {isLoading ?
+      {isLoading && (
         <div role="status" aria-live="polite" className="flex justify-center py-40">
           <Spinner aria-hidden="true" />
           <span className="sr-only">{t('messages:loading')}</span>
         </div>
-      : visibleMessages.length === 0 && !hasMore && !error ?
+      )}
+      {!isLoading && showEmptyState && (
         <p data-cy="no-messages" className="text-dark-secondary py-24">
           {t('messages:empty')}
         </p>
-      : <div className="flex flex-col gap-16" data-cy="message-list">
+      )}
+      {!isLoading && !showEmptyState && (
+        <div className="flex flex-col gap-16" data-cy="message-list">
           {visibleMessages.map((message) => (
             <MessageItem
               key={`${message.conversationId}:${message.messageId ?? message.sent}`}
@@ -91,7 +95,7 @@ export const ErrandMessages: React.FC = () => {
             />
           ))}
         </div>
-      }
+      )}
       {hasMore && (
         <div>
           <Button
