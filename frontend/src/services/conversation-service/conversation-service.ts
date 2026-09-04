@@ -26,7 +26,7 @@ export const getConversationMessages = async (
     .then((res) => res.data);
 
 /**
- * SupportManagement skapar eller återanvänder rapportörens samtal atomärt.
+ * Katlas backend återanvänder ett befintligt rapportörssamtal eller skapar ett via SupportManagement.
  */
 export const createConversation = async (errandId: string, topic: string): Promise<ConversationDTO> =>
   apiService.post<ConversationDTO>(errandPath(errandId), { topic }).then((res) => res.data);

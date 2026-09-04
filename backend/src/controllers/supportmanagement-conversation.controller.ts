@@ -167,16 +167,22 @@ export class SupportManagementConversationController {
     @Param('errandId') errandId: string,
     @Body() body: CreateConversationDTO,
   ): Promise<ConversationDTO> {
-    // SupportManagement äger atomärt skapande/återanvändning under ärendets databaslås.
-    // En lokal kontroll före POST skyddar inte mot andra processer eller handläggarens app.
+    // Återanvänd samtalet via API:ts befintliga kontrakt. GET och POST är separata:
+    // samtidiga klienter kan fortfarande skapa fler samtal, så historiken läser alla.
+    const existing = (await this.readConversations(req, errandId)).find(isReporterConversation);
+    if (existing) {
+      if (!existing.id) throw new HttpException(502, 'Conversation without id');
+      return existing;
+    }
+
     const conversation: Conversation = {
       topic: body.topic,
       type: REPORTER_CONVERSATION_TYPE,
       participants: [{ type: IdentifierTypeEnum.AdAccount, value: req.user.username }],
     };
 
-    const res = await this.apiService.put<Conversation>(
-      { baseURL: apiURL(this.apiBase), url: `${this.conversationsPath(errandId)}/internal`, data: conversation },
+    const res = await this.apiService.post<Conversation>(
+      { baseURL: apiURL(this.apiBase), url: this.conversationsPath(errandId), data: conversation },
       req,
     );
     if (!res.data?.id || !isReporterConversation(res.data)) throw new HttpException(502, 'Invalid response when creating conversation');

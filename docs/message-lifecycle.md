@@ -2,13 +2,13 @@
 
 Rapportörens samtal är `INTERNAL` och saknar `relationIds`. Katlas samtalscontroller kontrollerar samma villkor före läsning av meddelanden, skickande, läskvitton och bilagehämtning. SupportManagement äger behörigheten till själva ärendet och beständig lagring av samtal.
 
-## Atomärt skapande
+## Skapande med befintligt API
 
-SupportManagement måste skapa eller återanvända ett internt samtal utan relationskoppling under ärendets databaslås. Kontrollen och skapandet ligger i en transaktion. Katlas backend anropar `PUT .../communication/conversations/internal` och använder det returnerade samtals-ID:t. Endpointen accepterar enbart interna samtal utan relationskoppling. Saknas endpointen avvisas anropet; Katla faller inte tillbaka till ett osäkert skapande. En kontroll i Katlas process kan inte samordna andra instanser eller handläggarens app.
+Katlas samtalscontroller läser först befintliga samtal och återanvänder det första interna samtalet utan relationskoppling. Om inget finns skapar den ett via befintliga `POST .../communication/conversations`. `ApiService` följer API:ts `Location`-header för att läsa det skapade samtalet. Misslyckad läsning av befintliga samtal avbryter skapandet.
 
-Den tillhörande API-ändringen finns på branchen `fix/reporter-conversation-creation` i `api-service-support-management`. Den använder befintliga `AccessControlService.getErrand(..., true, ..., RW)` och `ConversationService.createConversation`, med `READ_COMMITTED`. Om flera sådana samtal redan finns återanvänds det med lägst ID. Historik raderas inte; Katlas vy läser alla rapportörssamtal och behåller varje meddelandes samtals-ID för läskvitton och bilagor.
+Ändringen kräver inga nya endpointar eller ändringar i SupportManagement. Katlas urval av rapportörssamtal är en regel i Katla och inför ingen begränsning av hur många interna samtal andra API-konsumenter får skapa eller vilka ämnen och deltagare de får ha.
 
-API:ts OpenAPI-schema använder namnet `ConversationIdentifier` för samtalens identiteter, så att de inte kolliderar med abonnentmodellens `Identifier`. JSON-fälten förblir desamma.
+GET och POST är separata operationer. Om två klienter samtidigt ser en tom lista kan båda skapa ett samtal. Katla garanterar därför inte ett enda samtal vid samtidig start. Vyn läser alla rapportörssamtal och behåller varje meddelandes samtals-ID för läskvitton och bilagor, så att flera samtal inte döljer historik i Katla. En global garanti mot dubbelt skapande kräver ett separat kontraktsbeslut med API-ägarna och hänsyn till samtliga konsumenter. Ingen sådan garanti påstås här.
 
 ## Sidindelning och uppdatering
 
@@ -22,16 +22,13 @@ Formulärets textredigerare, verktygsfält och bilagekontroller låses under ski
 
 ## Införande och återställning
 
-1. Inför API-ändringen i SupportManagement bakom den gatewayadress som `getApiBase('supportmanagement')` pekar på. Kontrollera att samtliga instanser använder ändringen innan Katla uppdateras. Katla pekar för närvarande på aliaset `supportmanagement-sprint/15.1`; API-repots versionsnummer ersätter inte automatiskt gatewaykonfigurationen.
-2. Inför Katlas backend och frontend tillsammans. Svarskontraktet för meddelanden har ändrats från en array till en sida; äldre klienter behöver ladda om sidan efter införandet.
-3. Verifiera i testmiljön att samtidig start från rapportör och handläggare återanvänder samma samtal och att båda kan läsa och svara med bilagor.
+1. Inför Katlas backend och frontend tillsammans. Svarskontraktet mellan dem för meddelanden har ändrats från en array till en sida; äldre klienter behöver ladda om sidan efter införandet. SupportManagement använder sitt befintliga kontrakt.
+2. Verifiera i testmiljön att rapportör och handläggare kan läsa och svara med bilagor och att Katla visar historiken även om ärendet har flera rapportörssamtal.
 
-Ingen databasmigrering eller radering behövs. Vid återställning återställs Katlas frontend och backend tillsammans. API-fixen kan ligga kvar med den äldre Katla-versionen. Återställ inte API-fixen medan den nya Katla-versionen fortfarande används: skickandet avvisas då tills API-fixen återinförs.
+Ingen databasmigrering eller radering behövs. Vid återställning återställs Katlas frontend och backend tillsammans.
 
 ## Validering
 
 I både `backend` och `frontend`: `yarn test`, `yarn type-check`, `yarn lint:strict` och `yarn format:check`.
 
 Webbläsartester: `NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE=true NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO=false yarn e2e meddelanden.spec.ts`.
-
-I API-repot: `mvn -Dtest=ConversationServiceTest,ConversationCreationPersistenceTest,ErrandCommunicationResourceTest test`. Persistenstesterna använder MariaDB via Testcontainers och verifierar samtidiga transaktioner samt återförsök efter återställd transaktion. OpenAPI-kontraktet verifieras med `mvn test-compile failsafe:integration-test failsafe:verify -Dit.test=OpenApiSpecificationIT`.

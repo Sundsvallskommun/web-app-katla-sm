@@ -63,29 +63,56 @@ describe('conversations', () => {
     expect(response.body).toEqual({ message: 'Conversation not found' });
   });
 
-  it('låter upstream återanvända samtalet atomärt', async () => {
-    const getSpy = vi.spyOn(ApiService.prototype, 'get');
-    const putSpy = vi.spyOn(ApiService.prototype, 'put').mockResolvedValue({ data: REPORTER_CONVERSATION, message: 'success' });
+  it('återanvänder rapportörens samtal utan att skapa ett nytt', async () => {
+    mockUpstream();
+    const postSpy = vi.spyOn(ApiService.prototype, 'post');
+    const putSpy = vi.spyOn(ApiService.prototype, 'put');
 
     const response = await request(app).post('/api/supportmanagement/errand/errand-1/conversations').send({ topic: 'Ärende: #VOF-1' }).expect(200);
 
     expect(response.body).toEqual(REPORTER_CONVERSATION);
-    expect(putSpy).toHaveBeenCalledTimes(1);
-    expect(putSpy.mock.calls[0]?.[0].url).toBe('2281/test/errands/errand-1/communication/conversations/internal');
-    expect(getSpy).not.toHaveBeenCalled();
+    expect(postSpy).not.toHaveBeenCalled();
+    expect(putSpy).not.toHaveBeenCalled();
   });
 
   it('startar tråden som intern med den inloggade som deltagare', async () => {
-    const putSpy = vi.spyOn(ApiService.prototype, 'put').mockResolvedValue({ data: { id: 'conv-new', type: 'INTERNAL' }, message: 'success' });
+    vi.spyOn(ApiService.prototype, 'get').mockResolvedValue({ data: OTHER_CONVERSATIONS, message: 'success' });
+    const postSpy = vi.spyOn(ApiService.prototype, 'post').mockResolvedValue({ data: { id: 'conv-new', type: 'INTERNAL' }, message: 'success' });
+    const putSpy = vi.spyOn(ApiService.prototype, 'put');
 
-    await request(app).post('/api/supportmanagement/errand/errand-1/conversations').send({ topic: 'Ärende: #VOF-1' }).expect(200);
+    const response = await request(app).post('/api/supportmanagement/errand/errand-1/conversations').send({ topic: 'Ärende: #VOF-1' }).expect(200);
 
-    const [config] = putSpy.mock.calls[0] ?? [];
+    expect(response.body).toEqual({ id: 'conv-new', type: 'INTERNAL' });
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    expect(putSpy).not.toHaveBeenCalled();
+    const [config] = postSpy.mock.calls[0] ?? [];
+    expect(config?.url).toBe('2281/test/errands/errand-1/communication/conversations');
     expect((config as { data?: unknown }).data).toEqual({
       topic: 'Ärende: #VOF-1',
       type: 'INTERNAL',
       participants: [{ type: 'adAccount', value: 'rapportor' }],
     });
+  });
+
+  it('skapar inte ett nytt samtal om hämtningen av befintliga samtal misslyckas', async () => {
+    vi.spyOn(ApiService.prototype, 'get').mockRejectedValue(new HttpException(502, 'Upstream unavailable'));
+    const postSpy = vi.spyOn(ApiService.prototype, 'post');
+    await request(app).post('/api/supportmanagement/errand/errand-1/conversations').send({ topic: 'Report' }).expect(502);
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('avvisar ett befintligt samtal utan id utan att skapa ett till', async () => {
+    vi.spyOn(ApiService.prototype, 'get').mockResolvedValue({ data: [{ type: 'INTERNAL' }], message: 'success' });
+    const postSpy = vi.spyOn(ApiService.prototype, 'post');
+    await request(app).post('/api/supportmanagement/errand/errand-1/conversations').send({ topic: 'Report' }).expect(502);
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('gör inget automatiskt nytt skapandeförsök efter ett misslyckat svar', async () => {
+    vi.spyOn(ApiService.prototype, 'get').mockResolvedValue({ data: [], message: 'success' });
+    const postSpy = vi.spyOn(ApiService.prototype, 'post').mockRejectedValue(new HttpException(502, 'Upstream unavailable'));
+    await request(app).post('/api/supportmanagement/errand/errand-1/conversations').send({ topic: 'Report' }).expect(502);
+    expect(postSpy).toHaveBeenCalledTimes(1);
   });
 
   it('avvisar ett samtal utan ämne', async () => {
@@ -293,11 +320,4 @@ describe('message pages', () => {
       await request(app).get(path).expect(502);
     },
   );
-});
-
-it('avvisar skickande mot ett API som saknar atomärt skapande', async () => {
-  vi.spyOn(ApiService.prototype, 'put').mockRejectedValue(new HttpException(404, 'Not found'));
-  const post = vi.spyOn(ApiService.prototype, 'post');
-  await request(app).post('/api/supportmanagement/errand/errand-1/conversations').send({ topic: 'Report' }).expect(404);
-  expect(post).not.toHaveBeenCalled();
 });
