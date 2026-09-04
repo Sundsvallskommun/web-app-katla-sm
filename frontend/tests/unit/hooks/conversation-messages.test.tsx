@@ -31,6 +31,18 @@ const page = (items: ConversationMessageDTO[], page = 0, hasMore = false): Conve
   page,
   hasMore,
 });
+const numberedMessages = (newest: number, oldest = 1): ConversationMessageDTO[] =>
+  Array.from({ length: newest - oldest + 1 }, (_, index) => ({
+    ...message(`msg-${newest - index}`),
+    sent: new Date(Date.UTC(2026, 0, 1) + newest - index).toISOString(),
+    viewed: true,
+  }));
+const storedPage = (items: ConversationMessageDTO[], requestedPage = 0): ConversationMessagesPageDTO =>
+  page(
+    items.slice(requestedPage * 50, (requestedPage + 1) * 50),
+    requestedPage,
+    items.length > (requestedPage + 1) * 50
+  );
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -51,6 +63,8 @@ const settled = async (result: { current: ReturnType<typeof useConversationMessa
 
 describe('conversation history', () => {
   it('läser historik från samtliga rapportörssamtal och kvitterar rätt tråd', async () => {
+    const pending = Promise.withResolvers<undefined>();
+    markRead.mockReturnValueOnce(pending.promise);
     conversations.mockResolvedValue([{ id: 'conv-1' }, { id: 'conv-2' }]);
     messages.mockImplementation((_id, conversationId) =>
       Promise.resolve(page([message('same-message-id', conversationId)]))
@@ -60,6 +74,10 @@ describe('conversation history', () => {
     expect(result.current.messages.map((m) => m.conversationId)).toEqual(['conv-1', 'conv-2']);
     expect(markRead).toHaveBeenCalledWith('errand-1', 'conv-1', ['same-message-id'], expect.any(AbortSignal));
     expect(markRead).toHaveBeenCalledWith('errand-1', 'conv-2', ['same-message-id'], expect.any(AbortSignal));
+    await act(async () => {
+      pending.resolve(undefined);
+      await pending.promise;
+    });
   });
 
   it('låter en sida med enbart systemhändelser följas av äldre meddelanden', async () => {
@@ -105,6 +123,121 @@ describe('conversation history', () => {
       expect(result.current.messages.map((m) => m.messageId)).toEqual(['new', 'a', 'b']);
     });
   });
+
+  it('behåller alla hundra öppnade meddelanden när ett nytt svar förskjuter sidgränserna', async () => {
+    let storedMessages = numberedMessages(100);
+    messages.mockImplementation((_errand, _conversation, requestedPage) =>
+      Promise.resolve(storedPage(storedMessages, requestedPage))
+    );
+    const { result } = renderHook(() => useConversationMessages('errand-1'));
+    await settled(result);
+    act(() => {
+      result.current.loadMore();
+    });
+    await settled(result);
+    expect(result.current.messages).toHaveLength(100);
+    expect(result.current.messages.at(-1)?.messageId).toBe('msg-1');
+    expect(result.current.hasMore).toBe(false);
+
+    storedMessages = numberedMessages(101);
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    await settled(result);
+    expect(result.current.messages.map((item) => item.messageId)).toEqual(storedMessages.map((item) => item.messageId));
+    expect(result.current.messages).toHaveLength(101);
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('slutar på sista sidan när ett tidigare öppnat meddelande har raderats', async () => {
+    let storedMessages = numberedMessages(100);
+    messages.mockImplementation((_errand, _conversation, requestedPage) =>
+      Promise.resolve(storedPage(storedMessages, requestedPage))
+    );
+    const { result } = renderHook(() => useConversationMessages('errand-1'));
+    await settled(result);
+    act(() => {
+      result.current.loadMore();
+    });
+    await settled(result);
+    expect(result.current.messages.at(-1)?.messageId).toBe('msg-1');
+
+    storedMessages = numberedMessages(101, 2);
+    act(() => {
+      result.current.reload();
+    });
+    await settled(result);
+    expect(result.current.messages.map((item) => item.messageId)).toEqual(storedMessages.map((item) => item.messageId));
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('visar äldre meddelanden vid sidladdning även när nya svar fyllt en hel sida', async () => {
+    let storedMessages = numberedMessages(150);
+    messages.mockImplementation((_errand, _conversation, requestedPage) =>
+      Promise.resolve(storedPage(storedMessages, requestedPage))
+    );
+    const { result } = renderHook(() => useConversationMessages('errand-1'));
+    await settled(result);
+    const previouslyVisible = result.current.messages.map((item) => item.messageId);
+    expect(result.current.messages.at(-1)?.messageId).toBe('msg-101');
+
+    storedMessages = numberedMessages(201);
+    act(() => {
+      result.current.loadMore();
+    });
+    await settled(result);
+    const visibleIds = result.current.messages.map((item) => item.messageId);
+    expect(visibleIds).toEqual(expect.arrayContaining(previouslyVisible));
+    expect(visibleIds).toContain('msg-100');
+    expect(visibleIds[0]).toBe('msg-201');
+    expect(new Set(visibleIds).size).toBe(visibleIds.length);
+    expect(result.current.hasMore).toBe(true);
+  });
+
+  it.each(['reload', 'focus', 'more'] as const)(
+    'låter %s hämta historik medan ett läskvitto väntar utan att kvittera samma meddelande igen',
+    async (action) => {
+      const pending = Promise.withResolvers<undefined>();
+      markRead.mockReturnValueOnce(pending.promise);
+      messages.mockResolvedValue(page([message('unread')], 0, true));
+      const { result } = renderHook(() => useConversationMessages('errand-1'));
+      await waitFor(() => {
+        expect(markRead).toHaveBeenCalledTimes(1);
+      });
+      await settled(result);
+      const receiptSignal = markRead.mock.calls[0]?.[3];
+
+      messages.mockImplementation((_errand, _conversation, requestedPage) =>
+        Promise.resolve(
+          requestedPage === 0 ?
+            page([{ ...message('new'), viewed: true }, message('unread')], 0, true)
+          : page([{ ...message('older'), viewed: true }], 1)
+        )
+      );
+      act(() => {
+        if (action === 'reload') result.current.reload();
+        else if (action === 'focus') window.dispatchEvent(new Event('focus'));
+        else result.current.loadMore();
+      });
+      await settled(result);
+      expect(result.current.messages.map((item) => item.messageId)).toEqual(
+        action === 'more' ? ['new', 'unread', 'older'] : ['new', 'unread']
+      );
+      expect(receiptSignal?.aborted).toBe(false);
+      expect(markRead).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        pending.resolve(undefined);
+        await pending.promise;
+      });
+      act(() => {
+        result.current.reload();
+      });
+      await settled(result);
+      expect(markRead).toHaveBeenCalledTimes(1);
+      expect(result.current.error).toBeNull();
+    }
+  );
 
   it('försöker ett misslyckat läskvitto igen men upprepar inte kvitterade läsningar', async () => {
     markRead.mockRejectedValueOnce(new Error('offline'));
@@ -180,6 +313,59 @@ describe('conversation history', () => {
     });
     expect(result.current.messages).toEqual([]);
     expect(markRead).not.toHaveBeenCalled();
+  });
+
+  it('avbryter gamla läskvitton vid ärendebyte och låter inte sena svar kvittera det nya ärendet', async () => {
+    const pending = Promise.withResolvers<undefined>();
+    markRead.mockReturnValueOnce(pending.promise).mockRejectedValueOnce(new Error('offline'));
+    messages.mockImplementation((errandId) => Promise.resolve(page([{ ...message('same-id'), message: errandId }])));
+    const { result, rerender } = renderHook(({ id }) => useConversationMessages(id), {
+      initialProps: { id: 'errand-1' },
+    });
+    await waitFor(() => {
+      expect(markRead).toHaveBeenCalledTimes(1);
+    });
+    const receiptSignal = markRead.mock.calls[0]?.[3];
+
+    rerender({ id: 'errand-2' });
+    await settled(result);
+    expect(receiptSignal?.aborted).toBe(true);
+    expect(result.current.messages[0]?.message).toBe('errand-2');
+    expect(markRead).toHaveBeenNthCalledWith(2, 'errand-2', 'conv-1', ['same-id'], expect.any(AbortSignal));
+
+    await act(async () => {
+      pending.resolve(undefined);
+      await pending.promise;
+    });
+    act(() => {
+      result.current.reload();
+    });
+    await settled(result);
+    expect(result.current.messages[0]?.message).toBe('errand-2');
+    expect(markRead).toHaveBeenNthCalledWith(3, 'errand-2', 'conv-1', ['same-id'], expect.any(AbortSignal));
+  });
+
+  it('avbryter pågående läskvitto vid avmontering och ignorerar svaret i en ny vy', async () => {
+    const pending = Promise.withResolvers<undefined>();
+    markRead.mockReturnValueOnce(pending.promise);
+    const first = renderHook(() => useConversationMessages('errand-1'));
+    await waitFor(() => {
+      expect(markRead).toHaveBeenCalledTimes(1);
+    });
+    const receiptSignal = markRead.mock.calls[0]?.[3];
+    first.unmount();
+    expect(receiptSignal?.aborted).toBe(true);
+
+    messages.mockResolvedValue(page([message('new-view')]));
+    const second = renderHook(() => useConversationMessages('errand-2'));
+    await settled(second.result);
+    await act(async () => {
+      pending.resolve(undefined);
+      await pending.promise;
+    });
+    expect(second.result.current.messages.map((item) => item.messageId)).toEqual(['new-view']);
+    expect(second.result.current.error).toBeNull();
+    expect(markRead).toHaveBeenNthCalledWith(2, 'errand-2', 'conv-1', ['new-view'], expect.any(AbortSignal));
   });
 
   it('köar uppdateringen efter skickande när en hämtning redan pågår', async () => {

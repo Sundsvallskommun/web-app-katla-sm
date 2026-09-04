@@ -22,6 +22,13 @@ interface HistoryState {
   failed: boolean;
 }
 
+interface ReadReceipts {
+  errandId: string;
+  signal: AbortSignal;
+  read: Set<string>;
+  pending: Set<string>;
+}
+
 const messageKey = (message: ConversationMessageDTO): string => `${message.conversationId}:${message.messageId ?? ''}`;
 
 async function loadConversationPages(
@@ -32,36 +39,46 @@ async function loadConversationPages(
   signal: AbortSignal
 ): Promise<ConversationMessagesPageDTO[]> {
   const lastPage = previousPages?.at(-1);
-  const count = (previousPages?.length ?? 1) + (kind === 'more' && lastPage?.hasMore ? 1 : 0);
+  const minimumPages = previousPages?.length ?? 1;
+  const remaining = new Set(previousPages?.flatMap((page) => page.messages.map(messageKey)));
+  let loadExtraPage = kind === 'more' && !!lastPage?.hasMore;
   const loaded: ConversationMessagesPageDTO[] = [];
-  for (let page = 0; page < count; page += 1) {
+  for (let page = 0; ; page += 1) {
     const result = await getConversationMessages(errandId, conversationId, page, signal);
     signal.throwIfAborted();
     loaded.push(result);
+    result.messages.forEach((message) => remaining.delete(messageKey(message)));
+    // Nya poster kan flytta tidigare visad historik till fler sidor. Sista sidan
+    // avslutar även när ett tidigare meddelande har tagits bort uppströms.
     if (!result.hasMore) break;
+    if (loaded.length >= minimumPages && remaining.size === 0) {
+      if (!loadExtraPage) break;
+      loadExtraPage = false;
+    }
   }
   return loaded;
 }
 
-async function acknowledgeHistory(
-  errandId: string,
-  pages: HistoryPages,
-  messages: ConversationMessageDTO[],
-  read: Set<string>,
-  signal: AbortSignal
-): Promise<void> {
+function acknowledgeHistory(pages: HistoryPages, messages: ConversationMessageDTO[], receipts: ReadReceipts): void {
+  const { errandId, signal, read, pending } = receipts;
   for (const [conversationId] of pages) {
     if (signal.aborted || document.visibilityState !== 'visible') return;
-    const unread = unreadMessageIds(messages.filter((message) => message.conversationId === conversationId));
+    const unread = unreadMessageIds(messages.filter((message) => message.conversationId === conversationId)).filter(
+      (id) => !read.has(`${conversationId}:${id}`) && !pending.has(`${conversationId}:${id}`)
+    );
     if (unread.length === 0) continue;
-    try {
-      await markMessagesAsRead(errandId, conversationId, unread, signal);
-      if (signal.aborted) return;
-      // Bara kvitterade läsningar spärrar nya försök. Fel provas igen vid nästa uppdatering.
-      unread.forEach((id) => read.add(`${conversationId}:${id}`));
-    } catch {
-      // Historiken är användbar även när läskvittot inte nådde fram.
-    }
+    const keys = unread.map((id) => `${conversationId}:${id}`);
+    keys.forEach((key) => pending.add(key));
+    void markMessagesAsRead(errandId, conversationId, unread, signal)
+      .then(() => {
+        if (!signal.aborted) keys.forEach((key) => read.add(key));
+      })
+      .catch(() => {
+        // Historiken är användbar även vid kvittofel. Nästa uppdatering provar igen.
+      })
+      .finally(() => {
+        keys.forEach((key) => pending.delete(key));
+      });
   }
 }
 
@@ -74,7 +91,8 @@ export function useConversationMessages(errandId: string | undefined) {
   const { t } = useTranslation();
   const [state, setState] = useState<HistoryState>({ messages: [], hasMore: false, activity: null, failed: false });
   const [request, setRequest] = useState<{ sequence: number; kind: LoadKind }>({ sequence: 0, kind: 'refresh' });
-  const history = useRef<{ errandId: string; pages: HistoryPages; read: Set<string> } | null>(null);
+  const history = useRef<{ errandId: string; pages: HistoryPages } | null>(null);
+  const readReceipts = useRef<ReadReceipts | null>(null);
   const busy = useRef(false);
   const refreshQueued = useRef(false);
 
@@ -97,9 +115,19 @@ export function useConversationMessages(errandId: string | undefined) {
   useEffect(() => {
     if (!errandId) return;
     const controller = new AbortController();
+    readReceipts.current = { errandId, signal: controller.signal, read: new Set(), pending: new Set() };
+    return () => {
+      controller.abort();
+      readReceipts.current = null;
+    };
+  }, [errandId]);
+
+  useEffect(() => {
+    const receipts = readReceipts.current;
+    if (!errandId || receipts?.errandId !== errandId) return;
+    const controller = new AbortController();
     const { signal } = controller;
     const previous = history.current?.errandId === errandId ? history.current : null;
-    const read = previous?.read ?? new Set<string>();
     busy.current = true;
     setState((current) => ({
       errandId,
@@ -130,11 +158,14 @@ export function useConversationMessages(errandId: string | undefined) {
       const distinct = new Map<string, ConversationMessageDTO>();
       for (const page of [...pages.values()].flat()) {
         for (const message of page.messages) {
-          distinct.set(messageKey(message), read.has(messageKey(message)) ? { ...message, viewed: true } : message);
+          distinct.set(
+            messageKey(message),
+            receipts.read.has(messageKey(message)) ? { ...message, viewed: true } : message
+          );
         }
       }
       const messages = byNewestFirst([...distinct.values()]);
-      history.current = { errandId, pages, read };
+      history.current = { errandId, pages };
       setState({
         errandId,
         messages,
@@ -143,7 +174,7 @@ export function useConversationMessages(errandId: string | undefined) {
         failed: false,
       });
 
-      await acknowledgeHistory(errandId, pages, messages, read, signal);
+      acknowledgeHistory(pages, messages, receipts);
     };
 
     void load()
