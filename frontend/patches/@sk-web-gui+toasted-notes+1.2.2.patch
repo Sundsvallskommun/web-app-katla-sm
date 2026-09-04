@@ -1,0 +1,87 @@
+diff --git a/node_modules/@sk-web-gui/toasted-notes/dist/cjs/Toast.js b/node_modules/@sk-web-gui/toasted-notes/dist/cjs/Toast.js
+index c567bb5..c8a003a 100644
+--- a/node_modules/@sk-web-gui/toasted-notes/dist/cjs/Toast.js
++++ b/node_modules/@sk-web-gui/toasted-notes/dist/cjs/Toast.js
+@@ -18,6 +18,7 @@ _export(exports, {
+ });
+ const _jsxruntime = require("react/jsx-runtime");
+ const _client = require("react-dom/client");
++const _reactdom = require("react-dom");
+ const _ToastManager = /*#__PURE__*/ _interop_require_default(require("./ToastManager"));
+ function _interop_require_default(obj) {
+     return obj && obj.__esModule ? obj : {
+@@ -30,7 +31,9 @@ class Toaster {
+     createNotification;
+     removeAll;
+     closeToast;
+-    constructor(){
++    // Importing this package must not create a React root before Next hydrates document.
++    // Mount on the first user notification, after the app has registered its event listeners.
++    initialize(){
+         if (!isBrowser) {
+             return;
+         }
+@@ -48,9 +51,10 @@ class Toaster {
+             portalElement = el;
+         }
+         const root = (0, _client.createRoot)(portalElement);
+-        root.render(/*#__PURE__*/ (0, _jsxruntime.jsx)(_ToastManager.default, {
++        // Bind ToastManager synchronously so the first notification and its return value survive.
++        (0, _reactdom.flushSync)(() => root.render(/*#__PURE__*/ (0, _jsxruntime.jsx)(_ToastManager.default, {
+             notify: this.bindNotify
+-        }));
++        })));
+     }
+     closeAll = ()=>{
+         if (this.removeAll) {
+@@ -63,6 +67,7 @@ class Toaster {
+         this.closeToast = closeToast;
+     };
+     notify = (message, options = {})=>{
++        if (!this.createNotification) this.initialize();
+         if (this.createNotification) {
+             return this.createNotification(message, options);
+         }
+diff --git a/node_modules/@sk-web-gui/toasted-notes/dist/esm/Toast.js b/node_modules/@sk-web-gui/toasted-notes/dist/esm/Toast.js
+index 8a76f3f..14a834a 100644
+--- a/node_modules/@sk-web-gui/toasted-notes/dist/esm/Toast.js
++++ b/node_modules/@sk-web-gui/toasted-notes/dist/esm/Toast.js
+@@ -1,5 +1,6 @@
+ import { jsx as _jsx } from 'react/jsx-runtime';
+ import { createRoot } from 'react-dom/client';
++import { flushSync } from 'react-dom';
+ import ToastManager from './ToastManager.js';
+ const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+ const PORTAL_ID = 'react-toast';
+@@ -7,7 +8,9 @@ export class Toaster {
+     createNotification;
+     removeAll;
+     closeToast;
+-    constructor(){
++    // Importing this package must not create a React root before Next hydrates document.
++    // Mount on the first user notification, after the app has registered its event listeners.
++    initialize(){
+         if (!isBrowser) {
+             return;
+         }
+@@ -25,9 +28,10 @@ export class Toaster {
+             portalElement = el;
+         }
+         const root = createRoot(portalElement);
+-        root.render(/*#__PURE__*/ _jsx(ToastManager, {
++        // Bind ToastManager synchronously so the first notification and its return value survive.
++        flushSync(() => root.render(/*#__PURE__*/ _jsx(ToastManager, {
+             notify: this.bindNotify
+-        }));
++        })));
+     }
+     closeAll = ()=>{
+         if (this.removeAll) {
+@@ -40,6 +44,7 @@ export class Toaster {
+         this.closeToast = closeToast;
+     };
+     notify = (message, options = {})=>{
++        if (!this.createNotification) this.initialize();
+         if (this.createNotification) {
+             return this.createNotification(message, options);
+         }

@@ -21,6 +21,10 @@ envalid.cleanEnv(process.env, {
 
 module.exports = {
   output: 'standalone',
+  // Automatic tracing omits libvips shared libraries needed by standalone image optimization.
+  outputFileTracingIncludes: {
+    '/*': ['./node_modules/@img/sharp-libvips-*/lib/**/*'],
+  },
   turbopack: {
     root: path.resolve(__dirname),
   },
