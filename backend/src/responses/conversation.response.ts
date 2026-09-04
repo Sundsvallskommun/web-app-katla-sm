@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsBoolean, IsIn, IsNumber, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
 
 import { Conversation, ConversationType, Identifier, KeyValues } from '@/data-contracts/supportmanagement/data-contracts';
 
@@ -97,6 +97,26 @@ export class ConversationMessageDTO {
   @ValidateNested({ each: true })
   @Type(() => ConversationMessageAttachmentDTO)
   attachments!: ConversationMessageAttachmentDTO[];
+}
+
+export class ConversationMessagesQueryDTO {
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  page = 0;
+}
+
+/** Sidgränsen gäller även när sidan bara innehöll bortfiltrerade systemmeddelanden. */
+export class ConversationMessagesPageDTO {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ConversationMessageDTO)
+  messages!: ConversationMessageDTO[];
+  @IsInt()
+  @Min(0)
+  page!: number;
+  @IsBoolean()
+  hasMore!: boolean;
 }
 
 /**

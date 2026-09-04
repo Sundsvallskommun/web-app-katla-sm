@@ -1,6 +1,6 @@
 'use client';
 
-import { ConversationMessageDTO } from '@data-contracts/backend/data-contracts';
+import { ConversationMessageDTO, ConversationMessagesPageDTO } from '@data-contracts/backend/data-contracts';
 import {
   byNewestFirst,
   getConversationMessages,
@@ -11,76 +11,220 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-interface UseConversationMessagesResult {
+type LoadKind = 'refresh' | 'more';
+type HistoryPages = Map<string, ConversationMessagesPageDTO[]>;
+
+interface HistoryState {
+  errandId?: string;
   messages: ConversationMessageDTO[];
-  conversationId: string | null;
-  isLoading: boolean;
-  error: string | null;
-  reload: () => void;
+  hasMore: boolean;
+  activity: 'initial' | LoadKind | null;
+  failed: boolean;
+}
+
+interface ReadReceipts {
+  errandId: string;
+  signal: AbortSignal;
+  read: Set<string>;
+  pending: Set<string>;
+}
+
+const messageKey = (message: ConversationMessageDTO): string => `${message.conversationId}:${message.messageId ?? ''}`;
+
+async function loadConversationPages(
+  errandId: string,
+  conversationId: string,
+  previousPages: ConversationMessagesPageDTO[] | undefined,
+  kind: LoadKind,
+  signal: AbortSignal
+): Promise<ConversationMessagesPageDTO[]> {
+  const lastPage = previousPages?.at(-1);
+  const minimumPages = previousPages?.length ?? 1;
+  const remaining = new Set(previousPages?.flatMap((page) => page.messages.map(messageKey)));
+  let loadExtraPage = kind === 'more' && !!lastPage?.hasMore;
+  const loaded: ConversationMessagesPageDTO[] = [];
+  for (let page = 0; ; page += 1) {
+    const result = await getConversationMessages(errandId, conversationId, page, signal);
+    signal.throwIfAborted();
+    loaded.push(result);
+    result.messages.forEach((message) => remaining.delete(messageKey(message)));
+    // Nya poster kan flytta tidigare visad historik till fler sidor. Sista sidan
+    // avslutar även när ett tidigare meddelande har tagits bort uppströms.
+    if (!result.hasMore) break;
+    if (loaded.length >= minimumPages && remaining.size === 0) {
+      if (!loadExtraPage) break;
+      loadExtraPage = false;
+    }
+  }
+  return loaded;
+}
+
+function acknowledgeHistory(pages: HistoryPages, messages: ConversationMessageDTO[], receipts: ReadReceipts): void {
+  const { errandId, signal, read, pending } = receipts;
+  for (const [conversationId] of pages) {
+    if (signal.aborted || document.visibilityState !== 'visible') return;
+    const unread = unreadMessageIds(messages.filter((message) => message.conversationId === conversationId)).filter(
+      (id) => !read.has(`${conversationId}:${id}`) && !pending.has(`${conversationId}:${id}`)
+    );
+    if (unread.length === 0) continue;
+    const keys = unread.map((id) => `${conversationId}:${id}`);
+    keys.forEach((key) => pending.add(key));
+    void markMessagesAsRead(errandId, conversationId, unread, signal)
+      .then(() => {
+        if (!signal.aborted) keys.forEach((key) => read.add(key));
+      })
+      .catch(() => {
+        // Historiken är användbar även vid kvittofel. Nästa uppdatering provar igen.
+      })
+      .finally(() => {
+        keys.forEach((key) => pending.delete(key));
+      });
+  }
 }
 
 /**
- * Tråden på ärendet. Ärendet har ett samtal, men listan hämtas ändå: samtalet finns inte förrän
- * någon skrivit det första meddelandet, och det kan lika gärna vara handläggaren som gjort det.
+ * Äger historik, sidladdning och läskvitton för ett ärende. Varje uppdatering läser om de sidor
+ * som redan visas: nya meddelanden förskjuter sidgränserna, så äldre sidor får inte fogas till
+ * en inaktuell förstasida. Samtalens identiteter följer med hela vägen till bilagor och läskvitton.
  */
-export function useConversationMessages(errandId: string | undefined): UseConversationMessagesResult {
+export function useConversationMessages(errandId: string | undefined) {
   const { t } = useTranslation();
-  const [messages, setMessages] = useState<ConversationMessageDTO[]>([]);
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
-  // Läsmarkeringen görs en gång per tråd och laddning, inte om vid varje omrendering.
-  const markedAsReadRef = useRef<string | null>(null);
+  const [state, setState] = useState<HistoryState>({ messages: [], hasMore: false, activity: null, failed: false });
+  const [request, setRequest] = useState<{ sequence: number; kind: LoadKind }>({ sequence: 0, kind: 'refresh' });
+  const history = useRef<{ errandId: string; pages: HistoryPages } | null>(null);
+  const readReceipts = useRef<ReadReceipts | null>(null);
+  const busy = useRef(false);
+  const refreshQueued = useRef(false);
+
+  const requestLoad = useCallback((kind: LoadKind, queue = false) => {
+    if (busy.current) {
+      if (queue) refreshQueued.current = true;
+      return;
+    }
+    busy.current = true;
+    setRequest((previous) => ({ sequence: previous.sequence + 1, kind }));
+  }, []);
 
   const reload = useCallback(() => {
-    setReloadToken((token) => token + 1);
-  }, []);
+    requestLoad('refresh', true);
+  }, [requestLoad]);
+  const loadMore = useCallback(() => {
+    requestLoad('more');
+  }, [requestLoad]);
 
   useEffect(() => {
     if (!errandId) return;
+    const controller = new AbortController();
+    readReceipts.current = { errandId, signal: controller.signal, read: new Set(), pending: new Set() };
+    return () => {
+      controller.abort();
+      readReceipts.current = null;
+    };
+  }, [errandId]);
 
-    let active = true;
-    setIsLoading(true);
-    setError(null);
+  useEffect(() => {
+    const receipts = readReceipts.current;
+    if (!errandId || receipts?.errandId !== errandId) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+    const previous = history.current?.errandId === errandId ? history.current : null;
+    busy.current = true;
+    setState((current) => ({
+      errandId,
+      messages: current.errandId === errandId ? current.messages : [],
+      hasMore: current.errandId === errandId && current.hasMore,
+      activity: previous ? request.kind : 'initial',
+      failed: false,
+    }));
 
     const load = async () => {
-      const conversations = await getConversations(errandId);
-      const conversation = conversations[0];
-      if (!conversation?.id) {
-        return { conversationId: null, messages: [] as ConversationMessageDTO[] };
+      const conversations = await getConversations(errandId, signal);
+      const pages: HistoryPages = new Map();
+      for (const conversation of conversations) {
+        if (signal.aborted) return;
+        if (!conversation.id) throw new Error('Conversation without id');
+        const loaded = await loadConversationPages(
+          errandId,
+          conversation.id,
+          previous?.pages.get(conversation.id),
+          request.kind,
+          signal
+        );
+        pages.set(conversation.id, loaded);
       }
+      if (signal.aborted) return;
 
-      const loaded = await getConversationMessages(errandId, conversation.id);
-      return { conversationId: conversation.id, messages: loaded };
+      // Samma meddelande kan hamna på två sidor om ett nytt anländer mellan anropen.
+      const distinct = new Map<string, ConversationMessageDTO>();
+      for (const page of [...pages.values()].flat()) {
+        for (const message of page.messages) {
+          distinct.set(
+            messageKey(message),
+            receipts.read.has(messageKey(message)) ? { ...message, viewed: true } : message
+          );
+        }
+      }
+      const messages = byNewestFirst([...distinct.values()]);
+      history.current = { errandId, pages };
+      setState({
+        errandId,
+        messages,
+        hasMore: [...pages.values()].some((items) => items.at(-1)?.hasMore),
+        activity: request.kind,
+        failed: false,
+      });
+
+      acknowledgeHistory(pages, messages, receipts);
     };
 
     void load()
-      .then((result) => {
-        if (!active) return;
-        setConversationId(result.conversationId);
-        setMessages(byNewestFirst(result.messages));
-
-        // Att tråden visats är det som gör meddelandena lästa. Misslyckas markeringen är det inte
-        // värt ett felmeddelande: meddelandena syns, och nästa besök försöker igen.
-        const unread = unreadMessageIds(result.messages);
-        const markKey = `${result.conversationId ?? ''}:${unread.join(',')}`;
-        if (result.conversationId && unread.length > 0 && markedAsReadRef.current !== markKey) {
-          markedAsReadRef.current = markKey;
-          void markMessagesAsRead(errandId, result.conversationId, unread).catch(() => undefined);
-        }
-      })
       .catch(() => {
-        if (active) setError(t('messages:load_error'));
+        if (!signal.aborted) setState((current) => ({ ...current, failed: true }));
       })
       .finally(() => {
-        if (active) setIsLoading(false);
+        if (signal.aborted) return;
+        busy.current = false;
+        setState((current) => ({ ...current, activity: null }));
+        // Ett skickat meddelande måste följas av en färsk hämtning även om en annan pågick.
+        if (refreshQueued.current) {
+          refreshQueued.current = false;
+          requestLoad('refresh');
+        }
       });
 
     return () => {
-      active = false;
+      controller.abort();
+      busy.current = false;
+      refreshQueued.current = false;
     };
-  }, [errandId, reloadToken, t]);
+  }, [errandId, request, requestLoad]);
 
-  return { messages, conversationId, isLoading, error, reload };
+  useEffect(() => {
+    if (!errandId) return;
+    const refreshVisible = () => {
+      if (document.visibilityState === 'visible') requestLoad('refresh');
+    };
+    const interval = window.setInterval(refreshVisible, 30_000);
+    window.addEventListener('focus', refreshVisible);
+    window.addEventListener('online', refreshVisible);
+    document.addEventListener('visibilitychange', refreshVisible);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refreshVisible);
+      window.removeEventListener('online', refreshVisible);
+      document.removeEventListener('visibilitychange', refreshVisible);
+    };
+  }, [errandId, requestLoad]);
+
+  const current = state.errandId === errandId;
+  return {
+    messages: current ? state.messages : [],
+    isLoading: !!errandId && (!current || state.activity === 'initial'),
+    isRefreshing: current && state.activity === 'refresh',
+    isLoadingMore: current && state.activity === 'more',
+    hasMore: current && state.hasMore,
+    error: current && state.failed ? t('messages:load_error') : null,
+    reload,
+    loadMore,
+  };
 }

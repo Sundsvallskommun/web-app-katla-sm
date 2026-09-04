@@ -20,5 +20,7 @@
   "direction_sent": "Sent",
   "unknown_sender": "Unknown sender",
   "attachment_fallback_name": "Attachment",
-  "attachment_error": "The attachment could not be downloaded."
+  "attachment_error": "The attachment could not be downloaded.",
+  "refresh": "Refresh messages",
+  "load_more": "Show older messages"
 }

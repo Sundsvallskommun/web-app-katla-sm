@@ -203,6 +203,14 @@ export interface ConversationMessageDTO {
   attachments: ConversationMessageAttachmentDTO[];
 }
 
+/** Sidgränsen gäller även när sidan bara innehöll bortfiltrerade systemmeddelanden. */
+export interface ConversationMessagesPageDTO {
+  messages: ConversationMessageDTO[];
+  /** @min 0 */
+  page: number;
+  hasMore: boolean;
+}
+
 export interface ConversationAttachmentDTO {
   content: string;
   fileName?: string;
