@@ -20,5 +20,7 @@
   "direction_sent": "Skickat",
   "unknown_sender": "Okänd avsändare",
   "attachment_fallback_name": "Bilaga",
-  "attachment_error": "Bilagan kunde inte hämtas."
+  "attachment_error": "Bilagan kunde inte hämtas.",
+  "refresh": "Uppdatera meddelanden",
+  "load_more": "Visa äldre meddelanden"
 }

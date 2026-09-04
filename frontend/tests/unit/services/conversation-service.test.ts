@@ -55,7 +55,8 @@ describe('conversation service', () => {
 
     expect(apiMocks.post).toHaveBeenCalledWith(
       'supportmanagement/errand/errand-1/conversations/conv-1/messages/mark-as-read',
-      { messageIds: ['msg-1'] }
+      { messageIds: ['msg-1'] },
+      { signal: undefined }
     );
   });
 });

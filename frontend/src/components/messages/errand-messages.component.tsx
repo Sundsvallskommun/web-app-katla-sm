@@ -5,7 +5,8 @@ import { MessageItem } from '@components/messages/message-item.component';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { SectionHeader } from '@components/misc/section-header.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { Divider, RadioButton, Spinner } from '@sk-web-gui/react';
+import { Button, Divider, RadioButton, Spinner } from '@sk-web-gui/react';
+import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +29,8 @@ export const ErrandMessages: React.FC = () => {
   const [filter, setFilter] = useState<MessageFilter>('ALL');
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
-  const { messages, isLoading, error, reload } = useConversationMessages(errandId);
+  const { messages, isLoading, isRefreshing, isLoadingMore, hasMore, error, reload, loadMore } =
+    useConversationMessages(errandId);
 
   const visibleMessages = filter === 'ALL' ? messages : messages.filter((message) => message.direction === filter);
   const errors = [error, attachmentError].filter((message): message is string => message !== null);
@@ -42,6 +44,18 @@ export const ErrandMessages: React.FC = () => {
       {errandId && errandNumber && <MessageComposer errandId={errandId} errandNumber={errandNumber} onSent={reload} />}
 
       <Divider />
+
+      <div>
+        <Button
+          variant="secondary"
+          leftIcon={<RefreshCw aria-hidden="true" />}
+          onClick={reload}
+          disabled={isLoading || isRefreshing || isLoadingMore}
+          loading={isRefreshing}
+        >
+          {t('messages:refresh')}
+        </Button>
+      </div>
 
       <RadioButton.Group inline data-cy="message-filter">
         {MESSAGE_FILTERS.map((option) => (
@@ -63,14 +77,14 @@ export const ErrandMessages: React.FC = () => {
           <Spinner aria-hidden="true" />
           <span className="sr-only">{t('messages:loading')}</span>
         </div>
-      : visibleMessages.length === 0 ?
+      : visibleMessages.length === 0 && !hasMore && !error ?
         <p data-cy="no-messages" className="text-dark-secondary py-24">
           {t('messages:empty')}
         </p>
       : <div className="flex flex-col gap-16" data-cy="message-list">
           {visibleMessages.map((message) => (
             <MessageItem
-              key={message.messageId ?? message.sent}
+              key={`${message.conversationId}:${message.messageId ?? message.sent}`}
               message={message}
               errandId={errandId ?? ''}
               onError={setAttachmentError}
@@ -78,6 +92,18 @@ export const ErrandMessages: React.FC = () => {
           ))}
         </div>
       }
+      {hasMore && (
+        <div>
+          <Button
+            variant="secondary"
+            onClick={loadMore}
+            loading={isLoadingMore}
+            disabled={isLoading || isRefreshing || isLoadingMore}
+          >
+            {t('messages:load_more')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -71,86 +71,90 @@ export const MessageComposer: React.FC<{
         void handleSubmit(onSubmit)(event);
       }}
     >
-      <FormControl id="message-body" className="w-full" required>
-        <FormFieldLabel>{t('messages:compose_label')}</FormFieldLabel>
-        <Controller
-          control={control}
-          name="messagePlainText"
-          rules={{
-            validate: (value) => value.trim().length > 0 || t('messages:required'),
-          }}
-          render={() => (
-            <TextEditor
-              className="h-[20rem]"
-              value={editorValue}
-              onChange={(event: { target: { value: { markup?: string; plainText?: string } } }) => {
-                setValue('messageMarkup', event.target.value.markup ?? '');
-                setValue('messagePlainText', event.target.value.plainText ?? '', { shouldValidate: true });
-              }}
-            />
+      <fieldset disabled={isSubmitting} aria-busy={isSubmitting} className="contents">
+        <FormControl id="message-body" className="w-full" required>
+          <FormFieldLabel>{t('messages:compose_label')}</FormFieldLabel>
+          <Controller
+            control={control}
+            name="messagePlainText"
+            rules={{
+              validate: (value) => value.trim().length > 0 || t('messages:required'),
+            }}
+            render={() => (
+              <TextEditor
+                readOnly={isSubmitting}
+                disableToolbar={isSubmitting}
+                className="h-[20rem]"
+                value={editorValue}
+                onChange={(event: { target: { value: { markup?: string; plainText?: string } } }) => {
+                  setValue('messageMarkup', event.target.value.markup ?? '');
+                  setValue('messagePlainText', event.target.value.plainText ?? '', { shouldValidate: true });
+                }}
+              />
+            )}
+          />
+          <div className="text-small mt-8 flex justify-between">
+            <span className="text-dark-secondary">
+              {t('messages:character_limit', { limit: MESSAGE_CHARACTER_LIMIT })}
+            </span>
+            <span className={isOverLimit ? 'text-error' : 'text-dark-secondary'}>
+              {messageLength}/{MESSAGE_CHARACTER_LIMIT}
+            </span>
+          </div>
+          {errors.messagePlainText && <FormErrorMessage>{errors.messagePlainText.message}</FormErrorMessage>}
+          {isOverLimit && (
+            <FormErrorMessage>{t('messages:too_long', { limit: MESSAGE_CHARACTER_LIMIT })}</FormErrorMessage>
           )}
-        />
-        <div className="text-small mt-8 flex justify-between">
-          <span className="text-dark-secondary">
-            {t('messages:character_limit', { limit: MESSAGE_CHARACTER_LIMIT })}
-          </span>
-          <span className={isOverLimit ? 'text-error' : 'text-dark-secondary'}>
-            {messageLength}/{MESSAGE_CHARACTER_LIMIT}
+        </FormControl>
+
+        <div className="flex flex-col gap-8">
+          <Controller
+            control={control}
+            name="files"
+            render={({ field }) => (
+              <FileUpload.Button appendFiles={field.value} maxFileSizeMB={MAX_FILE_SIZE_MB} {...field} />
+            )}
+          />
+          <span className="text-small text-dark-secondary">
+            {t('messages:max_file_size', { size: MAX_FILE_SIZE_MB })}
           </span>
         </div>
-        {errors.messagePlainText && <FormErrorMessage>{errors.messagePlainText.message}</FormErrorMessage>}
-        {isOverLimit && (
-          <FormErrorMessage>{t('messages:too_long', { limit: MESSAGE_CHARACTER_LIMIT })}</FormErrorMessage>
+
+        {files.length > 0 && (
+          <FileUpload.List showBorder>
+            {files.map((file, index) => (
+              <FileUpload.ListItem
+                key={`${file.meta.name}-${index}`}
+                index={index}
+                file={file}
+                actionsProps={{
+                  showRemove: true,
+                  onRemove: () => {
+                    setValue(
+                      'files',
+                      files.filter((candidate) => candidate !== file)
+                    );
+                  },
+                }}
+              />
+            ))}
+          </FileUpload.List>
         )}
-      </FormControl>
 
-      <div className="flex flex-col gap-8">
-        <Controller
-          control={control}
-          name="files"
-          render={({ field }) => (
-            <FileUpload.Button appendFiles={field.value} maxFileSizeMB={MAX_FILE_SIZE_MB} {...field} />
-          )}
-        />
-        <span className="text-small text-dark-secondary">
-          {t('messages:max_file_size', { size: MAX_FILE_SIZE_MB })}
-        </span>
-      </div>
+        {sendError && <FormErrorMessage>{sendError}</FormErrorMessage>}
 
-      {files.length > 0 && (
-        <FileUpload.List showBorder>
-          {files.map((file, index) => (
-            <FileUpload.ListItem
-              key={`${file.meta.name}-${index}`}
-              index={index}
-              file={file}
-              actionsProps={{
-                showRemove: true,
-                onRemove: () => {
-                  setValue(
-                    'files',
-                    files.filter((candidate) => candidate !== file)
-                  );
-                },
-              }}
-            />
-          ))}
-        </FileUpload.List>
-      )}
-
-      {sendError && <FormErrorMessage>{sendError}</FormErrorMessage>}
-
-      <div>
-        <Button
-          data-cy="send-message-button"
-          type="submit"
-          color="vattjom"
-          loading={isSubmitting}
-          disabled={isSubmitting || isOverLimit}
-        >
-          {t('messages:send')}
-        </Button>
-      </div>
+        <div>
+          <Button
+            data-cy="send-message-button"
+            type="submit"
+            color="vattjom"
+            loading={isSubmitting}
+            disabled={isSubmitting || isOverLimit}
+          >
+            {t('messages:send')}
+          </Button>
+        </div>
+      </fieldset>
     </form>
   );
 };

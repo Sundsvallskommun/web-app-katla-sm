@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, OnUndefined, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, HttpCode, OnUndefined, Param, Post, QueryParams, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { MUNICIPALITY_ID, NAMESPACE } from '@/config';
@@ -20,7 +20,8 @@ import authMiddleware from '@/middlewares/auth.middleware';
 import {
   ConversationAttachmentDTO,
   ConversationDTO,
-  ConversationMessageDTO,
+  ConversationMessagesPageDTO,
+  ConversationMessagesQueryDTO,
   CreateConversationDTO,
   MarkMessagesAsReadDTO,
 } from '@/responses/conversation.response';
@@ -57,7 +58,15 @@ export class SupportManagementConversationController {
   private async readConversations(req: RequestWithUser, errandId: string): Promise<Conversation[]> {
     const res = await this.apiService.get<Conversation[]>({ baseURL: apiURL(this.apiBase), url: this.conversationsPath(errandId) }, req);
 
-    return res.data ?? [];
+    if (!Array.isArray(res.data)) throw new HttpException(502, 'Invalid response when reading conversations');
+    return res.data;
+  }
+
+  /** Samma samtalsgräns gäller för text, bilagor och alla skrivoperationer. */
+  private async requireReporterConversation(req: RequestWithUser, errandId: string, conversationId: string): Promise<Conversation> {
+    const conversation = (await this.readConversations(req, errandId)).find(candidate => candidate.id === conversationId);
+    if (!conversation || !isReporterConversation(conversation)) throw new HttpException(404, 'Conversation not found');
+    return conversation;
   }
 
   /**
@@ -99,22 +108,30 @@ export class SupportManagementConversationController {
   @Get('/supportmanagement/errand/:errandId/conversations/:conversationId/messages')
   @OpenAPI({ summary: 'Read the messages in a conversation, with senders resolved' })
   @UseBefore(authMiddleware)
-  @ResponseSchema(ConversationMessageDTO, { isArray: true })
+  @ResponseSchema(ConversationMessagesPageDTO)
   async getConversationMessages(
     @Req() req: RequestWithUser,
     @Param('errandId') errandId: string,
     @Param('conversationId') conversationId: string,
-  ): Promise<ConversationMessageDTO[]> {
-    const conversations = await this.readConversations(req, errandId);
-    const conversation = conversations.find(candidate => candidate.id === conversationId);
-    if (!conversation || !isReporterConversation(conversation)) throw new HttpException(404, 'Conversation not found');
+    @QueryParams() query: ConversationMessagesQueryDTO,
+  ): Promise<ConversationMessagesPageDTO> {
+    const conversation = await this.requireReporterConversation(req, errandId, conversationId);
 
     const res = await this.apiService.get<PageMessage>(
-      { baseURL: apiURL(this.apiBase), url: `${this.conversationsPath(errandId)}/${conversationId}/messages` },
+      {
+        baseURL: apiURL(this.apiBase),
+        url: `${this.conversationsPath(errandId)}/${conversationId}/messages`,
+        params: { page: query.page, size: 50, sort: ['created,desc', 'id,desc'] },
+        paramsSerializer: { indexes: null },
+      },
       req,
     );
 
-    const messages = (res.data?.content ?? []).filter((message: Message) => !isSystemMessage(message));
+    if (!Array.isArray(res.data?.content) || res.data.number !== query.page || typeof res.data.last !== 'boolean') {
+      throw new HttpException(502, 'Invalid response when reading conversation messages');
+    }
+    const messages = res.data.content.filter(message => !isSystemMessage(message));
+    if (messages.some(message => !message.id)) throw new HttpException(502, 'Conversation message without id');
 
     // Uppslagen görs en gång per avsändare: en tråd har ofta många meddelanden från samma två personer.
     const senders = new Map<string, Promise<SenderName>>();
@@ -128,7 +145,7 @@ export class SupportManagementConversationController {
       return lookup;
     };
 
-    return Promise.all(
+    const mappedMessages = await Promise.all(
       messages.map(async message =>
         toConversationMessage(message, {
           conversationId,
@@ -138,6 +155,7 @@ export class SupportManagementConversationController {
         }),
       ),
     );
+    return { messages: mappedMessages, page: query.page, hasMore: !res.data.last };
   }
 
   @Post('/supportmanagement/errand/:errandId/conversations')
@@ -149,22 +167,19 @@ export class SupportManagementConversationController {
     @Param('errandId') errandId: string,
     @Body() body: CreateConversationDTO,
   ): Promise<ConversationDTO> {
-    // Ett ärende har ett samtal. Två trådar skulle dela upp historiken och göra att ett svar
-    // hamnar i den tråd mottagaren inte tittar i.
-    const existing = (await this.readConversations(req, errandId)).find(isReporterConversation);
-    if (existing) return existing;
-
+    // SupportManagement äger atomärt skapande/återanvändning under ärendets databaslås.
+    // En lokal kontroll före POST skyddar inte mot andra processer eller handläggarens app.
     const conversation: Conversation = {
       topic: body.topic,
       type: REPORTER_CONVERSATION_TYPE,
       participants: [{ type: IdentifierTypeEnum.AdAccount, value: req.user.username }],
     };
 
-    const res = await this.apiService.post<Conversation>(
-      { baseURL: apiURL(this.apiBase), url: this.conversationsPath(errandId), data: conversation },
+    const res = await this.apiService.put<Conversation>(
+      { baseURL: apiURL(this.apiBase), url: `${this.conversationsPath(errandId)}/internal`, data: conversation },
       req,
     );
-    if (!res.data) throw new HttpException(502, 'Invalid response when creating conversation');
+    if (!res.data?.id || !isReporterConversation(res.data)) throw new HttpException(502, 'Invalid response when creating conversation');
 
     return res.data;
   }
@@ -184,6 +199,7 @@ export class SupportManagementConversationController {
     if (!message) throw new HttpException(400, 'Message content is required');
 
     assertAllowedAttachments(files);
+    await this.requireReporterConversation(req, errandId, conversationId);
 
     // Samma multipart-form som handläggarens app skickar, så att API:t tar emot båda likadant.
     const formData = new FormData();
@@ -215,6 +231,7 @@ export class SupportManagementConversationController {
     @Param('conversationId') conversationId: string,
     @Body() body: MarkMessagesAsReadDTO,
   ): Promise<void> {
+    await this.requireReporterConversation(req, errandId, conversationId);
     const request: MarkAsReadRequest = { messageIds: body.messageIds };
 
     await this.apiService.post<unknown>(
@@ -238,6 +255,7 @@ export class SupportManagementConversationController {
     @Param('messageId') messageId: string,
     @Param('attachmentId') attachmentId: string,
   ): Promise<ConversationAttachmentDTO> {
+    await this.requireReporterConversation(req, errandId, conversationId);
     const res = await this.apiService.get<ArrayBuffer>(
       {
         baseURL: apiURL(this.apiBase),

@@ -2,26 +2,31 @@ import {
   ConversationAttachmentDTO,
   ConversationDTO,
   ConversationMessageDTO,
+  ConversationMessagesPageDTO,
 } from '@data-contracts/backend/data-contracts';
 import { apiService } from '@services/api-service';
 import { UploadFile } from '@sk-web-gui/react';
 
 const errandPath = (errandId: string) => `supportmanagement/errand/${errandId}/conversations`;
 
-export const getConversations = async (errandId: string): Promise<ConversationDTO[]> =>
-  apiService.get<ConversationDTO[]>(errandPath(errandId)).then((res) => res.data);
+export const getConversations = async (errandId: string, signal?: AbortSignal): Promise<ConversationDTO[]> =>
+  apiService.get<ConversationDTO[]>(errandPath(errandId), { signal }).then((res) => res.data);
 
 export const getConversationMessages = async (
   errandId: string,
-  conversationId: string
-): Promise<ConversationMessageDTO[]> =>
+  conversationId: string,
+  page = 0,
+  signal?: AbortSignal
+): Promise<ConversationMessagesPageDTO> =>
   apiService
-    .get<ConversationMessageDTO[]>(`${errandPath(errandId)}/${conversationId}/messages`)
+    .get<ConversationMessagesPageDTO>(`${errandPath(errandId)}/${conversationId}/messages`, {
+      params: { page },
+      signal,
+    })
     .then((res) => res.data);
 
 /**
- * Ärendet har ett samtal. Backend återanvänder det som redan finns, så det här går att anropa varje
- * gång ett meddelande skickas utan att trådarna blir fler.
+ * SupportManagement skapar eller återanvänder rapportörens samtal atomärt.
  */
 export const createConversation = async (errandId: string, topic: string): Promise<ConversationDTO> =>
   apiService.post<ConversationDTO>(errandPath(errandId), { topic }).then((res) => res.data);
@@ -47,11 +52,12 @@ export const sendConversationMessage = async (
 export const markMessagesAsRead = async (
   errandId: string,
   conversationId: string,
-  messageIds: string[]
+  messageIds: string[],
+  signal?: AbortSignal
 ): Promise<void> => {
   if (messageIds.length === 0) return;
 
-  await apiService.post(`${errandPath(errandId)}/${conversationId}/messages/mark-as-read`, { messageIds });
+  await apiService.post(`${errandPath(errandId)}/${conversationId}/messages/mark-as-read`, { messageIds }, { signal });
 };
 
 export const getConversationAttachment = async (
