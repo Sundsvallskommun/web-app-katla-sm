@@ -3,6 +3,7 @@ import { DeviationInformation } from '@components/errand-sections/deviation-info
 import { OtherPartiesContent } from '@components/errand-sections/other-parties.component';
 import { ReporterContent } from '@components/errand-sections/reporter.component';
 import { UserContent } from '@components/errand-sections/user.component';
+import { SectionHeader } from '@components/misc/section-header.component';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
 import { useActiveWizardSteps } from 'src/hooks/use-active-wizard-steps';
@@ -26,7 +27,13 @@ export const WizardStepContent: React.FC = () => {
             <ReporterContent />
             {appConfig.features.otherPartiesDisclosure && (
               <div className="mt-24">
-                <h2 className="text-h4-md mb-12">{t('errand-information:other_parties.title')}</h2>
+                <SectionHeader
+                  as="h2"
+                  headingClassName="text-h4-md"
+                  className="mb-12"
+                  title={t('errand-information:other_parties.title')}
+                  description={t('errand-information:other_parties.description')}
+                />
                 <OtherPartiesContent />
               </div>
             )}
@@ -45,7 +52,13 @@ export const WizardStepContent: React.FC = () => {
 
   return (
     <div className="px-16 py-24">
-      {step?.id !== 'summary' && <h2 className="text-h3-md mb-16">{t(step?.titleKey)}</h2>}
+      {step?.id !== 'summary' && (
+        <SectionHeader
+          className="mb-16"
+          title={t(step?.titleKey)}
+          description={step?.descriptionKey ? t(step.descriptionKey) : undefined}
+        />
+      )}
       {renderStepContent()}
     </div>
   );

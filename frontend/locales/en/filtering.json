@@ -1,8 +1,8 @@
 {
   "errands": {
-    "open": "open cases",
-    "draft": "drafts",
-    "closed": "closed cases"
+    "open": "Submitted",
+    "draft": "Drafts",
+    "closed": "Closed"
   },
   "search": "Search",
   "new_errand": "Report",
@@ -13,5 +13,9 @@
   "my_errands": "My cases",
   "load_more": "Load more",
   "search_title": "Search and filter",
-  "menu_title": "Menu"
+  "menu_title": "Menu",
+  "reports_heading": "Reports",
+  "showing_of": "Showing {{shown}} of {{total}}",
+  "showing_count_one": "Showing {{count}} case",
+  "showing_count_other": "Showing {{count}} cases"
 }

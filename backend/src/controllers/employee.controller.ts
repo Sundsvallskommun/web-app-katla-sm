@@ -10,6 +10,7 @@ import authMiddleware from '@/middlewares/auth.middleware';
 import { UserEmploymentDTO } from '@/responses/employee.response';
 import { StakeholderDTO } from '@/responses/supportmanagement.response';
 import ApiService from '@/services/api.service';
+import { employmentParameters } from '@/utils/employment-type';
 import { addHyphenToPersonNumber } from '@/utils/stakeholder-mapping';
 
 @Controller()
@@ -51,6 +52,7 @@ export class EmployeeController {
         phoneNumbers: phoneNumber ? [phoneNumber] : undefined,
         title: mainEmployment.title ?? undefined,
         department: mainEmployment.orgName ?? undefined,
+        parameters: employmentParameters(mainEmployment),
       };
       return stakeholder;
     } catch {
@@ -96,6 +98,7 @@ export class EmployeeController {
         phoneNumbers: phoneNumber ? [phoneNumber] : undefined,
         title: mainEmployment?.title ?? undefined,
         department: mainEmployment?.orgName ?? undefined,
+        parameters: employmentParameters(mainEmployment),
       };
 
       return stakeholder;

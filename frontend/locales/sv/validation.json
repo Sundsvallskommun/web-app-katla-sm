@@ -11,6 +11,7 @@
   "email": "Ange en giltig e-postadress",
   "url": "Ange en giltig länk (URL)",
   "date": "Ange ett datum i giltigt format (ÅÅÅÅ-MM-DD)",
+  "date_maximum": "Datumet får inte vara senare än {{limit}}",
   "date_time": "Ange datum och tid i giltigt format",
   "format": "Värdet matchar inte formatet \"{{format}}\"",
   "stakeholder": {

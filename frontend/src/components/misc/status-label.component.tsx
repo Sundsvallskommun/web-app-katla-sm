@@ -1,86 +1,44 @@
 import { Label, LabelProps } from '@sk-web-gui/react';
-import { Check, CirclePause, Clock10, Pen, SquarePen } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Check, Clock10, Pen, RefreshCw, Scale, Search, SquarePen, UserCheck } from 'lucide-react';
+import { ReactNode } from 'react';
+import { useStatusDisplayName } from 'src/hooks/use-status-display-name';
+
+interface StatusAppearance {
+  color: LabelProps['color'];
+  inverted?: boolean;
+  icon?: ReactNode;
+}
+
+const ICON_SIZE = 16;
+
+/**
+ * Färg och ikon per status. Namnet kommer från metadatan, men utseendet är vårt: handläggarens
+ * flöde går från inskickat till avslutat, och etiketterna ska gå att skilja åt på håll. En status
+ * som inte står här visas neutralt — den får sitt namn ur metadatan ändå.
+ */
+const STATUS_APPEARANCE: Record<string, StatusAppearance> = {
+  NEW: { color: 'vattjom', inverted: true },
+  ASSIGNED: { color: 'juniskar', inverted: true, icon: <UserCheck size={ICON_SIZE} /> },
+  REVIEW: { color: 'gronsta', inverted: true, icon: <Search size={ICON_SIZE} /> },
+  INQUIRY: { color: 'bjornstigen', inverted: true, icon: <Pen size={ICON_SIZE} /> },
+  DECISION: { color: 'warning', inverted: true, icon: <Scale size={ICON_SIZE} /> },
+  FOLLOW_UP: { color: 'gronsta', inverted: true, icon: <RefreshCw size={ICON_SIZE} /> },
+  AWAITING_RESPONSE: { color: 'warning', icon: <Clock10 size={ICON_SIZE} /> },
+  SOLVED: { color: 'primary', icon: <Check size={ICON_SIZE} /> },
+  DRAFT: { color: 'tertiary', icon: <SquarePen size={ICON_SIZE} /> },
+};
+
+const DEFAULT_APPEARANCE: StatusAppearance = { color: 'tertiary' };
 
 export const StatusLabel: React.FC<{ status?: string }> = ({ status }) => {
-  const { t } = useTranslation();
-  let color: LabelProps['color'],
-    inverted = false,
-    icon: React.ReactNode = null;
-  switch (status) {
-    case 'SOLVED':
-      color = 'primary';
-      icon = <Check size={16} />;
-      break;
-    case 'ONGOING':
-      color = 'gronsta';
-      icon = <Pen size={16} />;
-      break;
-    case 'NEW':
-      color = 'vattjom';
-      break;
-    case 'DRAFT':
-      color = 'tertiary';
-      icon = <SquarePen size={16} />;
-      break;
-    case 'PENDING':
-      color = 'gronsta';
-      inverted = true;
-      icon = <Clock10 size={16} />;
-      break;
-    case 'AWAITING_INTERNAL_RESPONSE':
-      color = 'gronsta';
-      inverted = true;
-      icon = <Clock10 size={16} />;
-      break;
-    case 'SUSPENDED':
-      color = 'warning';
-      inverted = true;
-      icon = <CirclePause size={16} />;
-      break;
-    case 'ASSIGNED':
-      color = 'warning';
-      inverted = false;
-      icon = <CirclePause size={16} />;
-      break;
-    case 'UPSTART':
-      color = 'tertiary';
-      inverted = true;
-      break;
-    case 'PUBLISH_SELECTION':
-      color = 'vattjom';
-      inverted = true;
-      break;
-    case 'INTERNAL_CONTROL_AND_INTERVIEWS':
-      color = 'tertiary';
-      inverted = true;
-      break;
-    case 'REFERENCE_CHECK':
-      color = 'juniskar';
-      inverted = true;
-      break;
-    case 'REVIEW':
-      color = 'warning';
-      inverted = true;
-      break;
-    case 'SECURITY_CLEARENCE':
-      color = 'bjornstigen';
-      inverted = true;
-      break;
-    case 'FEEDBACK_CLOSURE':
-      color = 'error';
-      inverted = true;
-      break;
-    default:
-      color = 'tertiary';
-      break;
-  }
+  const statusDisplayName = useStatusDisplayName();
+  const { color, inverted = false, icon = null } = STATUS_APPEARANCE[status ?? ''] ?? DEFAULT_APPEARANCE;
 
   return (
     <Label rounded inverted={inverted} color={color} className={`max-h-full h-auto text-center whitespace-nowrap`}>
-      {/* Statuskoden är språkneutral. Statusar utan egen text (t.ex. UPSTART) visar bara
-          färg och ikon, precis som tidigare. */}
-      {icon} {t(`common:status.${status ?? ''}`, { defaultValue: '' })}
+      {/* Namnet kommer från metadatan, så att en status som läggs till i namespacet visas med
+          rätt text utan att appen behöver byggas om. Färg och ikon är fortfarande våra egna. */}
+      {icon} {statusDisplayName(status)}
     </Label>
   );
 };

@@ -76,7 +76,12 @@ export interface LabelsDTO {
 }
 
 export interface StatusDTO {
+  id?: string;
   name: string;
+  displayName?: string | null;
+  externalDisplayName?: string | null;
+  sortOrder?: number | null;
+  deprecated?: boolean;
   created?: string;
   modified?: string;
 }
@@ -128,6 +133,8 @@ export interface StakeholderDTO {
   phoneNumbers?: string[];
   title?: string;
   department?: string;
+  /** Parameters for the stakeholder */
+  parameters?: ParameterDTO[];
 }
 
 export interface ClassificationDTO {
@@ -151,6 +158,55 @@ export interface JsonParameterDTO {
   key: string;
   value: any;
   schemaId: string;
+}
+
+export type ConversationTypeDTO = 'INTERNAL' | 'EXTERNAL';
+
+export interface IdentifierDTO {
+  type: string;
+  value: string;
+}
+
+export interface KeyValuesDTO {
+  key?: string;
+  values?: string[];
+}
+
+export interface ConversationDTO {
+  id?: string;
+  topic?: string;
+  type?: ConversationTypeDTO;
+  relationIds?: string[];
+  participants?: IdentifierDTO[];
+  metadata?: KeyValuesDTO[];
+}
+
+export interface ConversationMessageAttachmentDTO {
+  attachmentId: string;
+  name?: string;
+  contentType?: string;
+  size?: number;
+}
+
+export type MessageDirectionDTO = 'INBOUND' | 'OUTBOUND';
+
+export interface ConversationMessageDTO {
+  conversationId: string;
+  messageId?: string;
+  sent?: string;
+  message: string;
+  subject?: string;
+  firstName?: string;
+  lastName?: string;
+  direction?: MessageDirectionDTO;
+  viewed: boolean;
+  attachments: ConversationMessageAttachmentDTO[];
+}
+
+export interface ConversationAttachmentDTO {
+  content: string;
+  fileName?: string;
+  mimeType?: string;
 }
 
 export interface ErrandDTO {

@@ -4,6 +4,9 @@ import type { TFunction } from 'i18next';
 interface LimitParams {
   limit: number;
 }
+interface StringLimitParams {
+  limit: string;
+}
 interface FormatParams {
   format: string;
 }
@@ -16,6 +19,13 @@ const hasLimit = (e: RJSFValidationError): e is Omit<RJSFValidationError, 'param
 const hasFormat = (e: RJSFValidationError): e is Omit<RJSFValidationError, 'params'> & { params: FormatParams } => {
   const p = e.params as unknown;
   return !!p && typeof (p as FormatParams).format === 'string';
+};
+
+const hasStringLimit = (
+  e: RJSFValidationError
+): e is Omit<RJSFValidationError, 'params'> & { params: StringLimitParams } => {
+  const p = e.params as unknown;
+  return !!p && typeof (p as StringLimitParams).limit === 'string';
 };
 
 /**
@@ -71,6 +81,22 @@ function propertySchemaOf(schema: RJSFSchema, property: string): RJSFSchema | un
  * Översätter en felsökväg (t.ex. `.facility.orgName`) till fältets rubrik i schemat,
  * så att ett sammanfattande felmeddelande kan peka ut fältet med samma namn som formuläret visar.
  */
+/**
+ * Ett fält kan ha fel både på sig självt och i underliggande egenskaper. Egna ui:field-fält
+ * renderar hela objektet som en kontroll, så felen där hör till fältet man ser — hela grenen
+ * gås därför igenom.
+ */
+export function collectFieldErrors(node: unknown): string[] {
+  if (typeof node !== 'object' || node === null) return [];
+
+  const branch = node as Record<string, unknown>;
+  const own = Array.isArray(branch.__errors) ? (branch.__errors as string[]) : [];
+
+  return Object.entries(branch)
+    .filter(([key]) => key !== '__errors')
+    .reduce<string[]>((errors, [, value]) => [...errors, ...collectFieldErrors(value)], own);
+}
+
 export function fieldTitleFromSchema(schema: RJSFSchema, property: string | undefined): string | undefined {
   const path = (property ?? '').split('.').filter(Boolean);
   if (path.length === 0) return undefined;
@@ -127,6 +153,10 @@ export function createJsonErrorTransformer(schema: RJSFSchema, t: TFunction) {
 
       if (e.name === 'pattern') {
         return { ...e, message: t(validationKey('pattern')) };
+      }
+
+      if (e.name === 'formatMaximum' && hasStringLimit(e)) {
+        return { ...e, message: t(validationKey('date_maximum'), { limit: e.params.limit }) };
       }
 
       if (e.name === 'format' && hasFormat(e)) {

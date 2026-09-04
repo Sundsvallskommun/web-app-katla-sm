@@ -6,47 +6,55 @@ import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { getTypeDisplayName } from '@utils/errand-helpers';
 import dayjs from 'dayjs';
 import { ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
 interface MobileErrandCardProps {
   errand: ErrandDTO;
 }
 
+/**
+ * Ett ärende i mobilens lista. Hela kortet öppnar ärendet för den som pekar; pilen är kvar som
+ * riktig länk, eftersom det är den som går att nå med tangentbord och som läses upp.
+ */
 export const MobileErrandCard: React.FC<MobileErrandCardProps> = ({ errand }) => {
   const { t } = useTranslation();
+  const router = useRouter();
   const url = `/arende/${errand.errandNumber}/grundinformation`;
 
   return (
-    <div className="py-4">
-      <div className="flex min-h-[8rem] items-end self-stretch rounded-[20px] border border-opacity-30 pt-[2.0rem] pb-[1.2rem] pl-[2.0rem] pr-[0.8rem] gap-4">
-        <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
-          <div className="w-fit">
-            <StatusLabel status={errand.status} />
-          </div>
-
-          <div className="text-xl font-bold lining-nums proportional-nums leading-[2.8rem] pt-[1.2rem] break-words">
-            {getTypeDisplayName(errand, t)}
-          </div>
-
-          <div className="flex flex-col items-start gap-1.5 pt-[2.4rem] flex-1">
-            <div className="text-base lining-nums proportional-nums leading-[2.4rem]">
-              <span className="font-[700]">{t('common:errand-table.registered')}</span>{' '}
-              {dayjs(errand.created).format('YYYY-MM-DD')}
-            </div>
-          </div>
-        </div>
-
-        <LinkButton
-          href={url}
-          aria-label={t('layout:controls.open_errand', { errandNumber: errand.errandNumber })}
-          className="flex items-center justify-center p-[1.2rem]"
-          iconButton
-          size="lg"
-          leftIcon={<ArrowRight aria-hidden="true" />}
-          color="primary"
-          variant="tertiary"
-        />
+    <div
+      data-cy="mobile-errand-card"
+      className="border-divider rounded-utility flex cursor-pointer flex-col gap-16 border-1 p-20"
+      onClick={() => {
+        router.push(url);
+      }}
+    >
+      <div className="flex items-start justify-between gap-16">
+        <span className="text-dark-primary text-base font-bold break-words">{getTypeDisplayName(errand, t)}</span>
+        <StatusLabel status={errand.status} />
       </div>
+
+      <div className="flex flex-col gap-8">
+        <p className="text-dark-primary text-base">
+          <span className="font-bold">{t('common:errand-table.header.errandNumber')}:</span> {errand.errandNumber}
+        </p>
+        <p className="text-dark-primary text-base">
+          <span className="font-bold">{t('common:errand-table.registered')}:</span>{' '}
+          {dayjs(errand.created).format('YYYY-MM-DD')}
+        </p>
+      </div>
+
+      <LinkButton
+        href={url}
+        aria-label={t('layout:controls.open_errand', { errandNumber: errand.errandNumber })}
+        className="self-end"
+        iconButton
+        showBackground={false}
+        leftIcon={<ArrowRight aria-hidden="true" />}
+        color="primary"
+        variant="tertiary"
+      />
     </div>
   );
 };

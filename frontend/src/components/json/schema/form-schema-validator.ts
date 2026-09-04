@@ -27,6 +27,9 @@ const validatorOptions = {
   ajvOptionsOverrides: {
     allErrors: true,
   },
+  ajvFormatOptions: {
+    keywords: true,
+  },
   AjvClass: HtmlAwareAjv2020,
 };
 

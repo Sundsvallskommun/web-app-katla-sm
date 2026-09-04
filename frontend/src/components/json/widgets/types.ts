@@ -11,6 +11,8 @@ export interface EnumOption {
 export interface WidgetOptions {
   className?: string;
   placeholder?: string;
+  /** Starthöjd för textarea i rem. Fältets min- och maxhöjd gäller fortfarande. */
+  initialHeightRem?: number;
   multiple?: boolean;
   disableToolbar?: boolean;
   enumOptions?: EnumOption[];
@@ -21,6 +23,10 @@ export function getWidgetOptions(options: WidgetProps['options']): WidgetOptions
   return {
     className: opts.className as string | undefined,
     placeholder: opts.placeholder as string | undefined,
+    initialHeightRem:
+      typeof opts.initialHeightRem === 'number' && Number.isFinite(opts.initialHeightRem) && opts.initialHeightRem > 0 ?
+        opts.initialHeightRem
+      : undefined,
     multiple: opts.multiple as boolean | undefined,
     disableToolbar: opts.disableToolbar as boolean | undefined,
     enumOptions: opts.enumOptions as EnumOption[] | undefined,
@@ -88,3 +94,16 @@ export function stripHtml(html: string): string {
   }
   return result.trim();
 }
+
+/**
+ * Märker fältet som obligatoriskt för hjälpmedel utan att sätta HTML-attributet `required`.
+ *
+ * Designsystemet ritar röd ram på både `[aria-invalid="true"]` och webbläsarens `:invalid`.
+ * Ett tomt `required`-fält är `:invalid` redan vid rendering — `noHtml5Validate` stänger av
+ * valideringen vid submit men inte pseudoklassen — så fältet såg felmarkerat ut innan
+ * användaren rört det. Valideringen sköts ändå av schemavalidatorn, och kravtexten i etiketten
+ * följer FormControl, så ingetdera går förlorat.
+ *
+ * `required: false` skickas explicit: utan det ärver kontrollen `required` från FormControl.
+ */
+export const requiredProps = (required: boolean) => ({ required: false, 'aria-required': required });

@@ -115,8 +115,8 @@ test.describe('Errand basic information page', () => {
 
     await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
     await expect(page.getByText(/^Steg 1\/\d+$/)).toHaveCount(0);
-    // Utkast är redigerbara, så åtgärderna ska finnas kvar här.
-    await expect(page.getByTestId('edit-card-button').first()).toBeVisible();
+    // Utkastets formulär är redigerbart, men stakeholder-korten har ingen separat redigeringsåtgärd.
+    await expect(page.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(page.getByTestId('person-number-input').first()).toBeVisible();
   });
 });

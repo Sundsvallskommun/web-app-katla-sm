@@ -24,7 +24,9 @@ export function useOverviewErrands({ mode = 'desktop' }: UseOverviewErrandsOptio
   const [rows, setRows] = useState<ErrandDTO[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalElements, setTotalElements] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // Startar som laddande: effekten hinner inte köra före första målningen, och tabellen skulle
+  // annars hinna säga att det inte finns några rapporter innan något ens begärts.
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errandsError, setErrandsError] = useState<string | null>(null);
 
   const mobilePageRef = useRef(0);
@@ -57,6 +59,11 @@ export function useOverviewErrands({ mode = 'desktop' }: UseOverviewErrandsOptio
   // Huvudhämtningen — utlöses av ändringar i storen (sortering, filter, paginering).
   // Mobil hämtar alltid från sida 0 och nollställer ackumulerade rader.
   useEffect(() => {
+    // Statuslistan kommer ur metadatan och är tom tills den hämtats. En hämtning utan statusfilter
+    // svarar med alla ärenden, även de avslutade — och blir det som ligger kvar på skärmen om
+    // metadatan aldrig kommer, eftersom ingen senare omgång då hinner ersätta den.
+    if (statuses.length === 0) return;
+
     const generation = requestGenerationRef.current + 1;
     requestGenerationRef.current = generation;
     requestTrackerRef.current = { generation, pending: 0 };

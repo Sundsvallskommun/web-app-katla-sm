@@ -10,6 +10,7 @@ import { RadiobuttonWidget } from '@components/json/widgets/radio-widget';
 import { RADIO_WIDGET_NAMES } from '@components/json/widgets/radio-widget-names';
 import { SelectWidget } from '@components/json/widgets/select-widget';
 import { TextWidget } from '@components/json/widgets/text-widget';
+import { TextareaWidget } from '@components/json/widgets/textarea-widget';
 import { TexteditorWidget } from '@components/json/widgets/texteditor-widget';
 import { TimeWidget } from '@components/json/widgets/time-widget';
 import Form, { IChangeEvent } from '@rjsf/core';
@@ -18,11 +19,14 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import createJsonErrorTransformer from '../utils/schema-form-error-handling';
+import { applyDateBounds } from './date-bounds';
 import { getFormSchemaValidator } from './form-schema-validator';
 
 const widgets: RegistryWidgetsType = {
   TextWidget,
   text: TextWidget,
+  TextareaWidget,
+  textarea: TextareaWidget,
   SelectWidget,
   select: SelectWidget,
   ...Object.fromEntries(RADIO_WIDGET_NAMES.map((name) => [name, RadiobuttonWidget])),
@@ -76,6 +80,7 @@ export default function SchemaForm({
   const data = formData ?? localData;
   const shouldValidate = showValidation ?? hasSubmitted;
   const validator = useMemo(() => getFormSchemaValidator(schemaId), [schemaId]);
+  const boundedSchema = useMemo(() => applyDateBounds(schema, uiSchema), [schema, uiSchema]);
 
   const handleChange = useCallback(
     (e: IChangeEvent<Record<string, unknown>>) => {
@@ -97,17 +102,17 @@ export default function SchemaForm({
     [onSubmit]
   );
 
-  const errorTransformer = useMemo(() => createJsonErrorTransformer(schema, t), [schema, t]);
+  const errorTransformer = useMemo(() => createJsonErrorTransformer(boundedSchema, t), [boundedSchema, t]);
 
   // Skickar originalschemat via formContext så att ObjectFieldTemplate kan läsa villkoren
   const formContext = useMemo(
-    () => ({ originalSchema: schema, compact, validationActive: shouldValidate }),
-    [schema, compact, shouldValidate]
+    () => ({ originalSchema: boundedSchema, compact, validationActive: shouldValidate }),
+    [boundedSchema, compact, shouldValidate]
   );
 
   return (
     <Form
-      schema={schema}
+      schema={boundedSchema}
       uiSchema={uiSchema}
       formData={data}
       formContext={formContext}

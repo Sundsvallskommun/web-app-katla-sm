@@ -17,9 +17,11 @@ import { useLanguageSwitch } from 'src/hooks/use-language-switch';
 interface LanguageSwitchButtonProps {
   /** Se `LanguageItems`: sidor med tillstånd i minnet får rädda undan det före navigeringen. */
   onBeforeSwitch?: () => void;
+  /** Sidhuvudet i ärendevyn är mörkt; knappen måste då rita sig ljus för att synas. */
+  inverted?: boolean;
 }
 
-export const LanguageSwitchButton: React.FC<LanguageSwitchButtonProps> = ({ onBeforeSwitch }) => {
+export const LanguageSwitchButton: React.FC<LanguageSwitchButtonProps> = ({ onBeforeSwitch, inverted = false }) => {
   const { t } = useTranslation();
   const { currentLanguage } = useLanguageSwitch();
 
@@ -35,6 +37,7 @@ export const LanguageSwitchButton: React.FC<LanguageSwitchButtonProps> = ({ onBe
         <PopupMenu.Button
           variant="tertiary"
           size="sm"
+          inverted={inverted}
           showBackground={false}
           data-cy="language-switch-button"
           aria-label={t('layout:language.switch', { language: t(`layout:language.${currentLanguage}`) })}

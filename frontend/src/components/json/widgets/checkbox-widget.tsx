@@ -1,4 +1,5 @@
 'use client';
+import { FieldRequirementIndicator } from '@components/form-field-label/form-field-label.component';
 import type { WidgetProps } from '@rjsf/utils';
 import { Checkbox, FormControl } from '@sk-web-gui/react';
 
@@ -38,7 +39,10 @@ export function CheckboxWidget(props: WidgetProps) {
           onChange(e.currentTarget.checked);
         }}
       >
-        <span className={hideLabel ? 'sr-only' : undefined}>{label}</span>
+        <span className={hideLabel ? 'sr-only' : undefined}>
+          {label}
+          <FieldRequirementIndicator required={required} />
+        </span>
       </Checkbox>
     </FormControl>
   );

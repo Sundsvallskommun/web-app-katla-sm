@@ -1,13 +1,11 @@
 import { pathWithoutLocale } from '@app/locale-path';
-import { LanguageSwitchButton } from '@components/misc/language-switch-button.component';
 import { StatusLabel } from '@components/misc/status-label.component';
 import { LinkButton } from '@components/navigation/link-button.component';
-import { AppUserMenu } from '@components/user-menu/app-user-menu.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { PageHeader } from '@layouts/page-header.component';
+import { AppHeader } from '@layouts/app-header.component';
 import { createUserMenuGroups } from '@layouts/userMenuGroup';
 import { useUserStore } from '@services/user-service/user-service';
-import { Divider, Link, Logo, PopupMenu } from '@sk-web-gui/react';
+import { Divider, Link, PopupMenu } from '@sk-web-gui/react';
 import { storeErrandFormHandover } from '@utils/errand-form-handover';
 import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -43,111 +41,79 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
   const errandNumber = watch('errandNumber');
   const status = watch('status');
 
-  // Bugfix (static-components): JSX-variabel i stället för komponent skapad under rendering
-  const singleErrandTitle = (
-    <div className="flex items-center gap-12 md:gap-24 py-8 md:py-10">
-      {registerNewErrand ?
-        <Logo variant="symbol" className="h-32 md:h-40" />
-      : <a
-          href={`${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
-          title={t('layout:controls.go_to_start', { app: process.env.NEXT_PUBLIC_APP_NAME })}
-        >
-          <Logo variant="symbol" className="h-32 md:h-40" />
-        </a>
-      }
-      <span className="text-large">
-        {registerNewErrand ?
-          <strong className="text-large ml-8 font-bold">{t('filtering:new_errand')}</strong>
-        : <>
-            <StatusLabel status={status} />
-            <span className="ml-8 text-small">{errandNumber}</span>
-          </>
-        }
-      </span>
-    </div>
-  );
+  // Andra raden bär sidans sammanhang: under registreringen finns inget ärende att peka ut,
+  // och då står appens undertitel där i stället för ärendets nummer.
+  const brandSubtitle = registerNewErrand ? t('layout:header.subtitle') : errandNumber;
 
   return (
-    <>
-      <div className="bg-background-100 h-screen min-h-screen max-h-screen overflow-hidden w-full flex flex-col">
-        <div className="relative z-[15] bg-background-content">
-          <PageHeader
-            logo={singleErrandTitle}
-            userMenu={
-              <div className="flex items-center h-fit">
-                <LanguageSwitchButton onBeforeSwitch={saveFormBeforeLanguageSwitch} />
-                <Divider orientation="vertical" className="mx-16" />
-                <div data-cy="usermenu">
-                  <AppUserMenu
-                    initials={user.initials}
-                    menuTitle={`${user.name} (${user.username})`}
-                    menuSubTitle=""
-                    menuGroups={userMenuGroups}
-                    buttonRounded={false}
-                    buttonSize="sm"
-                  />
-                </div>
+    <div className="bg-background-content flex h-screen max-h-screen min-h-screen w-full flex-col overflow-hidden">
+      <AppHeader
+        subtitle={brandSubtitle}
+        logoHref={registerNewErrand ? undefined : `${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
+        brandAside={registerNewErrand ? undefined : <StatusLabel status={status} />}
+        onBeforeLanguageSwitch={saveFormBeforeLanguageSwitch}
+        actions={
+          // Genvägen till registreringen döljs på registreringssidan – där leder den tillbaka
+          // till sidan man redan står på.
+          registerNewErrand ? undefined : (
+            <>
+              <Divider orientation="vertical" className="mx-24" />
+              <LinkButton
+                href="/arende/registrera"
+                data-cy="register-new-errand-button"
+                color="primary"
+                variant="tertiary"
+                inverted
+              >
+                {t('filtering:new_errand')}
+              </LinkButton>
+            </>
+          )
+        }
+        mobileMenu={
+          // Registreringen saknar meny med flit – den ska inte erbjuda vägar bort från
+          // formuläret. Språkvalet ligger utanför menyn och finns kvar även där.
+          registerNewErrand ? undefined
+            // Eget block, av samma skäl som i LanguageSwitchButton: panelen placeras utifrån sin
+            // statiska position, och raden runt omkring är en flex-container som annars
+            // centrerar den över knappen.
+          : (
+            <div className="relative">
+              <PopupMenu align="end">
+                <PopupMenu.Button inverted iconButton aria-label={t('layout:controls.open_menu')}>
+                  <Menu />
+                </PopupMenu.Button>
+                <PopupMenu.Panel>
+                  <PopupMenu.Group>
+                    <div className="font-bold">{`${user.name} (${user.username})`}</div>
+                  </PopupMenu.Group>
+                  <PopupMenu.Items>
+                    <PopupMenu.Group>
+                      <PopupMenu.Item>
+                        <Link href={`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/registrera`}>
+                          {t('filtering:new_errand')}
+                        </Link>
+                      </PopupMenu.Item>
+                    </PopupMenu.Group>
 
-                <Divider orientation="vertical" className="mx-24" />
-                <LinkButton
-                  href="/arende/registrera"
-                  data-cy="register-new-errand-button"
-                  color="primary"
-                  variant="tertiary"
-                >
-                  {t('filtering:new_errand')}
-                </LinkButton>
-              </div>
-            }
-            mobileMenu={
-              // Språkvalet ligger utanför menyn, inte i den. Registreringen saknar meny
-              // med flit – den ska inte erbjuda vägar bort från formuläret – men språket
-              // är inget man ska behöva lämna sidan för att byta.
-              <div className="flex items-center gap-8">
-                <LanguageSwitchButton onBeforeSwitch={saveFormBeforeLanguageSwitch} />
-                {!registerNewErrand && (
-                  // Eget block, av samma skäl som i LanguageSwitchButton: panelen placeras
-                  // utifrån sin statiska position, och raden runt omkring är en flex-container
-                  // som annars centrerar den över knappen.
-                  <div className="relative">
-                    <PopupMenu align="end">
-                      <PopupMenu.Button iconButton aria-label={t('layout:controls.open_menu')}>
-                        <Menu />
-                      </PopupMenu.Button>
-                      <PopupMenu.Panel>
-                        <PopupMenu.Group>
-                          <div className="font-bold">{`${user.name} (${user.username})`}</div>
-                        </PopupMenu.Group>
-                        <PopupMenu.Items>
-                          <PopupMenu.Group>
-                            <PopupMenu.Item>
-                              <Link href={`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/registrera`}>
-                                {t('filtering:new_errand')}
-                              </Link>
-                            </PopupMenu.Item>
-                          </PopupMenu.Group>
+                    {userMenuGroups.map((group, groupindex) => (
+                      <PopupMenu.Group key={`mobilegroup-${groupindex}`}>
+                        {group.elements.map((item, itemindex) => (
+                          <PopupMenu.Item key={`mobilegroup-${groupindex}-${itemindex}`}>
+                            {item.element()}
+                          </PopupMenu.Item>
+                        ))}
+                      </PopupMenu.Group>
+                    ))}
+                  </PopupMenu.Items>
+                </PopupMenu.Panel>
+              </PopupMenu>
+            </div>
+          )
+        }
+      />
 
-                          {userMenuGroups.map((group, groupindex) => (
-                            <PopupMenu.Group key={`mobilegroup-${groupindex}`}>
-                              {group.elements.map((item, itemindex) => (
-                                <PopupMenu.Item key={`mobilegroup-${groupindex}-${itemindex}`}>
-                                  {item.element()}
-                                </PopupMenu.Item>
-                              ))}
-                            </PopupMenu.Group>
-                          ))}
-                        </PopupMenu.Items>
-                      </PopupMenu.Panel>
-                    </PopupMenu>
-                  </div>
-                )}
-              </div>
-            }
-          />
-        </div>
-
-        {children}
-      </div>
-    </>
+      {children}
+    </div>
   );
 }

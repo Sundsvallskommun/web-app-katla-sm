@@ -7,6 +7,15 @@ vi.mock('@components/sidebars/overview-sidebar.component', () => ({
   OverviewSidebar: () => <aside data-testid="overview-sidebar" />,
 }));
 
+// Sidhuvudet har sin egen krets av routerberoenden. Testet gäller växlingen mellan skalen.
+vi.mock('@layouts/app-header.component', () => ({
+  AppHeader: () => <header data-testid="app-header" />,
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
+}));
+
 function MobileState() {
   return <span data-testid="mobile-state">{useIsOverviewMobile() ? 'mobile' : 'desktop'}</span>;
 }

@@ -8,6 +8,7 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import { SchemaResponseDTO } from '@/responses/schema.response';
 import ApiService from '@/services/api.service';
+import { findLocalSchemaById, findLocalSchemaByName, LocalSchemaOverride } from '@/utils/local-schemas';
 import { logger } from '@/utils/logger';
 import { applyUiSchemaTitleToSchema, localeFromAcceptLanguage, localizeUiSchema } from '@/utils/schema-localization';
 import { mapSchemaResponse, mapUiSchema } from '@/utils/schema-response-mapping';
@@ -17,6 +18,17 @@ import { apiURL } from '@/utils/util';
 export class SchemaController {
   private apiService = new ApiService();
   private apiBase = getApiBase('jsonschema');
+
+  /**
+   * Lokalt hållna scheman går genom samma mappning och lokalisering som API-svaren, så att
+   * svaret till frontend ser likadant ut oavsett var schemat kom ifrån.
+   */
+  private buildLocalResponse(override: LocalSchemaOverride, locale: string): SchemaResponseDTO {
+    const result = mapSchemaResponse(override.schema);
+    const uiSchema = localizeUiSchema(mapUiSchema(override.uiSchema), locale);
+
+    return { schema: applyUiSchemaTitleToSchema(result.schema, uiSchema), schemaId: result.schemaId, uiSchema };
+  }
 
   /**
    * Ui-schemat lagrar sina översättningar i x-i18n-block. De löses upp här, så att frontend
@@ -44,6 +56,12 @@ export class SchemaController {
   @ResponseSchema(SchemaResponseDTO)
   async getSchemaById(@Param('schemaId') schemaId: string, @Req() req: RequestWithUser): Promise<SchemaResponseDTO> {
     const locale = localeFromAcceptLanguage(req.headers['accept-language']);
+
+    const local = findLocalSchemaById(schemaId);
+    if (local) {
+      return this.buildLocalResponse(local, locale);
+    }
+
     const schemaRes = await this.apiService.get<JsonSchema>(
       {
         baseURL: apiURL(this.apiBase),
@@ -64,6 +82,12 @@ export class SchemaController {
   @ResponseSchema(SchemaResponseDTO)
   async getLatestSchema(@Param('schemaName') schemaName: string, @Req() req: RequestWithUser): Promise<SchemaResponseDTO> {
     const locale = localeFromAcceptLanguage(req.headers['accept-language']);
+
+    const local = findLocalSchemaByName(schemaName);
+    if (local) {
+      return this.buildLocalResponse(local, locale);
+    }
+
     const latestRes = await this.apiService.get<JsonSchema>(
       {
         baseURL: apiURL(this.apiBase),

@@ -3,7 +3,7 @@ import { titleId, type WidgetProps } from '@rjsf/utils';
 import { Combobox } from '@sk-web-gui/react';
 import { useTranslation } from 'react-i18next';
 
-import { getCommonProps, getWidgetOptions } from './types';
+import { getCommonProps, getWidgetOptions, requiredProps } from './types';
 
 const DEFAULT_CLASS = 'w-full';
 
@@ -65,7 +65,7 @@ export function ComboboxWidget(props: WidgetProps) {
         className="w-full"
         disabled={disabled || readonly}
         readOnly={readonly}
-        required={required}
+        {...requiredProps(required)}
         aria-label={hideLabel ? label : undefined}
         aria-labelledby={hideLabel ? undefined : titleId(id)}
         aria-describedby={describedBy}

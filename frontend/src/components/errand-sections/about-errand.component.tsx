@@ -1,12 +1,28 @@
-import { ErrandDisclosure } from '@components/disclosure/errand-information-disclosure.component';
+import { ErrandSection } from '@components/errand-sections/errand-section.component';
+import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { Alert } from '@sk-web-gui/alert';
-import { FormControl, FormErrorMessage, FormLabel, RadioButton } from '@sk-web-gui/react';
+import { FormControl, FormErrorMessage, RadioButton } from '@sk-web-gui/react';
+import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
-import { Info } from 'lucide-react';
+import { EVENT_TYPE_DEVIATION, EVENT_TYPE_MISCONDUCT, EVENT_TYPE_PARAMETER_KEY } from '@utils/report-type';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+
+/**
+ * Etiketten i designsystemet har fast höjd och centrerar innehållet lodrätt. Utan
+ * dessa klasser klipps beskrivningen och radioknappen hamnar mitt i textblocket.
+ */
+const RADIO_WITH_DESCRIPTION_CLASS = 'h-auto items-start';
+
+/** Alternativets namn med förklaringen under, så att båda typerna går att jämföra innan valet. */
+const RadioButtonLabelWithDescription: React.FC<{ label: string; description: string }> = ({ label, description }) => (
+  <span className="flex flex-col gap-8">
+    {label}
+    <span className="text-dark-secondary text-small">{description}</span>
+  </span>
+);
 
 export const AboutErrandContent: React.FC = () => {
   const { t } = useTranslation();
@@ -14,7 +30,7 @@ export const AboutErrandContent: React.FC = () => {
   const { showValidation } = useFormValidation();
 
   const parameters = watch('parameters') ?? [];
-  const eventType = parameters.find((p) => p.key === 'eventType')?.values?.[0] ?? '';
+  const eventType = parameters.find((p) => p.key === EVENT_TYPE_PARAMETER_KEY)?.values?.[0] ?? '';
   const eventConcerns = parameters.find((p) => p.key === 'eventConcerns')?.values?.[0] ?? '';
 
   const stakeholders = watch('stakeholders') ?? [];
@@ -31,7 +47,7 @@ export const AboutErrandContent: React.FC = () => {
 
   const setEventConcerns = (value: string) => {
     setParameter('eventConcerns', value);
-    if (value !== 'ENSKILD_BRUKARE') {
+    if (value !== EVENT_CONCERNS_INDIVIDUAL) {
       setValue(
         'stakeholders',
         stakeholders.filter((s) => s.role !== 'PRIMARY')
@@ -40,33 +56,41 @@ export const AboutErrandContent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-[2.4rem] pb-[2.4rem]">
+    <div className="flex flex-col gap-40">
       <FormControl required id="event-type" {...(missingEventType ? { [INVALID_FIELD_ATTRIBUTE]: 'event-type' } : {})}>
-        <FormLabel>{t('errand-information:about.event_type_label')}</FormLabel>
-        <RadioButton.Group data-cy="event-type-group" className="mb-18">
+        <FormFieldLabel>{t('errand-information:about.event_type_label')}</FormFieldLabel>
+        <RadioButton.Group data-cy="event-type-group" className="gap-16">
           <RadioButton
             data-cy="event-type-deviation"
-            checked={eventType === 'AVVIKELSE'}
-            value="AVVIKELSE"
+            className={RADIO_WITH_DESCRIPTION_CLASS}
+            checked={eventType === EVENT_TYPE_DEVIATION}
+            value={EVENT_TYPE_DEVIATION}
             onChange={() => {
-              setParameter('eventType', 'AVVIKELSE');
+              setParameter(EVENT_TYPE_PARAMETER_KEY, EVENT_TYPE_DEVIATION);
             }}
           >
-            {t('errand-information:about.event_type_deviation')}
+            <RadioButtonLabelWithDescription
+              label={t('errand-information:about.event_type_deviation')}
+              description={t('errand-information:about.event_type_deviation_description')}
+            />
           </RadioButton>
           <RadioButton
             data-cy="event-type-misconduct"
-            checked={eventType === 'MISSFORHALLANDE'}
-            value="MISSFORHALLANDE"
+            className={RADIO_WITH_DESCRIPTION_CLASS}
+            checked={eventType === EVENT_TYPE_MISCONDUCT}
+            value={EVENT_TYPE_MISCONDUCT}
             onChange={() => {
-              setParameter('eventType', 'MISSFORHALLANDE');
+              setParameter(EVENT_TYPE_PARAMETER_KEY, EVENT_TYPE_MISCONDUCT);
             }}
           >
-            {t('errand-information:about.event_type_misconduct')}
+            <RadioButtonLabelWithDescription
+              label={t('errand-information:about.event_type_misconduct')}
+              description={t('errand-information:about.event_type_misconduct_description')}
+            />
           </RadioButton>
         </RadioButton.Group>
         {missingEventType && <FormErrorMessage>{t('errand-information:about.event_type_required')}</FormErrorMessage>}
-        {eventType === 'MISSFORHALLANDE' && (
+        {eventType === EVENT_TYPE_MISCONDUCT && (
           <Alert type="info" data-cy="misconduct-alert">
             <Alert.Icon />
             <Alert.Content>
@@ -84,17 +108,14 @@ export const AboutErrandContent: React.FC = () => {
         id="event-concerns"
         {...(missingEventConcerns ? { [INVALID_FIELD_ATTRIBUTE]: 'event-concerns' } : {})}
       >
-        <FormLabel>{t('errand-information:about.event_concerns_label')}</FormLabel>
-        <span className="text-dark-secondary text-small mb-8">
-          {t('errand-information:about.event_concerns_describe_note')}
-        </span>
-        <RadioButton.Group data-cy="event-concerns-group" className="mb-18">
+        <FormFieldLabel>{t('errand-information:about.event_concerns_label')}</FormFieldLabel>
+        <RadioButton.Group data-cy="event-concerns-group" className="gap-16">
           <RadioButton
             data-cy="event-concerns-individual"
-            checked={eventConcerns === 'ENSKILD_BRUKARE'}
-            value="ENSKILD_BRUKARE"
+            checked={eventConcerns === EVENT_CONCERNS_INDIVIDUAL}
+            value={EVENT_CONCERNS_INDIVIDUAL}
             onChange={() => {
-              setEventConcerns('ENSKILD_BRUKARE');
+              setEventConcerns(EVENT_CONCERNS_INDIVIDUAL);
             }}
           >
             {t('errand-information:about.event_concerns_individual')}
@@ -109,16 +130,6 @@ export const AboutErrandContent: React.FC = () => {
           >
             {t('errand-information:about.event_concerns_group')}
           </RadioButton>
-          <RadioButton
-            data-cy="event-concerns-other"
-            checked={eventConcerns === 'ANNAT'}
-            value="ANNAT"
-            onChange={() => {
-              setEventConcerns('ANNAT');
-            }}
-          >
-            {t('errand-information:about.event_concerns_other')}
-          </RadioButton>
         </RadioButton.Group>
         {missingEventConcerns && (
           <FormErrorMessage>{t('errand-information:about.event_concerns_required')}</FormErrorMessage>
@@ -132,8 +143,8 @@ export const AboutErrand: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <ErrandDisclosure header={t('errand-information:about.title')} icon={<Info />}>
+    <ErrandSection header={t('errand-information:about.title')} description={t('errand-information:about.description')}>
       <AboutErrandContent />
-    </ErrandDisclosure>
+    </ErrandSection>
   );
 };

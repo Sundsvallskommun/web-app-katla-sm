@@ -1,10 +1,17 @@
 'use client';
 
+import { ErrandFormValidationError } from '@components/json/utils/schema-utils';
 import { createContext, useContext } from 'react';
 
 export interface FormValidationContextType {
   showValidation: boolean;
   setShowValidation: (show: boolean) => void;
+  /**
+   * Felen som hindrar att rapporten skickas in, i den ordning de står i formuläret.
+   * Sammanfattningen överst läser dem; fälten märker ut sig själva.
+   */
+  errors: ErrandFormValidationError[];
+  setErrors: (errors: ErrandFormValidationError[]) => void;
   /** Flyttar fokus till första fältet som visar ett valideringsfel och rullar fram det. */
   focusFirstError: () => void;
 }

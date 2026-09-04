@@ -16,6 +16,7 @@ import {
 const REQUIRED_SCHEMA_NAME = 'avvikelse-plats-handelse';
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -255,6 +256,55 @@ describe('validateErrandFormData', () => {
     await expect(
       validateErrandFormData([{ schemaName: REQUIRED_SCHEMA_NAME, schemaId: 'translated-error-v1', data: '{}' }], t)
     ).resolves.toEqual(['Plats och händelse – Datum för händelsen: Obligatoriskt fält']);
+  });
+
+  it('rejects future dates but accepts today and past dates before saving', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-02T12:00:00+02:00'));
+
+    const schema: RJSFSchema = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      title: 'Plats och händelse',
+      type: 'object',
+      properties: {
+        eventDate: { type: 'string', format: 'date', title: 'När upptäcktes händelsen?' },
+      },
+    };
+    const uiSchema = {
+      eventDate: {
+        'ui:widget': 'date',
+        'ui:options': { maxDate: 'today' },
+      },
+    };
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ schema, uiSchema, schemaId: 'date-bound-submission-v1' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const entryForDate = (eventDate: string): ErrandFormDataItem[] => [
+      {
+        schemaName: REQUIRED_SCHEMA_NAME,
+        schemaId: 'date-bound-submission-v1',
+        data: JSON.stringify({ eventDate }),
+      },
+    ];
+    const t = ((key: string, params?: Record<string, string>) => {
+      if (key === 'validation:date_maximum') return `Datumet får inte vara senare än ${params?.limit}`;
+      if (key === 'form_field_error') {
+        return `${params?.schemaTitle} – ${params?.fieldTitle}: ${params?.message}`;
+      }
+      return key;
+    }) as unknown as TFunction;
+
+    await expect(validateErrandFormData(entryForDate('2026-09-01'))).resolves.toEqual([]);
+    await expect(validateErrandFormData(entryForDate('2026-09-02'))).resolves.toEqual([]);
+    await expect(validateErrandFormData(entryForDate('2026-09-03'), t)).resolves.toEqual([
+      'Plats och händelse – När upptäcktes händelsen?: Datumet får inte vara senare än 2026-09-02',
+    ]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 

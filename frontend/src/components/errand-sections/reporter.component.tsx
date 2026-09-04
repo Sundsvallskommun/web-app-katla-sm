@@ -1,21 +1,22 @@
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
-import { ErrandDisclosure } from '@components/disclosure/errand-information-disclosure.component';
+import { ErrandSection } from '@components/errand-sections/errand-section.component';
+import { COLLEAGUE_FIELD_ID } from '@components/errand-sections/section-field-ids';
+import { SectionHeader } from '@components/misc/section-header.component';
 import { StakeholderList } from '@components/misc/stakeholder.component';
-import { ErrandDTO } from '@data-contracts/backend/data-contracts';
+import { ErrandFormDTO } from '@interfaces/errand-form';
 import { Checkbox, Spinner } from '@sk-web-gui/react';
 import { getReporterStakeholder } from '@utils/stakeholder';
-import { User as UserIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 export const ReporterContent: React.FC = () => {
   const { t } = useTranslation();
-  const { watch, control } = useFormContext<ErrandDTO>();
+  const { watch, control, setValue } = useFormContext<ErrandFormDTO>();
   const { stakeholders } = watch();
-  const [otherReporter, setOtherReporter] = useState(false);
-
-  const reporterIndex = stakeholders?.findIndex((s) => s.role === 'REPORTER') ?? -1;
+  // Valet ligger i formuläret, inte i komponenten: valideringen måste kunna se att en kollega
+  // utlovats men inte fyllts i, och den läser bara formulärets värden.
+  const otherReporter = watch('reportingForColleague') ?? false;
 
   const { remove } = useFieldArray({
     control,
@@ -26,13 +27,13 @@ export const ReporterContent: React.FC = () => {
   useEffect(() => {
     const hasContact = stakeholders?.some((s) => s.role === 'CONTACT');
     if (hasContact && !otherReporter) {
-      setOtherReporter(true);
+      setValue('reportingForColleague', true);
     }
   }, [stakeholders]);
 
   const handleOtherReporterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
-    setOtherReporter(checked);
+    setValue('reportingForColleague', checked);
 
     if (!checked) {
       // Remove CONTACT stakeholders in reverse order to preserve indices
@@ -47,28 +48,35 @@ export const ReporterContent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-[2.4rem] pb-[2.4rem]">
-      <span className="text-dark-secondary">{t('errand-information:reporter.description')}</span>
+    <div className="flex flex-col gap-32">
       {getReporterStakeholder(stakeholders) ?
         <>
           <StakeholderCard
             stakeholder={getReporterStakeholder(stakeholders) ?? {}}
-            isEditable
-            hideRemove
-            editableFields={['emails', 'phoneNumbers']}
-            index={reporterIndex}
+            // Avsnittet heter Rapportör och rymmer bara rapportören, så rollraden på kortet
+            // upprepar rubriken. Kortet får i stället ligga i avsnittets fulla bredd.
+            hideRole
+            wide
             roles={['REPORTER']}
           />
-          <Checkbox className="-mt-[2.4rem]" checked={otherReporter} onChange={handleOtherReporterChange}>
+          <Checkbox checked={otherReporter} onChange={handleOtherReporterChange}>
             {t('errand-information:stakeholder.reporting_for_colleague')}
           </Checkbox>
           {otherReporter && (
-            <div className="flex flex-col gap-[2.4rem]">
-              <h3 className="sk-disclosure-header-title sk-disclosure-header-title-md">
-                {t('errand-information:other_reporter.title')}
-              </h3>
-              <span className="text-dark-secondary">{t('errand-information:other_reporter.description')}</span>
-              <StakeholderList roles={['CONTACT', 'SUBSTITUTEASSIGNMENT']} autoDetectSearch maxCount={1} />
+            <div className="flex flex-col gap-32">
+              <SectionHeader
+                as="h3"
+                title={t('errand-information:other_reporter.title')}
+                description={t('errand-information:other_reporter.description')}
+              />
+              <StakeholderList
+                roles={['CONTACT', 'SUBSTITUTEASSIGNMENT']}
+                autoDetectSearch
+                maxCount={1}
+                fieldId={COLLEAGUE_FIELD_ID}
+                hideRoleSelect
+                sectionCards
+              />
             </div>
           )}
         </>
@@ -81,8 +89,11 @@ export const Reporter: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <ErrandDisclosure header={t('errand-information:reporter.title')} icon={<UserIcon />}>
+    <ErrandSection
+      header={t('errand-information:reporter.title')}
+      description={t('errand-information:reporter.description')}
+    >
       <ReporterContent />
-    </ErrandDisclosure>
+    </ErrandSection>
   );
 };

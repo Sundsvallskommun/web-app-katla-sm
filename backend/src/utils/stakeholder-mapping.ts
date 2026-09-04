@@ -7,6 +7,9 @@ import ApiService from '@/services/api.service';
 
 import { apiURL } from './util';
 
+/** Parametrar som DTO:n bär i egna fält, och som därför inte ska dubbleras tillbaka dit. */
+const LIFTED_PARAMETER_KEYS = ['title', 'department'];
+
 const getCitizenPersonNumber = (value: unknown): string => {
   if (typeof value === 'string') return value;
 
@@ -31,6 +34,10 @@ export async function mapStakeholderToStakeholderDTO(stakeholder: Stakeholder, r
 
   const { contactChannels, parameters, ...rest } = stakeholder;
 
+  // Titel och avdelning lyfts ur parametrarna till egna fält. Övriga parametrar — till exempel
+  // anställningsform — hör till parten och måste följa med, annars tappas de vid varje läsning.
+  const remainingParameters = (parameters ?? []).filter(parameter => !LIFTED_PARAMETER_KEYS.includes(parameter.key));
+
   const { emails, phoneNumbers } = (contactChannels ?? []).reduce<{
     emails: string[];
     phoneNumbers: string[];
@@ -51,6 +58,7 @@ export async function mapStakeholderToStakeholderDTO(stakeholder: Stakeholder, r
     personNumber: addHyphenToPersonNumber(personNumber),
     title: parameters?.find(p => p.key === 'title')?.displayName ?? undefined,
     department: parameters?.find(p => p.key === 'department')?.displayName ?? undefined,
+    parameters: remainingParameters.length ? remainingParameters : undefined,
     emails: emails.length ? emails : undefined,
     phoneNumbers: phoneNumbers.length ? phoneNumbers : undefined,
   };
@@ -58,7 +66,7 @@ export async function mapStakeholderToStakeholderDTO(stakeholder: Stakeholder, r
 
 export function mapStakeholderDTOToStakeholder(stakeholder: StakeholderDTO): Stakeholder {
   delete stakeholder.personNumber;
-  const { emails, phoneNumbers, title, department, ...rest } = stakeholder;
+  const { emails, phoneNumbers, title, department, parameters: ownParameters, ...rest } = stakeholder;
 
   const contactChannels: ContactChannel[] = [
     ...(emails?.map(email => ({
@@ -72,7 +80,9 @@ export function mapStakeholderDTOToStakeholder(stakeholder: StakeholderDTO): Sta
     })) ?? []),
   ];
 
-  const parameters: Parameter[] = [];
+  // Partens egna parametrar behålls och kompletteras med titel och avdelning, som ligger i
+  // egna fält i DTO:n. Utan det skrev titelraden nedan över allt annat parten bär.
+  const parameters: Parameter[] = [...(ownParameters ?? [])];
   if (title) {
     parameters.push({
       key: 'title',

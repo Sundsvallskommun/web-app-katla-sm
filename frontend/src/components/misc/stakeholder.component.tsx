@@ -1,5 +1,7 @@
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
+import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { useIsContentLocked } from '@contexts/errand-content-lock-context';
+import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { getStakeholderUsingPersonNumber } from '@services/citizen/citizen-service';
@@ -15,6 +17,7 @@ import {
   SearchField,
   Select,
 } from '@sk-web-gui/react';
+import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import {
   createStakeholderSchema,
   emptyStakeholder,
@@ -35,7 +38,28 @@ export const StakeholderList: React.FC<{
   autoDetectSearch?: boolean;
   maxCount?: number;
   hideRoleSelect?: boolean;
-}> = ({ roles, employeeSearch = false, autoDetectSearch = false, maxCount, hideRoleSelect = false }) => {
+  /**
+   * Korten ritas som rapportörens: utan rollrad och i avsnittets fulla bredd. Används där
+   * avsnittet bara rymmer en roll, så att rollraden bara skulle upprepa rubriken ovanför.
+   */
+  sectionCards?: boolean;
+  /**
+   * Listans id i valideringen. Med det visar listan sitt eget fel och märker ut sig, så att
+   * felsammanfattningen kan länka hit — samma sätt som fälten i schemaformuläret.
+   */
+  fieldId?: string;
+  /** Innehåll att visa inuti varje parts kort, till exempel val som hör till just den parten. */
+  renderCardExtra?: (index: number) => React.ReactNode;
+}> = ({
+  roles,
+  employeeSearch = false,
+  autoDetectSearch = false,
+  maxCount,
+  hideRoleSelect = false,
+  sectionCards = false,
+  fieldId,
+  renderCardExtra,
+}) => {
   const [searchMode, setSearchMode] = useState<string>('PERSON');
   const [query, setQuery] = useState<string>('');
   const [searchResult, setSearchResult] = useState<boolean>(false);
@@ -43,6 +67,8 @@ export const StakeholderList: React.FC<{
   const [manualEntryOpen, setManualEntryOpen] = useState<boolean>(false);
   const { metadata } = useMetadataStore();
   const { t } = useTranslation();
+  const { errors } = useFormValidation();
+  const fieldError = fieldId ? errors.find((error) => error.fieldId === fieldId) : undefined;
   const isLocked = useIsContentLocked();
 
   const context = useFormContext<ErrandDTO>();
@@ -142,7 +168,12 @@ export const StakeholderList: React.FC<{
   };
 
   return (
-    <div>
+    <div {...(fieldError ? { [INVALID_FIELD_ATTRIBUTE]: fieldId } : {})}>
+      {fieldError && (
+        <FormErrorMessage className="text-error mb-16" data-cy={`${fieldId ?? 'stakeholder'}-error`}>
+          {fieldError.message}
+        </FormErrorMessage>
+      )}
       <FormProvider {...method}>
         {showAddButton && (
           <FormControl className="w-full">
@@ -229,7 +260,7 @@ export const StakeholderList: React.FC<{
               {shouldShowContactDetails(roles) && (
                 <div className="flex flex-col sm:flex-row py-10 gap-10 w-full">
                   <FormControl className="w-full">
-                    <FormLabel>{t('errand-information:stakeholder.email')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.email')}</FormFieldLabel>
                     <Input
                       {...register('emails.0')}
                       data-cy="stakeholder-email-input"
@@ -242,7 +273,7 @@ export const StakeholderList: React.FC<{
                     )}
                   </FormControl>
                   <FormControl className="w-full">
-                    <FormLabel>{t('errand-information:stakeholder.phone')}</FormLabel>
+                    <FormFieldLabel>{t('errand-information:stakeholder.phone')}</FormFieldLabel>
                     <Input
                       {...register('phoneNumbers.0')}
                       data-cy="stakeholder-mobilephone-input"
@@ -259,7 +290,7 @@ export const StakeholderList: React.FC<{
 
               {!hideRoleSelect && (
                 <FormControl required className="w-full sm:w-[calc(50%-10px)]">
-                  <FormLabel>{t('errand-information:stakeholder.person_role')}</FormLabel>
+                  <FormFieldLabel>{t('errand-information:stakeholder.person_role')}</FormFieldLabel>
                   <Select data-cy="stakeholder-role-select" className="w-full" {...register('role')}>
                     {metadata?.roles?.map(
                       (role) =>
@@ -294,15 +325,17 @@ export const StakeholderList: React.FC<{
         if (!roles.includes(stakeholder.role ?? '')) return null;
         return (
           <StakeholderCard
-            index={index}
             key={index}
             stakeholder={stakeholder}
-            isEditable
+            hideRole={sectionCards}
+            wide={sectionCards}
             roles={roles}
             onRemove={() => {
               remove(index);
             }}
-          />
+          >
+            {renderCardExtra?.(index)}
+          </StakeholderCard>
         );
       })}
 
@@ -330,7 +363,7 @@ export const StakeholderList: React.FC<{
           setManualEntryOpen(false);
         }}
         editableFields={
-          roles.includes('EMPLOYEE') || roles.includes('SUBSTITUTEASSIGNMENT') ?
+          !hideRoleSelect && (roles.includes('EMPLOYEE') || roles.includes('SUBSTITUTEASSIGNMENT')) ?
             ['personNumber', 'firstName', 'lastName', 'emails', 'phoneNumbers', 'role']
           : ['personNumber', 'firstName', 'lastName', 'emails', 'phoneNumbers']
         }

@@ -1,0 +1,154 @@
+{
+  "id": "663c2d10-5f16-471e-8f65-86ee8c4f46be",
+  "description": "UI-schema för avvikelserapportering - plats och händelseförlopp",
+  "value": {
+    "facilityInfo": {
+      "ui:field": "FacilitySearchWidget",
+      "ui:title": "Enhet eller avdelning",
+      "x-i18n": {
+        "en": {
+          "ui:title": "Unit or department"
+        }
+      }
+    },
+    "eventDate": {
+      "ui:widget": "date",
+      "ui:title": "När upptäcktes händelsen?",
+      "ui:placeholder": "Välj datum",
+      "ui:options": {
+        "maxDate": "today"
+      },
+      "x-i18n": {
+        "en": {
+          "ui:title": "When was the event discovered?",
+          "ui:placeholder": "Select a date"
+        }
+      }
+    },
+    "eventTime": {
+      "ui:widget": "time",
+      "ui:title": "Vilken tid upptäcktes händelsen?",
+      "ui:description": "Ange ungefärlig tid då händelsen upptäcktes.",
+      "x-i18n": {
+        "en": {
+          "ui:title": "What time was the event discovered?",
+          "ui:description": "Enter the approximate time when the event was discovered."
+        }
+      }
+    },
+    "occurredDate": {
+      "ui:widget": "date",
+      "ui:title": "När inträffade händelsen?",
+      "ui:description": "Lämna fältet tomt om du inte vet när händelsen inträffade.",
+      "ui:placeholder": "Välj datum",
+      "ui:options": {
+        "maxDate": "today"
+      },
+      "x-i18n": {
+        "en": {
+          "ui:title": "When did the event occur?",
+          "ui:description": "Leave the field blank if you do not know the date when the event occurred.",
+          "ui:placeholder": "Select a date"
+        }
+      }
+    },
+    "occurredTime": {
+      "ui:widget": "time",
+      "ui:title": "Vilken tid inträffade händelsen?",
+      "ui:description": "Lämna fältet tomt om du inte vet vilken tid händelsen inträffade.",
+      "x-i18n": {
+        "en": {
+          "ui:title": "What time did the event occur?",
+          "ui:description": "Leave the field blank if you do not know the time when the event occurred."
+        }
+      }
+    },
+    "eventDescription": {
+      "ui:widget": "textarea",
+      "ui:options": {
+        "initialHeightRem": 24
+      },
+      "ui:title": "Händelse",
+      "ui:description": "Beskriv vad som hände, steg för steg.",
+      "x-i18n": {
+        "en": {
+          "ui:title": "Event",
+          "ui:description": "Describe what happened, step by step."
+        }
+      }
+    },
+    "actionsTaken": {
+      "ui:widget": "textarea",
+      "ui:title": "Åtgärder som vidtogs direkt",
+      "ui:description": "Beskriv vilka åtgärder som vidtogs direkt vid händelsen.",
+      "x-i18n": {
+        "en": {
+          "ui:title": "Actions taken immediately",
+          "ui:description": "Describe what actions were taken immediately at the time of the event."
+        }
+      }
+    },
+    "suggestedActions": {
+      "ui:widget": "textarea",
+      "ui:title": "Förslag på förbättringar",
+      "ui:description": "Beskriv vilka förbättringar eller åtgärder som kan minska risken för att händelsen upprepas.",
+      "x-i18n": {
+        "en": {
+          "ui:title": "Suggested improvements",
+          "ui:description": "Describe what improvements or actions could reduce the risk of the event happening again."
+        }
+      }
+    },
+    "ui:order": ["facilityInfo", "eventDate", "eventTime", "occurredDate", "occurredTime", "eventDescription", "actionsTaken", "suggestedActions"],
+    "ui:rows": [
+      {
+        "fields": ["eventDate", "eventTime"],
+        "layout": "narrow"
+      },
+      {
+        "fields": ["occurredDate", "occurredTime"],
+        "layout": "narrow"
+      }
+    ],
+    "ui:sections": [
+      {
+        "id": "plats",
+        "title": "Plats",
+        "description": "Ange vilken enhet eller avdelning händelsen inträffade på.",
+        "fields": ["facilityInfo"],
+        "x-i18n": {
+          "en": {
+            "title": "Location",
+            "description": "State which unit or department the event occurred in."
+          }
+        }
+      },
+      {
+        "id": "tidpunkter",
+        "title": "Tidpunkter",
+        "fields": ["eventDate", "eventTime", "occurredDate", "occurredTime"],
+        "x-i18n": {
+          "en": {
+            "title": "Times"
+          }
+        }
+      },
+      {
+        "id": "beskrivning",
+        "title": "Beskrivning av händelse",
+        "fields": ["eventDescription", "actionsTaken", "suggestedActions"],
+        "x-i18n": {
+          "en": {
+            "title": "Description of the event"
+          }
+        }
+      }
+    ],
+    "ui:title": "Plats och händelseförlopp",
+    "x-i18n": {
+      "en": {
+        "ui:title": "Location and sequence of events"
+      }
+    }
+  }
+}

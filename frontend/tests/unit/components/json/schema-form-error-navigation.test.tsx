@@ -5,14 +5,9 @@ import { focusFirstInvalidField, INVALID_FIELD_ATTRIBUTE } from '@utils/focus-fi
 import { FormProvider, useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
 
-const translations: Record<string, string> = {
-  section_incomplete: 'Ofullständig',
-  section_complete: 'Komplett',
-};
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => translations[key] ?? key,
+    t: (key: string) => key,
   }),
 }));
 
@@ -29,8 +24,8 @@ const schema: RJSFSchema = {
 
 const uiSchema: UiSchema<Record<string, unknown>> = {
   'ui:sections': [
-    { id: 'event', title: 'Om händelsen', fields: ['eventDate'], defaultOpen: false },
-    { id: 'details', title: 'Beskrivning', fields: ['description'], defaultOpen: false },
+    { id: 'event', title: 'Om händelsen', fields: ['eventDate'] },
+    { id: 'details', title: 'Beskrivning', fields: ['description'] },
   ],
 };
 
@@ -62,29 +57,15 @@ describe('felnavigering i schemaformuläret', () => {
     render(<ErrorNavigationForm />);
 
     expect(document.querySelector(`[${INVALID_FIELD_ATTRIBUTE}]`)).not.toBeInTheDocument();
-    expect(screen.queryByText('Ofullständig')).not.toBeInTheDocument();
-    expect(screen.queryByText('Komplett')).not.toBeInTheDocument();
   });
 
-  it('märker ifyllda avsnitt som kompletta och avsnitt med fel som ofullständiga', () => {
-    render(<ErrorNavigationForm showValidation formData={{ eventDate: '2026-08-13' }} />);
-
-    expect(document.querySelector('[data-cy="section-status-event"]')).toHaveTextContent('Komplett');
-    expect(document.querySelector('[data-cy="section-status-details"]')).toHaveTextContent('Ofullständig');
-  });
-
-  it('öppnar avsnittet och flyttar fokus till första fältet som saknas', () => {
+  it('flyttar fokus till första fältet som saknas', () => {
     render(<ErrorNavigationForm showValidation />);
 
-    // Fälten i ett hopfällt avsnitt är dolda för tillgänglighetsträdet, så de hämtas via id.
-    const dateInput = document.getElementById('root_eventDate');
+    const dateInput = screen.getByRole('textbox', { name: /Datum för händelsen/ });
     const markedFields = document.querySelectorAll(`[${INVALID_FIELD_ATTRIBUTE}]`);
     expect(markedFields).toHaveLength(2);
     expect(markedFields[0].getAttribute(INVALID_FIELD_ATTRIBUTE)).toBe('root_eventDate');
-    expect(screen.getAllByText('Ofullständig')).toHaveLength(2);
-
-    const eventSection = document.querySelector('[data-cy="section-status-event"]')?.closest('[data-open]');
-    expect(eventSection).toHaveAttribute('data-open', 'false');
 
     let navigated = false;
     act(() => {
@@ -92,7 +73,6 @@ describe('felnavigering i schemaformuläret', () => {
     });
 
     expect(navigated).toBe(true);
-    expect(eventSection).toHaveAttribute('data-open', 'true');
     expect(dateInput).toHaveFocus();
   });
 });

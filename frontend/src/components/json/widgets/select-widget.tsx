@@ -2,7 +2,7 @@
 import type { WidgetProps } from '@rjsf/utils';
 import { Select } from '@sk-web-gui/react';
 
-import { getCommonProps, getWidgetOptions } from './types';
+import { getCommonProps, getWidgetOptions, requiredProps } from './types';
 
 const DEFAULT_CLASS = 'w-full';
 
@@ -23,7 +23,7 @@ export function SelectWidget(props: WidgetProps) {
       }}
       disabled={disabled || readonly}
       aria-readonly={readonly}
-      required={required}
+      {...requiredProps(required)}
       aria-describedby={describedBy}
       aria-invalid={invalid}
       onBlur={onBlur}

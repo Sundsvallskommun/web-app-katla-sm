@@ -42,9 +42,10 @@ beforeEach(() => {
   getErrandsCountMock.mockReset();
   getMetadataMock.mockReset();
   useSortStore.setState({ sortColumn: 'created', sortOrder: 'desc', page: 0, size: 12, rowHeight: 'normal' });
-  useFilterStore.setState({ activeStatus: 'Öppna', statuses: [] });
+  // En satt statuslista: utan den görs ingen hämtning alls, och testerna nedan mäter hämtningen.
+  useFilterStore.setState({ activeStatus: 'OPEN', statuses: ['REVIEW'] });
   useMetadataStore.setState({ metadata: null });
-  useErrandCountStore.setState({ newErrandCount: 0, draftErrandCount: 0, closedErrandCount: 0 });
+  useErrandCountStore.setState({ openErrandCount: 0, draftErrandCount: 0, closedErrandCount: 0 });
 });
 
 afterEach(() => {
@@ -301,10 +302,11 @@ describe('overview API error state', () => {
 
 describe('status count API error state', () => {
   it('updates successful counts and preserves the failed count', async () => {
-    useErrandCountStore.setState({ newErrandCount: 8, closedErrandCount: 9 });
+    useMetadataStore.setState({ metadata: { statuses: [{ name: 'NEW' }, { name: 'REVIEW' }, { name: 'SOLVED' }] } });
+    useErrandCountStore.setState({ openErrandCount: 8, closedErrandCount: 9 });
     getErrandsCountMock.mockImplementation((query) => {
-      const [status] = query?.statuses ?? [];
-      if (status === 'NEW') return Promise.reject(new Error('new count unavailable'));
+      const statuses = query?.statuses ?? [];
+      if (statuses.includes('REVIEW')) return Promise.reject(new Error('open count unavailable'));
       return Promise.resolve({ count: 2 });
     });
 
@@ -315,8 +317,8 @@ describe('status count API error state', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(useErrandCountStore.getState().newErrandCount).toBe(8);
+    expect(useErrandCountStore.getState().openErrandCount).toBe(8);
     expect(useErrandCountStore.getState().closedErrandCount).toBe(2);
-    expect(result.current.statusButtons.find((button) => button.statuses.includes('NEW'))?.errandsCount).toBe(8);
+    expect(result.current.statusButtons.find((button) => button.statuses.includes('REVIEW'))?.errandsCount).toBe(8);
   });
 });

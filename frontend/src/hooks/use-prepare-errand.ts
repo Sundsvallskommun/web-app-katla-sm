@@ -1,7 +1,19 @@
 import { errandFormDataToJsonParameters, isJsonObject, parseErrandFormData } from '@components/json/utils/schema-utils';
 import { FacilityInfoDTO, LabelDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { ErrandFormDataItem, ErrandFormDTO } from '@interfaces/errand-form';
-import { findPlaceNode, getPlaceNodes, hasSubPlaces, qualifiedPlaceName, toErrandLabels } from '@utils/label-structure';
+import {
+  findPlaceNode,
+  getPlaceNodes,
+  hasSubPlaces,
+  qualifiedPlaceName,
+  toErrandLabel,
+  toErrandLabels,
+} from '@utils/label-structure';
+import {
+  EVENT_TYPE_PARAMETER_KEY,
+  getReportTypeResourceName,
+  REPORT_TYPE_ROOT_RESOURCE_NAME,
+} from '@utils/report-type';
 import { useMemo } from 'react';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
@@ -33,15 +45,6 @@ export function usePrepareErrand() {
       return undefined;
     };
     return metadata?.labels?.labelStructure ? findInStructure(metadata.labels.labelStructure) : undefined;
-  };
-
-  const flattenLabel = (label: LabelDTO): LabelDTO[] => {
-    const { labels: children, ...labelWithoutChildren } = label;
-    const result: LabelDTO[] = [labelWithoutChildren];
-    if (children?.length) {
-      children.forEach((child) => result.push(...flattenLabel(child)));
-    }
-    return result;
   };
 
   const dedupeLabels = (labels: LabelDTO[]): LabelDTO[] => {
@@ -92,20 +95,24 @@ export function usePrepareErrand() {
     return hasSubPlaces(placeNode) ? 'INCOMPLETE' : 'COMPLETE';
   };
 
+  /**
+   * Rapporttypen skickas som kedjan rot → vald typ, på samma sätt som platsen, så att båda
+   * dimensionerna går att läsa likadant hos mottagaren. Saknas något led i strukturen sätts ingen
+   * rapporttyp alls — hellre tom än gissad.
+   */
+  const buildReportTypeLabels = (eventType: string): LabelDTO[] => {
+    const reportTypeResourceName = getReportTypeResourceName(eventType);
+    if (!reportTypeResourceName) return [];
+
+    const rootLabel = findLabel(REPORT_TYPE_ROOT_RESOURCE_NAME);
+    const typeLabel = rootLabel?.labels?.find((label) => label.resourceName === reportTypeResourceName);
+    if (!rootLabel || !typeLabel) return [];
+
+    return [toErrandLabel(rootLabel), toErrandLabel(typeLabel)];
+  };
+
   const buildLabels = (eventType: string, errandFormData: ErrandFormDataItem[] | undefined): LabelDTO[] => {
-    const labels: LabelDTO[] = [];
-
-    const uncategorizedLabel = findLabel('UNCATEGORIZED');
-    if (uncategorizedLabel) {
-      labels.push(...flattenLabel(uncategorizedLabel));
-    }
-
-    if (eventType === 'MISSFORHALLANDE') {
-      const adverseLabel = findLabel('ABUSE');
-      if (adverseLabel) {
-        labels.push(...flattenLabel(adverseLabel));
-      }
-    }
+    const labels: LabelDTO[] = [...buildReportTypeLabels(eventType)];
 
     // Platsvalet styr behörigheten till ärendet: hela kedjan från platsstrukturens rot ner till
     // vald nod följer med som labels.
@@ -118,8 +125,8 @@ export function usePrepareErrand() {
   };
 
   const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
-    const { errandFormData, ...errandWithoutFormData } = values;
-    const eventType = values.parameters?.find((p) => p.key === 'eventType')?.values?.[0] ?? '';
+    const { errandFormData, reportingForColleague: _reportingForColleague, ...errandWithoutFormData } = values;
+    const eventType = values.parameters?.find((p) => p.key === EVENT_TYPE_PARAMETER_KEY)?.values?.[0] ?? '';
     const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
 
     let stakeholders = errandWithoutFormData.stakeholders ?? [];

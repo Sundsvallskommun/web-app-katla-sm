@@ -158,12 +158,14 @@ export const findPlaceNode = (
 export const isDescendantOrSelf = (node: PlaceNode, ancestor: PlaceNode): boolean =>
   node.path.some((label) => isSameLabel(label, ancestor.label));
 
+/** Labelns egna fält utan barnen: ärendet bär bara de labels som faktiskt valts. */
+export const toErrandLabel = (label: LabelDTO): LabelDTO => ({
+  id: label.id,
+  classification: label.classification,
+  displayName: label.displayName,
+  resourcePath: label.resourcePath,
+  resourceName: label.resourceName,
+});
+
 /** Labelkedjan som sätts på ärendet: roten och varje nod ner till valet, utan underliggande barn */
-export const toErrandLabels = (node: PlaceNode): LabelDTO[] =>
-  node.path.map((label) => ({
-    id: label.id,
-    classification: label.classification,
-    displayName: label.displayName,
-    resourcePath: label.resourcePath,
-    resourceName: label.resourceName,
-  }));
+export const toErrandLabels = (node: PlaceNode): LabelDTO[] => node.path.map(toErrandLabel);

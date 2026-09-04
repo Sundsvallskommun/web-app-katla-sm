@@ -6,9 +6,11 @@ import { useNotificationStore } from 'src/stores/notification-store';
 interface NotificationsBellProps {
   expanded: boolean;
   toggleShow: () => void;
+  /** Sidhuvudet i ärendevyn är mörkt; knappen måste då rita sig ljus för att synas. */
+  inverted?: boolean;
 }
 
-export const NotificationsBell = ({ expanded, toggleShow }: NotificationsBellProps) => {
+export const NotificationsBell = ({ expanded, toggleShow, inverted = false }: NotificationsBellProps) => {
   const { t } = useTranslation();
   const { activeNotifications } = useNotificationStore();
   const notificationCount = activeNotifications.length;
@@ -25,6 +27,10 @@ export const NotificationsBell = ({ expanded, toggleShow }: NotificationsBellPro
       aria-expanded={expanded}
       onClick={toggleShow}
       className="mx-md"
+      inverted={inverted}
+      // Mot den mörka bakgrunden räcker ikonen: en knappyta där ritar en ruta runt den
+      // som designen inte har.
+      showBackground={!inverted}
       variant="tertiary"
       iconButton
       leftIcon={<Bell aria-hidden="true" />}

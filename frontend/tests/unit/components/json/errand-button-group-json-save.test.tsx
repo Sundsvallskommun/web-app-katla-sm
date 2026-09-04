@@ -51,9 +51,16 @@ vi.mock('@sk-web-gui/react', () => {
   Dialog.Content = DialogContent;
   Dialog.Buttons = DialogButtons;
 
+  const Link = ({ children, onClick }: ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
+  );
+
   return {
     Button,
     Dialog,
+    Link,
     useSnackbar: () => snackbarMock,
   };
 });

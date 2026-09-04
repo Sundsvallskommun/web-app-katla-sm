@@ -1,6 +1,7 @@
 {
   "header": {
-    "goto_content": "Skip to content"
+    "goto_content": "Skip to content",
+    "subtitle": "Incident reporting"
   },
   "controls": {
     "open_user_menu": "Open user menu",

@@ -175,7 +175,7 @@ describe('SchemaForm accessibility contract', () => {
       />
     );
 
-    const input = screen.getByRole('textbox', { name: 'Sammanfattning' });
+    const input = screen.getByRole('textbox', { name: /^Sammanfattning/ });
     const fieldId = input.id;
     const label = document.getElementById(titleId(fieldId));
     const description = document.getElementById(descriptionId(fieldId));
@@ -203,7 +203,7 @@ describe('SchemaForm accessibility contract', () => {
     expect(differentlyCasedTargetLink).not.toHaveAttribute('rel');
     expect(differentlyCasedTargetLink).not.toHaveAccessibleDescription();
 
-    const detailsInput = screen.getByRole('textbox', { name: 'Detaljer' });
+    const detailsInput = screen.getByRole('textbox', { name: /^Detaljer/ });
     const schemaDescription = document.getElementById(descriptionId(detailsInput.id));
     expect(schemaDescription).toHaveTextContent('Trygg schematext');
     expect(schemaDescription?.innerHTML).not.toMatch(/script|onerror/i);
@@ -239,7 +239,7 @@ describe('SchemaForm accessibility contract', () => {
 
     render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
 
-    const group = screen.getByRole('group', { name: 'Händelsetyp' });
+    const group = screen.getByRole('group', { name: /^Händelsetyp/ });
     const radios = screen.getAllByRole('radio');
 
     expect(group.tagName).toBe('FIELDSET');
@@ -291,12 +291,12 @@ describe('SchemaForm accessibility contract', () => {
 
     render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
 
-    const summary = screen.getByRole('textbox', { name: 'Dold sammanfattning' });
+    const summary = screen.getByRole('textbox', { name: /^Dold sammanfattning/ });
     const summaryLabel = document.querySelector<HTMLLabelElement>(`label[for="${summary.id}"]`);
     expect(summaryLabel).toHaveClass('sr-only');
 
     await waitFor(() => {
-      const editor = screen.getByRole('textbox', { name: 'Dold anteckning' });
+      const editor = screen.getByRole('textbox', { name: /^Dold anteckning/ });
       expect(editor).toHaveAttribute('aria-labelledby', `${editor.id}__title`);
       expect(document.getElementById(`${editor.id}__title`)).toHaveClass('sr-only');
     });
@@ -315,7 +315,7 @@ describe('SchemaForm accessibility contract', () => {
 
     render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
 
-    const editor = await screen.findByRole('textbox', { name: 'Anteckning' });
+    const editor = await screen.findByRole('textbox', { name: /^Anteckning/ });
     const label = document.querySelector<HTMLLabelElement>(`label[for="${editor.id}"]`);
     expect(label).toBeInTheDocument();
     label?.click();
@@ -346,10 +346,10 @@ describe('SchemaForm accessibility contract', () => {
       />
     );
 
-    expect(screen.getByRole('checkbox', { name: 'Samtycke' })).toBeDisabled();
-    expect(screen.getByRole('combobox', { name: 'Val' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /^Samtycke/ })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: /^Val/ })).toBeDisabled();
     await waitFor(() => {
-      const editor = screen.getByRole('textbox', { name: 'Anteckning' });
+      const editor = screen.getByRole('textbox', { name: /^Anteckning/ });
       expect(editor).toHaveAttribute('aria-disabled', 'true');
       expect(editor).toHaveAttribute('aria-readonly', 'true');
     });
@@ -374,10 +374,10 @@ describe('SchemaForm accessibility contract', () => {
       />
     );
 
-    expect(screen.getByRole('checkbox', { name: 'Samtycke' })).toBeDisabled();
-    expect(screen.getByRole('combobox', { name: 'Val' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /^Samtycke/ })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: /^Val/ })).toBeDisabled();
     await waitFor(() => {
-      const editor = screen.getByRole('textbox', { name: 'Anteckning' });
+      const editor = screen.getByRole('textbox', { name: /^Anteckning/ });
       expect(editor).toHaveAttribute('aria-disabled', 'false');
       expect(editor).toHaveAttribute('aria-readonly', 'true');
     });
@@ -411,10 +411,10 @@ describe('SchemaForm accessibility contract', () => {
     render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
 
     // i18n-mocken ekar nyckeln, så det är nyckeln som blir fältets tillgängliga namn här.
-    const input = screen.getByRole('textbox', { name: 'facility_search.add_label' });
+    const input = screen.getByRole('textbox', { name: /^facility_search.search_label/ });
     const searchLabel = document.querySelector(`label[for="${input.id}"]`);
 
-    expect(searchLabel).toHaveTextContent('facility_search.add_label');
+    expect(searchLabel).toHaveTextContent('facility_search.search_label');
     expect(input).toHaveAttribute('aria-labelledby', searchLabel?.id);
     expect(input).toHaveAttribute('aria-describedby', expect.stringContaining(descriptionId(input.id)));
     const list = document.querySelector('.sk-form-combobox-list');
@@ -446,7 +446,7 @@ describe('SchemaForm accessibility contract', () => {
     expect(list).not.toHaveTextContent('IAF VUX SFI SO och Grl');
   });
 
-  it('visar anläggning och avdelning med en enda åtgärd som öppnar platsväljaren igen', async () => {
+  it('visar den valda platsen i väljaren utan ett extra avdelningsval', () => {
     const schema: RJSFSchema = {
       type: 'object',
       properties: {
@@ -468,7 +468,6 @@ describe('SchemaForm accessibility contract', () => {
 
     useMetadataStore.setState({ metadata: { labels: { labelStructure: placeLabelStructure } } });
 
-    const user = userEvent.setup();
     render(
       <SchemaForm
         schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
@@ -484,32 +483,17 @@ describe('SchemaForm accessibility contract', () => {
       />
     );
 
-    expect(document.querySelector('[data-cy="facility-name"]')).toHaveTextContent('Solhaga');
-    expect(document.querySelector('[data-cy="facility-department"]')).toHaveTextContent(
-      'facility_search.department_label: Blå'
-    );
+    // Valet bärs av väljaren själv, inte av ett kort under den.
+    const placeInput = screen.getByRole('textbox', { name: /^facility_search.search_label/ });
+    expect(placeInput).toHaveValue('Solhaga — facility_search.department_label: Blå');
+    expect(document.querySelector('[data-cy="facility-card"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-label-preview"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-confirm-button"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-remove-button"]')).not.toBeInTheDocument();
 
-    const subPlaceOptions = document.querySelector('[data-cy="facility-sub-place-options"]');
-    expect(subPlaceOptions).toBeInTheDocument();
-    expect(within(subPlaceOptions as HTMLElement).getByRole('radio', { name: 'Blå' })).toBeChecked();
-    expect(within(subPlaceOptions as HTMLElement).getByRole('radio', { name: 'Gul' })).not.toBeChecked();
-
-    await user.click(within(subPlaceOptions as HTMLElement).getByRole('radio', { name: 'Gul' }));
-
-    expect(document.querySelector('[data-cy="facility-department"]')).toHaveTextContent(
-      'facility_search.department_label: Gul'
-    );
-    expect(document.querySelector('[data-cy="facility-sub-place-options"]')).toBeInTheDocument();
-
-    const changeButton = screen.getByRole('button', { name: 'facility_search.change' });
-    expect(changeButton).not.toHaveClass('flex-1');
-
-    await user.click(changeButton);
-
-    expect(await screen.findByRole('textbox', { name: 'facility_search.add_label' })).toBeInTheDocument();
+    // Avdelningen ligger med i alternativet man valde, så valet är redan färdigt – ett extra
+    // avdelningsval hade bara upprepat det.
+    expect(document.querySelector('[data-cy="facility-sub-place-options"]')).not.toBeInTheDocument();
   });
 
   it('visar bara anläggningen för ett val på nivå 6 utan avdelning', () => {
@@ -549,8 +533,10 @@ describe('SchemaForm accessibility contract', () => {
       />
     );
 
-    expect(document.querySelector('[data-cy="facility-name"]')).toHaveTextContent('Anläggning utan avdelning');
-    expect(document.querySelector('[data-cy="facility-department"]')).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /^facility_search.search_label/ })).toHaveValue(
+      'Anläggning utan avdelning'
+    );
+    expect(document.querySelector('[data-cy="facility-card"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-sub-place-options"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-label-preview"]')).not.toBeInTheDocument();
   });

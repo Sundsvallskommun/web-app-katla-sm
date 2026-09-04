@@ -16,4 +16,11 @@
   .container {
     @apply max-width-content;
   }
+
+  // Textredigeraren och kryssrutan ritar ingen egen yta, så de tog färgen från avsnittskortet
+  // de ligger i. Båda ska ha inmatningsytan, som formulärets övriga fält.
+  .ql-container,
+  .sk-form-checkbox {
+    background-color: var(--sk-colors-input-field-surface-DEFAULT);
+  }
 }

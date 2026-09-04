@@ -24,21 +24,18 @@ export const MobileErrandsList: React.FC<MobileErrandsListProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  if (isLoading && rows.length === 0) {
-    return (
-      <div className="flex justify-center py-40">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (rows.length === 0 && errors.length === 0) {
-    return <div className="text-center py-40 text-dark-secondary">{t('errand-information:no_errands')}</div>;
-  }
-
   return (
     <div className="flex flex-col gap-8 px-16 pb-24">
+      {/* Felen står först, av samma skäl som i tabellen: ett stående laddläge får inte dölja dem. */}
       <ErrorAlertList messages={errors} />
+      {isLoading && rows.length === 0 && (
+        <div className="flex justify-center py-40">
+          <Spinner />
+        </div>
+      )}
+      {!isLoading && rows.length === 0 && errors.length === 0 && (
+        <div className="text-center py-40 text-dark-secondary">{t('errand-information:no_errands')}</div>
+      )}
       {rows.map((errand, index) => (
         <MobileErrandCard key={`mobile-errand-${index}`} errand={errand} />
       ))}

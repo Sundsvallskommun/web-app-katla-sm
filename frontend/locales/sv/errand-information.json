@@ -7,9 +7,14 @@
     "back": "Nej, fortsätt"
   },
   "save_draft": "Spara utkast",
-  "register": "Skicka",
+  "register": "Skicka rapport",
   "no_errands": "Det finns inga ärenden att visa",
   "errand": "Ärende: ",
+  "new_report": "Ny rapport",
+  "submitted": {
+    "title": "Rapporten är inskickad",
+    "back_to_overview": "Tillbaka till översikt"
+  },
   "draft": "Utkast: ",
   "search": {
     "PERSON": "Sök på personnummer",
@@ -22,17 +27,18 @@
     "error": "Något gick fel när ärendet sparades"
   },
   "about": {
-    "title": "Om ärendet",
-    "event_type_label": "Välj händelsetyp",
+    "title": "Om rapporten",
+    "description": "Ange vilken typ av händelse det gäller och vem eller vilka som berörs.",
+    "event_type_label": "Typ av rapport",
     "event_type_deviation": "Avvikelse",
+    "event_type_deviation_description": "Något har inte blivit som det var tänkt eller planerat i verksamheten. Det gäller inom områdena SoL, LSS och HSL.",
     "event_type_misconduct": "Missförhållande",
+    "event_type_misconduct_description": "En brist eller händelse som har medfört en allvarlig risk för den enskildes liv, säkerhet eller hälsa.",
     "misconduct_alert_title": "Missförhållande",
     "misconduct_alert_description": "Ärendet skickas till en oberoende utredare. Din chef får veta om ärendet men beslutar inte om resultatet.",
-    "event_concerns_label": "Händelsen berör",
+    "event_concerns_label": "Vem eller vilka berör rapporten?",
     "event_concerns_individual": "Enskild brukare",
-    "event_concerns_group": "Grupp/hela verksamheten",
-    "event_concerns_other": "Annat",
-    "event_concerns_describe_note": "(Beskriv mer i avsnittet \"Vad har hänt?\")",
+    "event_concerns_group": "Grupp och/eller verksamhet",
     "event_type_required": "Välj en händelsetyp",
     "event_concerns_required": "Välj vad händelsen berör",
     "event_concerns_group_facility_required": "Välj en plats där avvikelsen inträffat när händelsen berör grupp/hela verksamheten",
@@ -40,21 +46,21 @@
   },
   "reporter": {
     "title": "Rapportör",
-    "description": "Rapportören är den person som initierat ärendet och vår primära kontakt när ärendet handläggs. Om du rapporterar åt en annan kollega, lägger du den personen under annan rapportör."
+    "description": "Rapportören är den person som rapporterar händelsen och är kontaktperson för ärendet. Om du rapporterar åt en kollega, markera rutan nedan och ange kollegans uppgifter."
   },
   "user": {
-    "title": "Brukare",
-    "description": "En brukare är den individ som berörs av ärendet.",
-    "not_required_title": "Brukare behövs inte för detta ärende",
-    "not_required_description": "Eftersom händelsen inte berör en enskild brukare behöver du inte ange en brukare. Du kan gå vidare till nästa steg."
+    "title": "Enskild brukare",
+    "description": "En brukare är den individ som berörs av rapporten.",
+    "required": "Lägg till den brukare rapporten berör"
   },
   "other_reporter": {
-    "title": "Annan rapportör",
-    "description": "Ange den kollega som du rapporterar åt."
+    "title": "Lägg till kollega",
+    "description": "Ange den kollega som du rapporterar åt.",
+    "required": "Lägg till kollegan du rapporterar åt"
   },
   "other_parties": {
     "title": "Övriga parter",
-    "description": "En part kan vara en kontaktperson, läkare eller en anhörig vars roll är viktig för ärendet. Om du rapporterar åt en kollega så ska du ange kollegan som övrig part."
+    "description": "En part kan vara en kontaktperson, läkare eller anhörig vars roll är viktig för ärendet."
   },
   "deviation_information": {
     "title": "Uppgifter kring avvikelsen",
@@ -77,7 +83,7 @@
     "add_manually": "Lägg till manuellt",
     "edit_details": "Redigera uppgifter",
     "remove": "Ta bort",
-    "reporting_for_colleague": "Jag rapporterar åt en annan kollega",
+    "reporting_for_colleague": "Jag rapporterar åt en kollega",
     "modal": {
       "edit_title": "Redigera person",
       "add_title": "Lägg till person manuellt",
@@ -88,16 +94,15 @@
       "zip_code": "Postnummer",
       "city": "Ort",
       "role": "Roll",
-      "save_edit": "Ändra uppgifter",
+      "save_edit": "Spara",
       "save_add": "Lägg till",
       "cancel": "Avbryt"
     }
   },
   "submit_confirm": {
-    "question": "Vill du skicka in ärendet?",
-    "no": "Nej",
-    "submit": "Skicka in",
-    "submit_and_logout": "Skicka in och logga ut"
+    "question": "När du skickar rapporten registreras den och kan inte längre ändras.",
+    "submit": "Skicka rapport",
+    "title": "Skicka rapporten?"
   },
   "section": {
     "complete": "Komplett",
@@ -106,8 +111,6 @@
   "read_only": {
     "notice": "Ärendet är inlämnat och kan inte längre ändras."
   },
-  "basic_information_heading": "1. Grundinformation",
-  "errand_details_heading": "2. Ärendeuppgifter",
   "wizard": {
     "step_indicator": "Steg {{current}}/{{total}}",
     "next": "Nästa",
@@ -122,5 +125,10 @@
   },
   "sequence_of_events": {
     "title": "Händelseförlopp"
+  },
+  "validation_summary": {
+    "title_one": "Du behöver åtgärda {{count}} sak",
+    "title_other": "Du behöver åtgärda {{count}} saker",
+    "go_to_error": "Gå till fältet: {{message}}"
   }
 }

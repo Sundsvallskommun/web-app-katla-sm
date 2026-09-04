@@ -14,26 +14,44 @@ const label = (name: string, resourcePath: string, labels: LabelDTO[] = []): Lab
   labels,
 });
 
+/** Rotnoderna heter som i API:t: platsstrukturen känns igen på sitt displayName, inte sitt namn. */
 const labelStructure: LabelDTO[] = [
   {
-    id: 'uncategorized',
-    classification: 'CATEGORY',
-    displayName: 'Okategoriserad',
-    resourceName: 'UNCATEGORIZED',
-    resourcePath: 'UNCATEGORIZED',
-    labels: [],
+    id: 'report-type',
+    classification: 'report-type-root',
+    displayName: 'Rapporttyp',
+    resourceName: 'REPORT_TYPE',
+    resourcePath: 'REPORT_TYPE',
+    labels: [
+      {
+        id: 'deviation',
+        classification: 'report-type',
+        displayName: 'Avvikelse',
+        resourceName: 'DEVIATION',
+        resourcePath: 'REPORT_TYPE/DEVIATION',
+        labels: [],
+      },
+      {
+        id: 'abuse',
+        classification: 'report-type',
+        displayName: 'Missförhållande',
+        resourceName: 'ABUSE',
+        resourcePath: 'REPORT_TYPE/ABUSE',
+        labels: [],
+      },
+    ],
   },
   {
-    id: 'platsstruktur',
-    classification: 'PLACE',
+    id: 'location',
+    classification: 'location-root',
     displayName: 'Platsstruktur',
-    resourceName: 'PLATSSTRUKTUR',
-    resourcePath: 'PLATSSTRUKTUR',
+    resourceName: 'LOCATION',
+    resourcePath: 'LOCATION',
     labels: [
-      label('VOF Äldreboende', 'PLATSSTRUKTUR/VOF_ALDREBOENDE', [
-        label('VOF ÄB Skottsundsbacken geme.', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/GEME', [
-          label('Blå', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/GEME/BLA'),
-          label('Gul', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/GEME/GUL'),
+      label('VOF Äldreboende', 'LOCATION/VOF_ALDREBOENDE', [
+        label('VOF ÄB Skottsundsbacken geme.', 'LOCATION/VOF_ALDREBOENDE/GEME', [
+          label('Blå', 'LOCATION/VOF_ALDREBOENDE/GEME/BLA'),
+          label('Gul', 'LOCATION/VOF_ALDREBOENDE/GEME/GUL'),
         ]),
       ]),
     ],
@@ -51,10 +69,14 @@ const facilityFormData = (facility: Record<string, unknown> | undefined): Errand
     ]
   : [];
 
-const errand = (errandFormData: ErrandFormDataItem[], eventConcerns = 'GRUPP_VERKSAMHET'): ErrandFormDTO => ({
+const errand = (
+  errandFormData: ErrandFormDataItem[],
+  eventConcerns = 'GRUPP_VERKSAMHET',
+  eventType = 'AVVIKELSE'
+): ErrandFormDTO => ({
   errandFormData,
   parameters: [
-    { key: 'eventType', values: ['AVVIKELSE'] },
+    { key: 'eventType', values: [eventType] },
     { key: 'eventConcerns', values: [eventConcerns] },
   ],
 });
@@ -75,12 +97,32 @@ describe('usePrepareErrand', () => {
     );
 
     expect(prepared.labels?.map((l) => l.resourceName)).toEqual([
-      'UNCATEGORIZED',
-      'PLATSSTRUKTUR',
+      'REPORT_TYPE',
+      'DEVIATION',
+      'LOCATION',
       'VOF_ALDREBOENDE',
       'GEME',
       'BLA',
     ]);
+  });
+
+  it.each([
+    ['AVVIKELSE', 'DEVIATION'],
+    ['MISSFORHALLANDE', 'ABUSE'],
+  ])('sätter rapporttypen %s som kedjan rot → typ', (eventType, resourceName) => {
+    const { prepareErrandForApi } = renderPrepareErrand();
+
+    const prepared = prepareErrandForApi(errand([], 'GRUPP_VERKSAMHET', eventType), 'NEW');
+
+    expect(prepared.labels?.map((l) => l.resourceName)).toEqual(['REPORT_TYPE', resourceName]);
+  });
+
+  it('sätter ingen rapporttyp innan användaren valt en', () => {
+    const { prepareErrandForApi } = renderPrepareErrand();
+
+    const prepared = prepareErrandForApi(errand([], 'GRUPP_VERKSAMHET', ''), 'NEW');
+
+    expect(prepared.labels).toEqual([]);
   });
 
   it('lägger inte till någon platslabel när valet inte pekar ut en nod i strukturen', () => {
@@ -88,7 +130,7 @@ describe('usePrepareErrand', () => {
 
     const prepared = prepareErrandForApi(errand(facilityFormData({ orgName: 'Okänd enhet' })), 'NEW');
 
-    expect(prepared.labels?.map((l) => l.resourceName)).toEqual(['UNCATEGORIZED']);
+    expect(prepared.labels?.map((l) => l.resourceName)).toEqual(['REPORT_TYPE', 'DEVIATION']);
   });
 
   it('namnger ärendeägaren med plats och enhet när händelsen berör hela verksamheten', () => {

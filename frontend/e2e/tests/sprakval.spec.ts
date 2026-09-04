@@ -82,8 +82,12 @@ test.describe('Language switching', () => {
     test.use({ viewport: { width: 390, height: 844 } });
 
     test('changes language from the registration header without leaving the wizard', async ({ page }) => {
-      await selectRequiredErrandParameters(page);
+      // Rapportör är wizardens första steg; händelsetypen väljs först i steg 2.
+      // Brukarsteget tillkommer när händelsen berör en enskild brukare, så
+      // stegräknaren visar 5 steg först efter att valet är gjort.
+      await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
       await page.getByRole('button', { name: 'Nästa' }).click();
+      await selectRequiredErrandParameters(page);
       await expect(page.getByText('Steg 2/5')).toBeVisible();
 
       await switchLanguageTo(page, 'English');

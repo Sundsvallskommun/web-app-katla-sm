@@ -29,31 +29,31 @@ const label = (name: string, resourcePath: string, labels: LabelDTO[] = []): Lab
 
 const labelStructure: LabelDTO[] = [
   {
-    id: 'uncategorized',
-    classification: 'CATEGORY',
+    id: 'category',
+    classification: 'category-root',
     displayName: 'Kategori',
-    resourceName: 'UNCATEGORIZED',
-    resourcePath: 'UNCATEGORIZED',
+    resourceName: 'CATEGORY',
+    resourcePath: 'CATEGORY',
     labels: [],
   },
   {
-    id: 'platsstruktur',
-    classification: 'PLACE',
+    id: 'location',
+    classification: 'location-root',
     displayName: 'Platsstruktur',
-    resourceName: 'PLATSSTRUKTUR',
-    resourcePath: 'PLATSSTRUKTUR',
+    resourceName: 'LOCATION',
+    resourcePath: 'LOCATION',
     labels: [
-      label('VOF Äldreboende', 'PLATSSTRUKTUR/VOF_ALDREBOENDE', [
-        label('VOF ÄB Skottsundsbacken', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN', [
-          label('VOF ÄB Skottsundsbacken geme.', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME', [
-            label('Blå', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME/BLA'),
-            label('Gul', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME/GUL'),
-            label('Röd', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME/ROD'),
+      label('VOF Äldreboende', 'LOCATION/VOF_ALDREBOENDE', [
+        label('VOF ÄB Skottsundsbacken', 'LOCATION/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN', [
+          label('VOF ÄB Skottsundsbacken geme.', 'LOCATION/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME', [
+            label('Blå', 'LOCATION/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME/BLA'),
+            label('Gul', 'LOCATION/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME/GUL'),
+            label('Röd', 'LOCATION/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME/ROD'),
           ]),
         ]),
-        label('VOF ÄB Solhaga', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/SOLHAGA', [
-          label('VOF ÄB Solhaga geme.', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/SOLHAGA/GEME', [
-            label('Blå', 'PLATSSTRUKTUR/VOF_ALDREBOENDE/SOLHAGA/GEME/BLA'),
+        label('VOF ÄB Solhaga', 'LOCATION/VOF_ALDREBOENDE/SOLHAGA', [
+          label('VOF ÄB Solhaga geme.', 'LOCATION/VOF_ALDREBOENDE/SOLHAGA/GEME', [
+            label('Blå', 'LOCATION/VOF_ALDREBOENDE/SOLHAGA/GEME/BLA'),
           ]),
         ]),
       ]),
@@ -71,7 +71,7 @@ const requirePlace = (name: string, parentName?: string): PlaceNode => {
 
 describe('label-structure', () => {
   it('hittar platsstrukturens rot och ingen annan rotnod', () => {
-    expect(getPlaceStructureRoot(labelStructure)?.resourceName).toBe('PLATSSTRUKTUR');
+    expect(getPlaceStructureRoot(labelStructure)?.resourceName).toBe('LOCATION');
     expect(getPlaceStructureRoot([labelStructure[0]])).toBeUndefined();
   });
 
@@ -83,7 +83,7 @@ describe('label-structure', () => {
   it('slår upp en nod på namn oberoende av skiftläge och extra mellanslag', () => {
     const node = requirePlace('  vof äb  skottsundsbacken geme. ');
 
-    expect(node.label.resourcePath).toBe('PLATSSTRUKTUR/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME');
+    expect(node.label.resourcePath).toBe('LOCATION/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME');
     expect(hasSubPlaces(node)).toBe(true);
   });
 
@@ -94,7 +94,7 @@ describe('label-structure', () => {
   it('särskiljer sista nivån med hjälp av föräldern', () => {
     const node = requirePlace('Blå', 'VOF ÄB Skottsundsbacken geme.');
 
-    expect(node.label.resourcePath).toBe('PLATSSTRUKTUR/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME/BLA');
+    expect(node.label.resourcePath).toBe('LOCATION/VOF_ALDREBOENDE/SKOTTSUNDSBACKEN/GEME/BLA');
     expect(qualifiedPlaceName(node)).toBe('VOF ÄB Skottsundsbacken geme. Blå');
     expect(placeParentName(node)).toBe('VOF ÄB Skottsundsbacken geme.');
     expect(hasSubPlaces(node)).toBe(false);
@@ -114,20 +114,18 @@ describe('label-structure', () => {
   it('visar nivå 6 och 7 tillsammans och särskiljer samma avdelningsnamn genom anläggningen', () => {
     const structureWithDepartments: LabelDTO[] = [
       {
-        id: 'platsstruktur',
-        classification: 'PLACE',
+        id: 'location',
+        classification: 'location-root',
         displayName: 'Platsstruktur',
-        resourceName: 'PLATSSTRUKTUR',
-        resourcePath: 'PLATSSTRUKTUR',
+        resourceName: 'LOCATION',
+        resourcePath: 'LOCATION',
         labels: [
-          label('IAF Vuxenutbildningen', 'PLATSSTRUKTUR/VUX', [
-            label('IAF VUX SFI SO och Grl', 'PLATSSTRUKTUR/VUX/SFI', [
-              label('IAF VUX SFI egen extern och SO', 'PLATSSTRUKTUR/VUX/SFI/EGEN', [
-                label('Solhaga', 'PLATSSTRUKTUR/VUX/SFI/EGEN/SOLHAGA', [
-                  label('Blå', 'PLATSSTRUKTUR/VUX/SFI/EGEN/SOLHAGA/BLA'),
-                ]),
-                label('Skottsundsbacken', 'PLATSSTRUKTUR/VUX/SFI/EGEN/SKOTTSUNDSBACKEN', [
-                  label('Blå', 'PLATSSTRUKTUR/VUX/SFI/EGEN/SKOTTSUNDSBACKEN/BLA'),
+          label('IAF Vuxenutbildningen', 'LOCATION/VUX', [
+            label('IAF VUX SFI SO och Grl', 'LOCATION/VUX/SFI', [
+              label('IAF VUX SFI egen extern och SO', 'LOCATION/VUX/SFI/EGEN', [
+                label('Solhaga', 'LOCATION/VUX/SFI/EGEN/SOLHAGA', [label('Blå', 'LOCATION/VUX/SFI/EGEN/SOLHAGA/BLA')]),
+                label('Skottsundsbacken', 'LOCATION/VUX/SFI/EGEN/SKOTTSUNDSBACKEN', [
+                  label('Blå', 'LOCATION/VUX/SFI/EGEN/SKOTTSUNDSBACKEN/BLA'),
                 ]),
               ]),
             ]),
@@ -183,7 +181,7 @@ describe('label-structure', () => {
     const labels = toErrandLabels(node);
 
     expect(labels.map((l) => l.resourceName)).toEqual([
-      'PLATSSTRUKTUR',
+      'LOCATION',
       'VOF_ALDREBOENDE',
       'SKOTTSUNDSBACKEN',
       'GEME',
