@@ -59,17 +59,9 @@ redigera `.env.development.local` för behov. URLer, nycklar och cert behöver f
 - `CLIENT_KEY` och `CLIENT_SECRET` måste fyllas i för att APIerna ska fungera, du måste ha en applikation från WSO2-portalen som abonnerar på de microtjänster du anropar
 - `SAML_ENTRY_SSO` behöver pekas till en SAML IDP
 - `SAML_IDP_PUBLIC_CERT` ska stämma överens med IDPens cert
-- `SAML_PRIVATE_KEY` och `SAML_PUBLIC_KEY` lämnas tomma i mallen. Om din lokala SAML-anslutning behöver ett nyckelpar, generera ett eget från `backend/`:
+- `SAML_PRIVATE_KEY` och `SAML_PUBLIC_KEY` innehåller avsiktligt ett exempelnyckelpar för lokal utveckling, med ett självsignerat localhost-certifikat. Det behålls som lokal testdata och är ingen drifthemlighet. Använd egna nycklar och certifikat för en riktig IDP-anslutning. `cert/` och `.env.development.local` är git-ignorerade och uteslutna från Docker-byggets filer.
 
-  ```sh
-  mkdir -p cert
-  (umask 077 && openssl genrsa -out cert/local-saml-key.pem 4096)
-  openssl req -new -x509 -key cert/local-saml-key.pem -out cert/local-saml-cert.pem -sha256 -days 365 -subj '/CN=localhost'
-  ```
-
-  Kopiera nyckelfilens innehåll till `SAML_PRIVATE_KEY` och certifikatets innehåll till `SAML_PUBLIC_KEY`. Omslut varje värde med dubbla citattecken; dotenv stöder radbrytningar inom dessa. `cert/` och `.env.development.local` är git-ignorerade och uteslutna från Docker-byggets filer. Registrera rätt certifikat hos din IDP när det behövs. Driftmiljöer ska ha egna nycklar och certifikat.
-
-Vid uppgradering: kontrollera driftmiljöns `SECRET_KEY` före deployment. Värden kortare än 32 tecken måste ersättas för att servern ska starta; byte av sessionshemlighet loggar ut befintliga sessioner. Den tidigare exempelhemligheten och privata nyckeln är offentliga. Om någon miljö har återanvänt dem behöver de ersättas där, inklusive registrerat SAML-certifikat. Enbart ändringen av exempelfilen roterar inga driftvärden.
+Vid uppgradering: kontrollera driftmiljöns `SECRET_KEY` före deployment. Värden kortare än 32 tecken måste ersättas för att servern ska starta; byte av sessionshemlighet loggar ut befintliga sessioner. Om någon miljö har återanvänt den tidigare exempelhemligheten behöver den ersättas där. Enbart ändringen av exempelfilen roterar inga driftvärden.
 
 ## Tester
 

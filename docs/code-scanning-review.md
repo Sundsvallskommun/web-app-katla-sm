@@ -7,7 +7,7 @@ one is from CodeQL. Alert numbers below refer to
 
 | Alerts | Disposition and owner |
 | --- | --- |
-| #32 | Remove the working shared SAML private key and its matching certificate from `backend/.env.example.local`. The README owns instructions for generating a separate local key pair. Check whether an environment reused the published key and rotate it there before closing that exposure. An expired localhost certificate does not prove the private key is unused. |
+| #32 | Intentionally retain the example SAML private key and matching self-signed localhost certificate in `backend/.env.example.local`, as confirmed by the maintainer. An inline comment and the README identify the pair as local development test data, not a deployment secret. Real IdP connections use their own key pairs. Classify this alert as used in tests. |
 | #33 | The scanner calls this an Alibaba credential, but it is the example `SECRET_KEY` used by Express sessions. Remove the shared value, document local generation and validate the session secret in the existing backend environment validator. Check environments for reuse rather than treating the misclassification as proof of safety. |
 | #34 | The RHEL workflow restricts both the initial Node download and redirects to HTTPS. |
 | #35 | Installing the pinned Yarn release in the RHEL workflow disables npm lifecycle scripts. |
@@ -23,11 +23,6 @@ characters; `openssl rand -hex 32` supplies 32 random bytes. The old 30-characte
 example and empty/placeholder values are rejected by backend startup validation.
 Changing a deployed session secret invalidates existing sessions. Keep real
 credentials in the deployment's secret configuration, outside the repository.
-
-If the published SAML key was registered with a real identity provider, replace
-the key and certificate together with that provider and verify login and logout.
-Do not assume removing the example from the latest tree revokes copies in git
-history or deployed environments.
 
 For #31, confirm `NODE_ENV=production`, `ENVIRONMENT` is not `LOCAL`, and an actual
 login response through the deployed proxy sets `Secure` on the session cookie.
