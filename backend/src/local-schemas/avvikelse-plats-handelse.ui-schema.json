@@ -15,6 +15,9 @@
       "ui:widget": "date",
       "ui:title": "När upptäcktes händelsen?",
       "ui:placeholder": "Välj datum",
+      "ui:options": {
+        "maxDate": "today"
+      },
       "x-i18n": {
         "en": {
           "ui:title": "When was the event discovered?",
@@ -25,23 +28,26 @@
     "eventTime": {
       "ui:widget": "time",
       "ui:title": "Vilken tid upptäcktes händelsen?",
-      "ui:description": "Ange ungefärlig tid då händelsen upptäcktes?",
+      "ui:description": "Ange ungefärlig tid då händelsen upptäcktes.",
       "x-i18n": {
         "en": {
           "ui:title": "What time was the event discovered?",
-          "ui:description": "State the approximate time the event was discovered?"
+          "ui:description": "Enter the approximate time when the event was discovered."
         }
       }
     },
     "occurredDate": {
       "ui:widget": "date",
       "ui:title": "När inträffade händelsen?",
-      "ui:description": "Lämna tomt om du inte vet den här uppgiften",
+      "ui:description": "Lämna fältet tomt om du inte vet när händelsen inträffade.",
       "ui:placeholder": "Välj datum",
+      "ui:options": {
+        "maxDate": "today"
+      },
       "x-i18n": {
         "en": {
           "ui:title": "When did the event occur?",
-          "ui:description": "Leave blank if you do not know.",
+          "ui:description": "Leave the field blank if you do not know the date when the event occurred.",
           "ui:placeholder": "Select a date"
         }
       }
@@ -49,11 +55,11 @@
     "occurredTime": {
       "ui:widget": "time",
       "ui:title": "Vilken tid inträffade händelsen?",
-      "ui:description": "Lämna tomt om du inte vet den här uppgiften",
+      "ui:description": "Lämna fältet tomt om du inte vet vilken tid händelsen inträffade.",
       "x-i18n": {
         "en": {
           "ui:title": "What time did the event occur?",
-          "ui:description": "Leave blank if you do not know."
+          "ui:description": "Leave the field blank if you do not know the time when the event occurred."
         }
       }
     },

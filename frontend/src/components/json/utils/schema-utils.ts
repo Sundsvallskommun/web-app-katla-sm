@@ -4,6 +4,7 @@ import type { ErrandFormDataItem } from '@interfaces/errand-form';
 import type { RJSFSchema, RJSFValidationError, UiSchema } from '@rjsf/utils';
 import type { TFunction } from 'i18next';
 
+import { applyDateBounds } from '../schema/date-bounds';
 import { getJsonValueSchemaValidator } from '../schema/form-schema-validator';
 import { createJsonErrorTransformer, fieldTitleFromSchema } from './schema-form-error-handling';
 
@@ -370,11 +371,12 @@ export async function collectErrandFormDataErrors(
 
     try {
       const { schema, uiSchema, schemaId } = await loadFormSchemaForEntry(entry.schemaName, entry.schemaId, t, locale);
+      const boundedSchema = applyDateBounds(schema, uiSchema);
       const validator = getJsonValueSchemaValidator(schemaId);
-      const { errors: validationErrors } = validator.validateFormData(parsedData.value, schema);
+      const { errors: validationErrors } = validator.validateFormData(parsedData.value, boundedSchema);
 
       if (validationErrors.length > 0) {
-        errors.push(...schemaFieldValidationErrors(schema, uiSchema, entry.schemaName, validationErrors, t));
+        errors.push(...schemaFieldValidationErrors(boundedSchema, uiSchema, entry.schemaName, validationErrors, t));
       }
     } catch (error: unknown) {
       errors.push({

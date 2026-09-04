@@ -4,6 +4,9 @@ import type { TFunction } from 'i18next';
 interface LimitParams {
   limit: number;
 }
+interface StringLimitParams {
+  limit: string;
+}
 interface FormatParams {
   format: string;
 }
@@ -16,6 +19,13 @@ const hasLimit = (e: RJSFValidationError): e is Omit<RJSFValidationError, 'param
 const hasFormat = (e: RJSFValidationError): e is Omit<RJSFValidationError, 'params'> & { params: FormatParams } => {
   const p = e.params as unknown;
   return !!p && typeof (p as FormatParams).format === 'string';
+};
+
+const hasStringLimit = (
+  e: RJSFValidationError
+): e is Omit<RJSFValidationError, 'params'> & { params: StringLimitParams } => {
+  const p = e.params as unknown;
+  return !!p && typeof (p as StringLimitParams).limit === 'string';
 };
 
 /**
@@ -143,6 +153,10 @@ export function createJsonErrorTransformer(schema: RJSFSchema, t: TFunction) {
 
       if (e.name === 'pattern') {
         return { ...e, message: t(validationKey('pattern')) };
+      }
+
+      if (e.name === 'formatMaximum' && hasStringLimit(e)) {
+        return { ...e, message: t(validationKey('date_maximum'), { limit: e.params.limit }) };
       }
 
       if (e.name === 'format' && hasFormat(e)) {

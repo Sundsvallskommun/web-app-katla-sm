@@ -43,6 +43,29 @@ describe('formSchemaValidator', () => {
     expect(formSchemaValidator.validateFormData({ description: '<b>abc</b>' }, schema).errors).toEqual([]);
   });
 
+  it('enforces a maximum for date-formatted strings', () => {
+    const validator = getFormSchemaValidator('date-maximum-schema-v1');
+    const boundedDateSchema = Object.assign(
+      { type: 'string' as const, format: 'date' },
+      { formatMaximum: '2026-09-02' }
+    );
+    const schema: RJSFSchema = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      type: 'object',
+      properties: {
+        eventDate: boundedDateSchema,
+      },
+    };
+
+    expect(validator.validateFormData({ eventDate: '2026-09-01' }, schema).errors).toEqual([]);
+    expect(validator.validateFormData({ eventDate: '2026-09-02' }, schema).errors).toEqual([]);
+    const futureDateErrors = validator.validateFormData({ eventDate: '2026-09-03' }, schema).errors;
+    const errorParams: unknown = futureDateErrors[0]?.params;
+
+    expect(futureDateErrors[0]?.name).toBe('formatMaximum');
+    expect(errorParams).toEqual(expect.objectContaining({ limit: '2026-09-02' }));
+  });
+
   it.each([
     ['string first', 'same-document-id-string-first-v1', 'same-document-id-string-first-v2', true],
     ['number first', 'same-document-id-number-first-v1', 'same-document-id-number-first-v2', false],

@@ -11,6 +11,7 @@
   "email": "Enter a valid email address",
   "url": "Enter a valid link (URL)",
   "date": "Enter a date in a valid format (YYYY-MM-DD)",
+  "date_maximum": "The date must not be later than {{limit}}",
   "date_time": "Enter date and time in a valid format",
   "format": "The value does not match the format \"{{format}}\"",
   "stakeholder": {
