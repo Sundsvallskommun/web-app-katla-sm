@@ -34,7 +34,10 @@ jobs:
           cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --network-timeout 1000000
+        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
+
+      - name: Apply reviewed frontend patches
+        run: yarn run postinstall
 
       # src/proxy.ts importerar genererade middleware-envs.js, som behövs för typmedveten lint
       - name: Generate middleware envs
@@ -74,7 +77,7 @@ jobs:
         run: node .github/scripts/verify-node-runtime-contract.mjs
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --network-timeout 1000000
+        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
 
       - name: Lint (strict)
         run: yarn lint:strict
@@ -119,7 +122,10 @@ jobs:
           cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --network-timeout 1000000
+        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
+
+      - name: Apply reviewed frontend patches
+        run: yarn run postinstall
 
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps chromium
