@@ -31,8 +31,8 @@
 @supports (font-variation-settings: 'wght') {
     @font-face {
         font-family: 'Raleway';
-        src: url('./Raleway-VariableFont_wght.ttf') format('truetype supports variations') tech('variations'),
-             url('./Raleway-VariableFont_wght.ttf') format('truetype-variations');
+        src: url('./Raleway-VariableFont_wght.ttf') format('truetype');
+        font-display: swap;
         font-weight: 100 1000;
         font-stretch: 25% 151%;
     }
@@ -42,6 +42,6 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-h1, h2, h3, h4, h4, h6, .btn, .header-font {
+h1, h2, h3, h4, h5, h6, .btn, .header-font {
     font-family: 'Raleway', sans-serif;
 }

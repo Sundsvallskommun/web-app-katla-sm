@@ -33,6 +33,8 @@ Automatiserade tester betraktas därför som regressionsskydd, inte som ensam ko
 
 Slutkontroll i denna branch: **290 godkända enhetstester i 51 filer**, sex redan överhoppade tester, **62/62 Chromium-scenarier**, typkontroll för app/unit/E2E, lint och produktionsbygge godkända. Tester med väntande eller misslyckad meddelandesändning skyddar både låst text/bilagor och bibehållen text vid nytt försök. Inga riktiga ärenden skickas av testerna. De äldre mätresultaten nedan avser sina angivna historiska körningar.
 
+Vid CI-omtest rättades även ett öppningsrace: viewport-hooken uppdaterar layouten före uppritning så att en öppnad notifieringspanel inte ersätts vid första mobilrenderingen. Raleways variabla font använder en giltig TrueType-deklaration och `font-display: swap`. Alla 62 browserfall passerade även med CI:s tomma basstig.
+
 ## Ursprunglig kontroll och åtgärder 2026-09-04
 
 ### Miljö och avgränsning
