@@ -98,6 +98,12 @@ Integrationsriskerna finns främst i externa schema-id:n, sökbara kontroller, r
 
 Verklig SSO, fullständig skärmläsaranvändning, alla schema-/ärendevarianter och andra webbläsare än den dokumenterade Chromium-körningen är inte verifierade här. Axe-resultat med status `incomplete` behöver bedömas separat. Automatiska tester och stickprov ger inget heltäckande intyg om WCAG-överensstämmelse.
 
+### Öppen fråga: lokal minnesincident
+
+Efter den lokala valideringen rapporterade macOS en minnesincident den 6 september kl. 10:19. Jetsam-rapporten innehåller 2 545 unika Node-processer i Codex processgrupp, med sammanlagt cirka 101 GiB rapporterat minnesfotavtryck inklusive komprimerat minne. Detta är onormalt och pekar på ett skenande antal processer. Rapporten saknar fullständiga kommandoargument och bevisar inte vilket kommando eller bibliotek som utlöste det. Den ska inte tolkas som bekräftad minnesläcka i Katlas webbläsargränssnitt.
+
+De lokala test- och byggprocesserna är avslutade. Inga ytterligare lokala tunga körningar har startats efter incidenten. Byggloggen visar ett avslutat bygge, men den lokala resursincidenten behöver utredas innan denna draft betraktas som färdig för merge. Vid nästa reproduktion behövs en isolerad miljö med begränsat antal processer och minne samt loggning av processernas föräldrar och kommandoargument.
+
 Ingen driftsättning eller datamigrering har gjorts. Worktreen gör det möjligt att fortsätta i originalprojektet utan att ta in ändringen. För teknisk återgång används WCAG-branchen utan migreringen. Efter en framtida merge återställs migreringens commit genom en granskad revert-commit. Originalkatalogen och användarens parallella ändringar ska inte återställas som del av återgången.
 
 Appen startas med `PORT=3107 yarn dev` i worktreens `frontend/` och använder dess lokala miljökonfiguration. Interaktiv appanvändning kräver som tidigare backend/SSO. [Bildgalleriet](astryx-preview.html) visar appen med testdata och behöver inga externa tjänster. Aktuella granskningsartefakter finns under `docs/astryx-screenshots/` och avser den fullständiga migreringen i denna commit.
