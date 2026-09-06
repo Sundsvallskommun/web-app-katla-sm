@@ -22,8 +22,13 @@ const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? '';
  * PageHeader sätter själv py-2 på .sk-header och py-4 på innehållsraden, så designens lodräta
  * mått måste ta över båda.
  */
-const HEADER_CLASS =
-  'bg-inverted-background-100 border-b-1 border-inverted-divider shadow-none px-24 !py-16 [&_.sk-header-top-content]:!py-0';
+const HEADER_CLASS = [
+  'bg-inverted-background-100 border-b-1 border-inverted-divider shadow-none px-16 md:px-24 !py-16',
+  // Varumärke/status och kontroller får varsin hel rad på smal skärm.
+  // Det gemensamma sidhuvudet äger layouten; ingen navigation eller ärendeinformation döljs.
+  '[&_.sk-header-top-content]:!py-0 [&_.sk-header-top-content]:flex-col [&_.sk-header-top-content]:items-stretch [&_.sk-header-top-content]:gap-12',
+  'md:[&_.sk-header-top-content]:flex-row md:[&_.sk-header-top-content]:items-center md:[&_.sk-header-top-content]:gap-20',
+].join(' ');
 
 interface AppHeaderProps {
   /** Andra raden i varumärkesblocket: appens undertitel, eller sidans sammanhang. */
@@ -61,9 +66,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   // avdelare mellan symbol och text som designen inte har. Blocket byggs därför av symbolen
   // och de två textraderna, i designens mått.
   const brandBlock = (
-    <div className="flex h-[4.6rem] items-center gap-6">
-      <Logo variant="symbol" inverted className="h-[4.3rem]" />
-      <div className="flex flex-col justify-center">
+    <div className="flex min-h-[4.6rem] min-w-0 items-center gap-6">
+      <Logo variant="symbol" inverted className="h-[4.3rem] shrink-0" />
+      <div className="flex min-w-0 flex-col justify-center break-words">
         <span className="font-header text-inverted-dark-primary text-h4-md font-bold leading-[2.8rem]">{APP_NAME}</span>
         <span className="text-inverted-dark-secondary text-small leading-[1.8rem]">{subtitle}</span>
       </div>
@@ -86,9 +91,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         <PageHeader
           className={HEADER_CLASS}
           logo={
-            <div className="flex items-center gap-12 md:gap-16">
+            <div className="flex min-w-0 flex-wrap items-center gap-12 md:gap-16">
               {logoHref ?
-                <a href={logoHref} title={t('layout:controls.go_to_start', { app: APP_NAME })}>
+                <a href={logoHref} title={t('layout:controls.go_to_start', { app: APP_NAME })} className="min-w-0">
                   {brandBlock}
                 </a>
               : brandBlock}
@@ -122,7 +127,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </div>
           }
           mobileMenu={
-            <div className="flex items-center gap-8">
+            <div className="flex flex-wrap items-center justify-end gap-8">
               {notificationsBell}
               <LanguageSwitchButton inverted onBeforeSwitch={onBeforeLanguageSwitch} />
               {mobileMenu}

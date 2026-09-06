@@ -5,13 +5,14 @@ import {
   jsonParametersToErrandFormData,
   validateErrandFormData,
 } from '@components/json/utils/schema-utils';
+import { ModalLayer } from '@components/modal-layer/modal-layer.component';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
@@ -32,6 +33,9 @@ export const WizardBottomBar: React.FC = () => {
   const { currentStep, goNext, goBack, setStepErrors } = useWizardStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
+  const submitDialogId = useId();
+  const cancelSubmitButtonRef = useRef<HTMLButtonElement>(null);
+  const submitTitle = t('errand-information:submit_confirm.title');
   const { prepareErrandForApi, getFacilityStatus } = usePrepareErrand();
 
   const steps = useActiveWizardSteps();
@@ -215,13 +219,27 @@ export const WizardBottomBar: React.FC = () => {
       />
 
       {/* Samma besked som på stor skärm, så att frågan lyder likadant var man än fyller i. */}
-      <Dialog show={isOpen}>
+      <ModalLayer
+        id={submitDialogId}
+        variant="dialog"
+        show={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+        }}
+        initialFocus={cancelSubmitButtonRef}
+        label={submitTitle}
+      >
+        <div className="sk-modal-dialog-header">
+          <div className="sk-modal-dialog-header-title">
+            <h2 className="text-h4-sm text-dark-primary">{submitTitle}</h2>
+          </div>
+        </div>
         <Dialog.Content className="flex flex-col items-start gap-12 text-left">
-          <h2 className="text-h4-sm text-dark-primary">{t('errand-information:submit_confirm.title')}</h2>
           <p>{t('errand-information:submit_confirm.question')}</p>
         </Dialog.Content>
         <Dialog.Buttons className="flex-col items-start gap-16 sm:flex-row sm:items-center sm:justify-start">
           <Button
+            ref={cancelSubmitButtonRef}
             variant="secondary"
             onClick={() => {
               setIsOpen(false);
@@ -240,7 +258,7 @@ export const WizardBottomBar: React.FC = () => {
             {t('errand-information:submit_confirm.submit')}
           </Button>
         </Dialog.Buttons>
-      </Dialog>
+      </ModalLayer>
     </>
   );
 };

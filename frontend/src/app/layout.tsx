@@ -1,4 +1,5 @@
 import '@styles/tailwind.scss';
+import '../../public/fonts/fonts.css';
 
 import AppLayout from '@layouts/app/app-layout.component';
 import { headers } from 'next/headers';

@@ -9,6 +9,7 @@
   "load_error": "Meddelandena kunde inte hämtas.",
   "required": "Skriv ett meddelande innan du skickar.",
   "character_limit": "Max {{limit}} tecken.",
+  "character_count": "{{count}} av {{limit}} tecken använda.",
   "too_long": "Meddelandet får vara högst {{limit}} tecken.",
   "max_file_size": "Största filstorlek: {{size}} MB.",
   "loading": "Hämtar meddelanden",
