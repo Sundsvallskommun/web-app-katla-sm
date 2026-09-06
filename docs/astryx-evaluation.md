@@ -70,7 +70,9 @@ reset → app-utilities → astryx-base → astryx-theme → katla
 
 Utveckling, bygge, testbygge och analys använder nu Webpack via paketskripten, ärvt från WCAG-branchen. `build:webpack` går genom ordinarie `build` så att även temakontrollen körs. Beroendeversionerna behålls. Detta är en tillfällig begränsning av den misstänkta Turbopack-vägen; det bevisar inte grundorsaken till minnesincidenten.
 
-CI:s rena checkout visade att typmedveten lint behövde Nexts befintliga globala CSS-modultyper innan `next-env.d.ts` hade genererats. Lintkonfigurationen refererar nu direkt till `next`, liksom enhetstesternas konfiguration redan gör. Browserprovet för misslyckad registrering riktar sin synlighetskontroll till den synliga toasten; skärmläsarens separata live-region räknas inte som en andra toast.
+CI:s rena checkout visade att typmedveten lint och appens typkontroll behövde Nexts befintliga globala CSS-modultyper innan `next-env.d.ts` hade genererats. App- och lintkonfigurationen refererar nu direkt till `next`, liksom enhetstesternas konfiguration redan gör. Browserprovet för misslyckad registrering riktar sin synlighetskontroll till den synliga toasten; skärmläsarens separata live-region räknas inte som en andra toast.
+
+CI identifierade även en instabil första öppning av notifieringspanelen på mobil. Notifieringsknappen kunde vara aktiv i serverns desktopvy innan JavaScript kopplats på och mobilvyn ersatt den. Knappen aktiveras nu först efter hydrering. Rättningen och kontraktstestet för serverrendering, hydrering och första klick delas med WCAG-branchen; Astryx använder sin vanliga `isDisabled`-prop. De befintliga browserfallen kontrollerar fortsatt fokus och modalitet på båda skärmstorlekarna.
 
 ## Validering
 
