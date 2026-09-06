@@ -1,5 +1,8 @@
+'use client';
+
 import { Badge, Button } from '@sk-web-gui/react';
 import { Bell } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from 'src/stores/notification-store';
 
@@ -11,6 +14,12 @@ interface NotificationsBellProps {
 }
 
 export const NotificationsBell = ({ expanded, toggleShow, inverted = false }: NotificationsBellProps) => {
+  const [isReady, setIsReady] = useState(false);
+  // Server HTML can appear before hydration replaces the desktop header on mobile.
+  // Do not accept a click until this button has its event handler and final layout.
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
   const { t } = useTranslation();
   const { activeNotifications } = useNotificationStore();
   const notificationCount = activeNotifications.length;
@@ -25,6 +34,7 @@ export const NotificationsBell = ({ expanded, toggleShow, inverted = false }: No
       aria-label={accessibleName}
       aria-controls={expanded ? 'notifications-panel' : undefined}
       aria-expanded={expanded}
+      disabled={!isReady}
       onClick={toggleShow}
       className="mx-md"
       inverted={inverted}

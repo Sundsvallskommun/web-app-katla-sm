@@ -39,6 +39,8 @@ Webpack är nu uttryckligt standardval i frontendens utvecklings-, bygg-, testby
 
 Webpack-bygget identifierade även saknade klientgränser i de tre presentationskomponenterna `EntryLayout`, `CenterDiv` och `CardElevated` på inloggningssidan. De markerar nu uttryckligen att SK-biblioteket ska laddas i klientgrafen; dess samlade exporter innehåller formulärhooks som inte kan användas som React-serverkod. Detta ändrar inte sidans funktioner eller utseende.
 
+Notifieringsknappen är inaktiv i servergenererad HTML och aktiveras efter hydrering, när händelsehanteraren och viewport-layouten är på plats. Detta skyddar första klicket från att gå förlorat medan mobilens sidhuvud ersätter serverns desktopvy. Ett kontraktstest granskar serverrenderingen, hydrerar samma knapp och verifierar att första klicket fungerar; de befintliga browserfallen granskar sedan dialogens modalitet och fokus på mobil och desktop.
+
 ## Ursprunglig kontroll och åtgärder 2026-09-04
 
 ### Miljö och avgränsning
