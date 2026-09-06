@@ -57,7 +57,8 @@ export default defineConfig({
     // Då kan en dev-kompilering inte starta om servern mitt under navigationstesterna.
     command: process.env.CI ? 'node .next/standalone/server.js' : 'yarn dev',
     env: { HOSTNAME: '127.0.0.1', PORT },
-    url: `http://localhost:${PORT}${BASE_PATH}`,
+    url: `http://127.0.0.1:${PORT}${BASE_PATH}/login`,
+    stdout: 'pipe',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
