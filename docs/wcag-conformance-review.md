@@ -37,6 +37,8 @@ Vid CI-omtest rättades även ett öppningsrace: viewport-hooken uppdaterar layo
 
 Webpack är nu uttryckligt standardval i frontendens utvecklings-, bygg-, testbygg- och analyskommandon efter den lokala minnesincidenten. Beroenden och låsfil är oförändrade; paketmanifestets skript har ändrats. Den tidigare valideringen ovan avser Turbopack. Webpack verifieras separat i GitHub CI utan nya tunga lokala körningar.
 
+Webpack-bygget identifierade även saknade klientgränser i de tre presentationskomponenterna `EntryLayout`, `CenterDiv` och `CardElevated` på inloggningssidan. De markerar nu uttryckligen att SK-biblioteket ska laddas i klientgrafen; dess samlade exporter innehåller formulärhooks som inte kan användas som React-serverkod. Detta ändrar inte sidans funktioner eller utseende.
+
 ## Ursprunglig kontroll och åtgärder 2026-09-04
 
 ### Miljö och avgränsning

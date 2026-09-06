@@ -1,3 +1,5 @@
+'use client';
+
 import { LanguageSwitchButton } from '@components/misc/language-switch-button.component';
 import { cx, Logo } from '@sk-web-gui/react';
 
