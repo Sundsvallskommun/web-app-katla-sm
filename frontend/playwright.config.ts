@@ -56,8 +56,10 @@ export default defineConfig({
     // CI återanvänder det färdiga bygget och dess statiska filer från föregående steg.
     // Då kan en dev-kompilering inte starta om servern mitt under navigationstesterna.
     command: process.env.CI ? 'node .next/standalone/server.js' : 'yarn dev',
-    env: { HOSTNAME: '127.0.0.1', PORT },
-    url: `http://127.0.0.1:${PORT}${BASE_PATH}/login`,
+    // Språkroutern normaliserar loopback till localhost. Samma värd behövs här
+    // så att en intern rewrite inte blir en extern proxy tillbaka till servern.
+    env: { HOSTNAME: 'localhost', PORT },
+    url: `http://localhost:${PORT}${BASE_PATH}/login`,
     stdout: 'pipe',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
