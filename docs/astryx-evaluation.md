@@ -66,9 +66,15 @@ reset → app-utilities → astryx-base → astryx-theme → katla
 
 `app-utilities` ligger före bibliotekets komponentlager, så utility-regler skriver inte över Astryx egna komponentmått. Astryx äger reset; Tailwinds preflight är avstängt. [katla.css](../frontend/src/styles/katla.css) innehåller grundläggande dokumentfärg, typografi, fokus och reducerad rörelse. `app-shell.module.css` hanterar skalets viewport, scroll, safe area och den befintliga kommunlogotypen. Schemafältens och Quill-redigerarens avgränsade CSS finns nära respektive integration. Handskriven CSS/SCSS under `frontend/src/`, exklusive `theme/generated`, har minskat från 717 till 206 rader jämfört med `0cfb2c2` (511 rader netto, cirka 71 procent). Detta mått omfattar de kvarvarande schema- och Quill-stilarna; genererad temakod och beroendenas CSS ingår inte.
 
+## Webpack som standard
+
+Utveckling, bygge, testbygge och analys använder nu Webpack via paketskripten, ärvt från WCAG-branchen. `build:webpack` går genom ordinarie `build` så att även temakontrollen körs. Beroendeversionerna behålls. Detta är en tillfällig begränsning av den misstänkta Turbopack-vägen; det bevisar inte grundorsaken till minnesincidenten.
+
+CI:s rena checkout visade att typmedveten lint behövde Nexts befintliga globala CSS-modultyper innan `next-env.d.ts` hade genererats. Lintkonfigurationen refererar nu direkt till `next`, liksom enhetstesternas konfiguration redan gör. Browserprovet för misslyckad registrering riktar sin synlighetskontroll till den synliga toasten; skärmläsarens separata live-region räknas inte som en andra toast.
+
 ## Validering
 
-Verifierat 2026-09-06 på migreringen ovanpå den separata WCAG-branchen. GitHub CI kör dessutom branchens egna kontroller; lokal evidens redovisas här.
+Följande lokala resultat avser Turbopack-versionen före bytet av byggverktyg den 6 september. Webpack och rättningarna för ren CI-checkout verifieras i GitHub CI. Inga nya tunga lokala körningar görs efter minnesincidenten.
 
 | Kontroll | Resultat |
 | --- | --- |

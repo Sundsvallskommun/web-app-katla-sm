@@ -160,7 +160,7 @@ test.describe('Register new errand page', () => {
     await expect(page).toHaveURL(/\/arende\/registrera$/);
     await expect(page.getByTestId('event-type-deviation').getByRole('radio')).toBeChecked();
     await expect(page.getByTestId('event-concerns-individual').getByRole('radio')).toBeChecked();
-    await expect(page.getByText('Något gick fel när ärendet sparades')).toBeVisible();
+    await expect(page.locator('.astryx-toast').filter({ hasText: 'Något gick fel när ärendet sparades' })).toBeVisible();
     await expect(page.getByText('Ärendet skickades in')).toHaveCount(0);
   });
 
