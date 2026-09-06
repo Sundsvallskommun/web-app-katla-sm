@@ -1,6 +1,9 @@
+'use client';
+
 import { Badge } from '@astryxdesign/core/Badge';
 import { Button } from '@astryxdesign/core/Button';
 import { Bell } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from 'src/stores/notification-store';
 
@@ -10,6 +13,12 @@ interface NotificationsBellProps {
 }
 
 export const NotificationsBell = ({ expanded, toggleShow }: NotificationsBellProps) => {
+  const [isReady, setIsReady] = useState(false);
+  // Server HTML can appear before hydration replaces the desktop header on mobile.
+  // Do not accept a click until this button has its event handler and final layout.
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
   const { t } = useTranslation();
   const notificationCount = useNotificationStore((state) => state.activeNotifications.length);
   const accessibleName =
@@ -23,6 +32,7 @@ export const NotificationsBell = ({ expanded, toggleShow }: NotificationsBellPro
         label={accessibleName}
         aria-controls={expanded ? 'notifications-panel' : undefined}
         aria-expanded={expanded}
+        isDisabled={!isReady}
         aria-haspopup="dialog"
         onClick={toggleShow}
         variant="ghost"
