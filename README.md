@@ -84,14 +84,14 @@ E2e-tester körs med [Playwright](https://playwright.dev). Första gången behö
 yarn playwright install chromium
 ```
 
-Playwright startar en dev-server via `yarn dev`, alternativt återanvänder en redan startad lokal dev-server. Produktionsbygget verifieras separat:
+Lokalt startar Playwright en dev-server via `yarn dev`, alternativt återanvänder en redan startad lokal dev-server. I GitHub CI körs testerna mot det färdiga produktionsbyggets standalone-server; arbetsflödet kopierar dess `public` och `.next/static` före start. Därmed görs ingen ny kompilering under browserkörningen.
 
 ```
-yarn build && yarn e2e     # bygg och kör headless
+yarn e2e                  # kör headless lokalt
 yarn e2e:ui                # interaktivt UI-läge
 ```
 
-Obs: e2e-testerna förutsätter att `NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE=true` och `NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO=false` är satta i `.env` vid byggtillfället (se `.github/workflows/ci.yml`).
+Obs: e2e-testerna förutsätter att `NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE=true` och `NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO=false` är satta i `.env` lokalt och vid byggtillfället i CI (se `.github/workflows/ci.yml`).
 
 ### Backend (`cd backend`)
 

@@ -41,6 +41,8 @@ Webpack-bygget identifierade även saknade klientgränser i de tre presentations
 
 Notifieringsknappen är inaktiv i servergenererad HTML och aktiveras efter hydrering, när händelsehanteraren och viewport-layouten är på plats. Detta skyddar första klicket från att gå förlorat medan mobilens sidhuvud ersätter serverns desktopvy. Ett kontraktstest granskar serverrenderingen, hydrerar samma knapp och verifierar att första klicket fungerar; de befintliga browserfallen granskar sedan dialogens modalitet och fokus på mobil och desktop.
 
+Den första fullständiga CI-körningen med Webpack-devserver nådde utvecklingsserverns minnesgräns och startade om den under navigeringstester. CI:s browsersteg återanvänder därför det redan byggda standalone-paketet med dess statiska filer. Testfall, timeoutgränser och antal workers behålls. Lokala browserkörningar använder fortsatt devservern. Denna observerade omstart i CI är skild från den tidigare lokala processincidenten och fastställer inte dess grundorsak.
+
 ## Ursprunglig kontroll och åtgärder 2026-09-04
 
 ### Miljö och avgränsning
