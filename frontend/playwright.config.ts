@@ -30,11 +30,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  // Sviten kör mot en enda dev-server som kompilerar on demand. Parallella
-  // workers får den att kompilera flera routes samtidigt, och de tyngsta
-  // registrera-scenarierna föll då ungefär var tredje körning utan att koden
-  // hade ändrats. En worker kostar ~9 sekunder och gör lokala körningar
-  // deterministiska och identiska med CI.
+  // En worker begränsar minnestrycket och håller samma testordning lokalt och i CI.
   workers: 1,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'on-failure' }]],
   timeout: 60_000,
@@ -57,9 +53,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    // Produktionsbygget använder Nexts standalone-output, som inte kan startas med `next start`.
-    // CI verifierar bygget separat; Playwright använder den befintliga dev-servern som testharness.
-    command: 'yarn dev',
+    // CI återanvänder det färdiga bygget och dess statiska filer från föregående steg.
+    // Då kan en dev-kompilering inte starta om servern mitt under navigationstesterna.
+    command: process.env.CI ? 'node .next/standalone/server.js' : 'yarn dev',
+    env: { HOSTNAME: '127.0.0.1', PORT },
     url: `http://localhost:${PORT}${BASE_PATH}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
