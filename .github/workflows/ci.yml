@@ -135,8 +135,7 @@ jobs:
       - name: Run Playwright tests
         run: yarn e2e
         env:
-          DEBUG: pw:webserver,next:router-server:*,next:start-server
-          NODE_DEBUG: module
+          DEBUG: pw:webserver
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7
