@@ -1,79 +1,59 @@
-import { SortMode, Table } from '@sk-web-gui/react';
+import { Button } from '@astryxdesign/core/Button';
+import { TableHeader, TableHeaderCell, TableRow } from '@astryxdesign/core/Table';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSortStore } from 'src/stores/sort-store';
 
 export const ErrandTableHeader: React.FC = () => {
-  const sortOrders: Record<string, 'ascending' | 'descending'> = {
-    asc: 'ascending',
-    desc: 'descending',
-  };
-
   const { t } = useTranslation();
   const { sortColumn, sortOrder, setSort } = useSortStore();
-
-  // Kolumnordningen följer designen. Sista kolumnen bär pilen som öppnar ärendet och har
-  // därför ingen synlig rubrik – bara en för uppläsning.
   const headers = [
-    {
-      label: t('errand-table.header.classificationType'),
-      property: 'classification.type',
-      sortable: true,
-      screenReaderOnly: false,
-      sticky: true,
-    },
-    {
-      label: t('errand-table.header.status'),
-      property: 'status',
-      sortable: true,
-      screenReaderOnly: false,
-      sticky: false,
-    },
-    {
-      label: t('errand-table.header.errandNumber'),
-      property: 'errandNumber',
-      sortable: true,
-      screenReaderOnly: false,
-      sticky: false,
-    },
-    {
-      label: t('errand-table.header.created'),
-      property: 'created',
-      sortable: true,
-      screenReaderOnly: false,
-      sticky: false,
-    },
-    {
-      label: t('errand-table.header.open'),
-      property: 'open',
-      sortable: false,
-      screenReaderOnly: true,
-      sticky: false,
-    },
+    { label: t('errand-table.header.classificationType'), property: 'classification.type' },
+    { label: t('errand-table.header.status'), property: 'status' },
+    { label: t('errand-table.header.errandNumber'), property: 'errandNumber' },
+    { label: t('errand-table.header.created'), property: 'created' },
   ];
 
   return (
-    <Table.Header>
-      {headers.map((header, index) => {
-        const isActive = sortColumn === header.property;
+    <TableHeader>
+      <TableRow isHeaderRow>
+        {headers.map((header) => {
+          const isActive = sortColumn === header.property;
+          const SortIcon =
+            isActive ?
+              sortOrder === 'asc' ?
+                ArrowUp
+              : ArrowDown
+            : ArrowUpDown;
 
-        return (
-          <Table.HeaderColumn key={`header-${index}`} sticky={header.sticky}>
-            {header.screenReaderOnly ?
-              <span className="sr-only">{header.label}</span>
-            : header.sortable ?
-              <Table.SortButton
-                isActive={isActive}
-                sortOrder={isActive ? (sortOrders[sortOrder] as SortMode) : null}
+          return (
+            <TableHeaderCell
+              key={header.property}
+              scope="col"
+              aria-sort={
+                isActive ?
+                  sortOrder === 'asc' ?
+                    'ascending'
+                  : 'descending'
+                : undefined
+              }
+            >
+              <Button
+                label={header.label}
+                variant="ghost"
+                size="sm"
+                endContent={<SortIcon size={14} aria-hidden="true" />}
                 onClick={() => {
                   setSort(header.property);
                 }}
-              >
-                {header.label}
-              </Table.SortButton>
-            : header.label}
-          </Table.HeaderColumn>
-        );
-      })}
-    </Table.Header>
+              />
+            </TableHeaderCell>
+          );
+        })}
+        <TableHeaderCell scope="col" className="relative">
+          <span className="sr-only">{t('errand-table.header.open')}</span>
+        </TableHeaderCell>
+      </TableRow>
+    </TableHeader>
   );
 };

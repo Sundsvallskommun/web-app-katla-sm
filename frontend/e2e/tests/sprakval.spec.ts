@@ -40,8 +40,8 @@ const switchLanguageTo = async (page: Page, language: string) => {
 };
 
 const selectRequiredErrandParameters = async (page: Page) => {
-  const eventType = page.getByTestId('event-type-deviation');
-  const eventConcerns = page.getByTestId('event-concerns-individual');
+  const eventType = page.getByTestId('event-type-deviation').getByRole('radio');
+  const eventConcerns = page.getByTestId('event-concerns-individual').getByRole('radio');
 
   await eventType.check();
   await expect(eventType).toBeChecked();
@@ -73,8 +73,8 @@ test.describe('Language switching', () => {
 
     // Språkbytet monterar om hela ärendeträdet. Utan överlämningen står användaren
     // inför ett tomt formulär, och priset för att byta språk blir att börja om.
-    await expect(page.getByTestId('event-type-deviation')).toBeChecked();
-    await expect(page.getByTestId('event-concerns-individual')).toBeChecked();
+    await expect(page.getByTestId('event-type-deviation').getByRole('radio')).toBeChecked();
+    await expect(page.getByTestId('event-concerns-individual').getByRole('radio')).toBeChecked();
     await expect(page.getByRole('textbox', { name: /Beskriv händelsen/ })).toHaveValue(MOCK_INCIDENT_DESCRIPTION);
   });
 

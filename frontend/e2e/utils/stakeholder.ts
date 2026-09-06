@@ -20,12 +20,21 @@ import { emptyRoute, jsonRoute } from './routes';
 export const sectionByTitle = (page: Page, title: string): Locator =>
   page.locator('section').filter({ has: page.getByRole('heading', { name: title, exact: true }) });
 
-/**
- * Knapparna i sök-/formulärsektionerna täcks av en transparent .sk-form-control-wrapper
- * som fångar pekarhändelser, så ett vanligt Playwright-klick når dem inte.
- * Ett syntetiskt klick-event motsvarar hur Cypress klickade på dem.
- */
-const syntheticClick = (locator: Locator) => locator.dispatchEvent('click');
+/** Verifierar både synligt fel och kopplingen från kontrollen för hjälpmedel. */
+const expectFieldError = async (input: Locator, message: RegExp) => {
+  await expect(input).toHaveAttribute('aria-invalid', 'true');
+  await expect(input).toHaveAccessibleDescription(message);
+  const descriptionIds = (await input.getAttribute('aria-describedby'))?.split(/\s+/) ?? [];
+  expect(descriptionIds).toHaveLength(1);
+  const fieldStatus = input.page().locator(`[id="${descriptionIds[0]}"]`);
+  await expect(fieldStatus).toHaveText(message);
+  await expect(fieldStatus).toBeVisible();
+};
+
+const expectFieldValid = async (input: Locator) => {
+  await expect(input).not.toHaveAttribute('aria-invalid', 'true');
+  await expect(input).not.toHaveAttribute('aria-describedby');
+};
 
 export const addStakeholder = async (page: Page, scope: Locator, role: string) => {
   await page.route(`**/citizen/person/${MOCK_PERSON_NUMBER}`, jsonRoute({ ...mockStakeholder, role }));
@@ -36,41 +45,41 @@ export const addStakeholder = async (page: Page, scope: Locator, role: string) =
 
   // Personnummer
   await personNumberInput.fill('PERSONNUMBER');
-  await syntheticClick(searchButton);
-  await expect(scope.getByTestId('person-number-error')).toBeVisible();
+  await searchButton.click();
+  await expectFieldError(scope.getByTestId('person-number-input'), /Personnummer måste|Ogiltigt datum i personnummer/);
   await personNumberInput.fill(MOCK_NON_EXISTENT_PERSON_NUMBER);
   const emptyPersonResponse = page.waitForResponse(`**/citizen/person/${MOCK_NON_EXISTENT_PERSON_NUMBER}`);
-  await syntheticClick(searchButton);
+  await searchButton.click();
   await emptyPersonResponse;
-  await expect(scope.getByTestId('empty-person-error')).toBeVisible();
-  await syntheticClick(scope.locator('button[aria-label="Rensa"]'));
-  await expect(scope.getByTestId('empty-person-error')).toHaveCount(0);
+  await expectFieldError(scope.getByTestId('person-number-input'), /Ingen person hittades/);
+  await scope.getByRole('button', { name: 'Rensa sökning' }).click();
+  await expectFieldValid(scope.getByTestId('person-number-input'));
   await personNumberInput.fill(MOCK_INVALID_DATE_PERSON_NUMBER);
-  await syntheticClick(searchButton);
-  await expect(scope.getByTestId('person-number-error')).toBeVisible();
-  await syntheticClick(scope.locator('button[aria-label="Rensa"]'));
-  await expect(scope.getByTestId('person-number-error')).toHaveCount(0);
+  await searchButton.click();
+  await expectFieldError(scope.getByTestId('person-number-input'), /Personnummer måste|Ogiltigt datum i personnummer/);
+  await scope.getByRole('button', { name: 'Rensa sökning' }).click();
+  await expectFieldValid(scope.getByTestId('person-number-input'));
   await personNumberInput.fill(MOCK_PERSON_NUMBER);
   const personResponse = page.waitForResponse(`**/citizen/person/${MOCK_PERSON_NUMBER}`);
-  await syntheticClick(searchButton);
+  await searchButton.click();
   await personResponse;
 
   // E-post
-  await expect(scope.getByTestId('person-number-error')).toHaveCount(0);
-  await expect(scope.getByTestId('email-input-error')).toHaveCount(0);
-  await expect(scope.getByTestId('phone-number-input-error')).toHaveCount(0);
+  await expectFieldValid(scope.getByTestId('person-number-input'));
+  await expectFieldValid(scope.getByTestId('stakeholder-email-input'));
+  await expectFieldValid(scope.getByTestId('stakeholder-mobilephone-input'));
   const emailInput = scope.getByTestId('stakeholder-email-input');
   await emailInput.fill('EMAIL');
-  await syntheticClick(scope.locator('button', { hasText: 'Lägg till person' }));
-  await expect(scope.getByTestId('email-input-error')).toBeVisible();
+  await scope.locator('button', { hasText: 'Lägg till person' }).click();
+  await expectFieldError(scope.getByTestId('stakeholder-email-input'), /Ogiltig e-postadress/);
   await emailInput.fill(MOCK_EMAIL);
 
   // Telefon
   const phoneInput = scope.getByTestId('stakeholder-mobilephone-input');
   await phoneInput.fill('PHONENUMBER');
-  await expect(scope.getByTestId('phone-number-input-error')).toBeVisible();
+  await expectFieldError(scope.getByTestId('stakeholder-mobilephone-input'), /Fyll i ett giltigt mobilnummer/);
   await phoneInput.fill(MOCK_PHONE_NUMBER);
-  await syntheticClick(scope.locator('button', { hasText: 'Lägg till person' }));
+  await scope.locator('button', { hasText: 'Lägg till person' }).click();
 };
 
 export const addEmployeeStakeholder = async (page: Page, scope: Locator, role: string) => {
@@ -82,50 +91,50 @@ export const addEmployeeStakeholder = async (page: Page, scope: Locator, role: s
 
   // Sök på AD-konto i stället för personnummer
   await expect(scope.getByTestId('radiobutton-person')).toBeAttached();
-  await scope.getByTestId('radiobutton-employee').check();
+  await scope.getByTestId('radiobutton-employee').getByRole('radio').check();
 
   await personNumberInput.fill('ADACCOUNT');
   const emptyPersonResponse = page.waitForResponse('**/employee/personal/ADACCOUNT');
-  await syntheticClick(searchButton);
-  await expect(scope.getByTestId('empty-person-error')).toBeVisible();
+  await searchButton.click();
+  await expectFieldError(scope.getByTestId('person-number-input'), /Ingen person hittades/);
   await emptyPersonResponse;
-  await syntheticClick(scope.locator('button[aria-label="Rensa"]'));
-  await expect(scope.getByTestId('empty-person-error')).toHaveCount(0);
+  await scope.getByRole('button', { name: 'Rensa sökning' }).click();
+  await expectFieldValid(scope.getByTestId('person-number-input'));
   await personNumberInput.fill('ABC12DEF');
   const personResponse = page.waitForResponse('**/employee/personal/ABC12DEF');
-  await syntheticClick(searchButton);
-  await expect(scope.getByTestId('person-number-error')).toHaveCount(0);
+  await searchButton.click();
+  await expectFieldValid(scope.getByTestId('person-number-input'));
   await personResponse;
 
   // E-post
-  await expect(scope.getByTestId('person-number-error')).toHaveCount(0);
-  await expect(scope.getByTestId('email-input-error')).toHaveCount(0);
-  await expect(scope.getByTestId('phone-number-input-error')).toHaveCount(0);
+  await expectFieldValid(scope.getByTestId('person-number-input'));
+  await expectFieldValid(scope.getByTestId('stakeholder-email-input'));
+  await expectFieldValid(scope.getByTestId('stakeholder-mobilephone-input'));
   await expect(scope.getByTestId('stakeholder-email-input')).toHaveValue(mockReporterStakeholder.emails?.[0] ?? '');
 
   // Telefon
   await expect(scope.getByTestId('stakeholder-mobilephone-input')).toHaveValue(
     mockReporterStakeholder.phoneNumbers?.[0] ?? ''
   );
-  await syntheticClick(scope.locator('button', { hasText: 'Lägg till person' }));
+  await scope.locator('button', { hasText: 'Lägg till person' }).click();
 };
 
 export const manuallyAddStakeholder = async (page: Page) => {
-  const modal = page.getByTestId('manual-person-modal');
+  const modal = page.getByTestId('manual-person-modal').filter({ visible: true });
   await expect(modal).toBeVisible();
 
   // Inga fel initialt
-  await expect(modal.getByTestId('firstName-input-error')).toHaveCount(0);
-  await expect(modal.getByTestId('lastName-input-error')).toHaveCount(0);
-  await expect(modal.getByTestId('modal-email-input-error')).toHaveCount(0);
-  await expect(modal.getByTestId('modal-phone-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-firstName-input'));
+  await expectFieldValid(modal.getByTestId('modal-lastName-input'));
+  await expectFieldValid(modal.getByTestId('modal-email-input'));
+  await expectFieldValid(modal.getByTestId('modal-phone-input'));
 
   // Fel visas efter första försöket att spara
   await modal.getByTestId('modal-add-person-button').click();
-  await expect(modal.getByTestId('firstName-input-error')).toBeVisible();
-  await expect(modal.getByTestId('lastName-input-error')).toBeVisible();
-  await expect(modal.getByTestId('modal-email-input-error')).toHaveCount(0);
-  await expect(modal.getByTestId('modal-phone-input-error')).toHaveCount(0);
+  await expectFieldError(modal.getByTestId('modal-firstName-input'), /Förnamn får inte vara tomt/);
+  await expectFieldError(modal.getByTestId('modal-lastName-input'), /Efternamn får inte vara tomt/);
+  await expectFieldValid(modal.getByTestId('modal-email-input'));
+  await expectFieldValid(modal.getByTestId('modal-phone-input'));
 
   // Personnummer kan inte anges vid manuell registrering
   await expect(modal.getByTestId('modal-personNumber-input')).toHaveCount(0);
@@ -133,36 +142,36 @@ export const manuallyAddStakeholder = async (page: Page) => {
   // Namn
   await modal.getByTestId('modal-firstName-input').fill('Test');
   await modal.getByTestId('modal-lastName-input').fill('Testsson');
-  await expect(modal.getByTestId('firstName-input-error')).toHaveCount(0);
-  await expect(modal.getByTestId('lastName-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-firstName-input'));
+  await expectFieldValid(modal.getByTestId('modal-lastName-input'));
 
   // E-post
   await modal.getByTestId('modal-email-input').fill('test');
   await modal.getByTestId('modal-add-person-button').click();
-  await expect(modal.getByTestId('modal-email-input-error')).toBeVisible();
+  await expectFieldError(modal.getByTestId('modal-email-input'), /Ogiltig e-postadress/);
   await modal.getByTestId('modal-email-input').fill(MOCK_EMAIL);
-  await expect(modal.getByTestId('modal-email-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-email-input'));
 
   // Telefon
   await modal.getByTestId('modal-phone-input').fill('Testsson');
   await modal.getByTestId('modal-add-person-button').click();
-  await expect(modal.getByTestId('modal-phone-input-error')).toBeVisible();
+  await expectFieldError(modal.getByTestId('modal-phone-input'), /Fyll i ett giltigt mobilnummer/);
   await modal.getByTestId('modal-phone-input').fill(MOCK_PHONE_NUMBER);
-  await expect(modal.getByTestId('modal-phone-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-phone-input'));
 
   // Adressfält finns inte vid manuell registrering
   await expect(modal.getByTestId('modal-address-input')).toHaveCount(0);
 };
 
 export const manuallyEditStakeholder = async (page: Page, stakeholder: StakeholderDTO) => {
-  const modal = page.getByTestId('manual-person-modal');
+  const modal = page.getByTestId('manual-person-modal').filter({ visible: true });
   await expect(modal).toBeVisible();
 
   // Inga fel initialt
-  await expect(modal.getByTestId('firstName-input-error')).toHaveCount(0);
-  await expect(modal.getByTestId('lastName-input-error')).toHaveCount(0);
-  await expect(modal.getByTestId('modal-email-input-error')).toHaveCount(0);
-  await expect(modal.getByTestId('modal-phone-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-firstName-input'));
+  await expectFieldValid(modal.getByTestId('modal-lastName-input'));
+  await expectFieldValid(modal.getByTestId('modal-email-input'));
+  await expectFieldValid(modal.getByTestId('modal-phone-input'));
 
   // Personnummer visas inte i redigeringsmodalen
   await expect(modal.getByTestId('modal-personNumber-input')).toHaveCount(0);
@@ -172,25 +181,25 @@ export const manuallyEditStakeholder = async (page: Page, stakeholder: Stakehold
   await expect(firstNameInput).toHaveValue(stakeholder.firstName ?? '');
   await firstNameInput.fill('');
   await modal.getByTestId('modal-add-person-button').click();
-  await expect(modal.getByTestId('firstName-input-error')).toBeVisible();
+  await expectFieldError(modal.getByTestId('modal-firstName-input'), /Förnamn får inte vara tomt/);
   await firstNameInput.fill(mockManualEditStakeholder.firstName ?? '');
-  await expect(modal.getByTestId('firstName-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-firstName-input'));
   const lastNameInput = modal.getByTestId('modal-lastName-input');
   await expect(lastNameInput).toHaveValue(stakeholder.lastName ?? '');
   await lastNameInput.fill('');
   await modal.getByTestId('modal-add-person-button').click();
-  await expect(modal.getByTestId('lastName-input-error')).toBeVisible();
+  await expectFieldError(modal.getByTestId('modal-lastName-input'), /Efternamn får inte vara tomt/);
   await lastNameInput.fill(mockManualEditStakeholder.lastName ?? '');
-  await expect(modal.getByTestId('lastName-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-lastName-input'));
 
   // E-post
   const emailInput = modal.getByTestId('modal-email-input');
   await expect(emailInput).toHaveValue(MOCK_EMAIL);
   await emailInput.fill('test');
   await modal.getByTestId('modal-add-person-button').click();
-  await expect(modal.getByTestId('modal-email-input-error')).toBeVisible();
+  await expectFieldError(modal.getByTestId('modal-email-input'), /Ogiltig e-postadress/);
   await emailInput.fill(MOCK_EMAIL);
-  await expect(modal.getByTestId('modal-email-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-email-input'));
   await emailInput.fill('');
 
   // Telefon
@@ -198,9 +207,9 @@ export const manuallyEditStakeholder = async (page: Page, stakeholder: Stakehold
   await expect(phoneInput).toHaveValue(MOCK_COUNTRY_CODE_PHONE_NUMBER);
   await phoneInput.fill('Testsson');
   await modal.getByTestId('modal-add-person-button').click();
-  await expect(modal.getByTestId('modal-phone-input-error')).toBeVisible();
+  await expectFieldError(modal.getByTestId('modal-phone-input'), /Fyll i ett giltigt mobilnummer/);
   await phoneInput.fill(MOCK_PHONE_NUMBER);
-  await expect(modal.getByTestId('modal-phone-input-error')).toHaveCount(0);
+  await expectFieldValid(modal.getByTestId('modal-phone-input'));
 
   // Adress
   const addressInput = modal.getByTestId('modal-address-input');

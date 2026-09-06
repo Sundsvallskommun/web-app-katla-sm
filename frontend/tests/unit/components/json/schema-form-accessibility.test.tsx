@@ -3,6 +3,7 @@ import type { LabelDTO } from '@data-contracts/backend/data-contracts';
 import { descriptionId, errorId, type RJSFSchema, titleId, type UiSchema } from '@rjsf/utils';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { focusInvalidField } from '@utils/focus-first-error';
 import type { ComponentType } from 'react';
 import { renderToString } from 'react-dom/server';
 import { useMetadataStore } from 'src/stores/metadata-store';
@@ -411,13 +412,17 @@ describe('SchemaForm accessibility contract', () => {
     render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
 
     // i18n-mocken ekar nyckeln, så det är nyckeln som blir fältets tillgängliga namn här.
-    const input = screen.getByRole('textbox', { name: /^facility_search.search_label/ });
+    const input = screen.getByRole('combobox', { name: /^facility_search.search_label/ });
     const searchLabel = document.querySelector(`label[for="${input.id}"]`);
 
     expect(searchLabel).toHaveTextContent('facility_search.search_label');
-    expect(input).toHaveAttribute('aria-labelledby', searchLabel?.id);
-    expect(input).toHaveAttribute('aria-describedby', expect.stringContaining(descriptionId(input.id)));
-    const list = document.querySelector('.sk-form-combobox-list');
+    expect(input).toHaveAccessibleName(/^facility_search.search_label/);
+    expect(input).toHaveAccessibleDescription('Sök fram platsen där händelsen inträffade.');
+    await user.click(input);
+    const list = await screen.findByRole('listbox');
+    await waitFor(() => {
+      expect(within(list).getAllByRole('option')).toHaveLength(4);
+    });
     expect(list).toHaveTextContent('Solhaga — facility_search.department_label: Blå');
     expect(list).toHaveTextContent('Skottsundsbacken — facility_search.department_label: Blå');
     expect(list).toHaveTextContent('Anläggning utan avdelning');
@@ -425,7 +430,7 @@ describe('SchemaForm accessibility contract', () => {
 
     await user.type(input, 'Blå');
 
-    let visibleOptions = document.querySelectorAll('.sk-form-combobox-list-option');
+    let visibleOptions = screen.getAllByRole('option');
     expect(visibleOptions).toHaveLength(2);
     expect(visibleOptions[0]).toHaveTextContent('Solhaga — facility_search.department_label: Blå');
     expect(visibleOptions[1]).toHaveTextContent('Skottsundsbacken — facility_search.department_label: Blå');
@@ -433,7 +438,7 @@ describe('SchemaForm accessibility contract', () => {
     await user.clear(input);
     await user.type(input, 'Solhaga');
 
-    visibleOptions = document.querySelectorAll('.sk-form-combobox-list-option');
+    visibleOptions = screen.getAllByRole('option');
     expect(visibleOptions).toHaveLength(2);
     expect(visibleOptions[0]).toHaveTextContent('Solhaga — facility_search.department_label: Blå');
     expect(visibleOptions[1]).toHaveTextContent('Solhaga — facility_search.department_label: Gul');
@@ -441,7 +446,7 @@ describe('SchemaForm accessibility contract', () => {
     await user.clear(input);
     await user.type(input, 'SFI SO');
 
-    visibleOptions = document.querySelectorAll('.sk-form-combobox-list-option');
+    visibleOptions = screen.getAllByRole('option');
     expect(visibleOptions).toHaveLength(4);
     expect(list).not.toHaveTextContent('IAF VUX SFI SO och Grl');
   });
@@ -484,8 +489,7 @@ describe('SchemaForm accessibility contract', () => {
     );
 
     // Valet bärs av väljaren själv, inte av ett kort under den.
-    const placeInput = screen.getByRole('textbox', { name: /^facility_search.search_label/ });
-    expect(placeInput).toHaveValue('Solhaga — facility_search.department_label: Blå');
+    expect(screen.getByRole('button', { name: 'Solhaga — facility_search.department_label: Blå' })).toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-card"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-label-preview"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-confirm-button"]')).not.toBeInTheDocument();
@@ -533,11 +537,99 @@ describe('SchemaForm accessibility contract', () => {
       />
     );
 
-    expect(screen.getByRole('textbox', { name: /^facility_search.search_label/ })).toHaveValue(
-      'Anläggning utan avdelning'
-    );
+    expect(screen.getByRole('button', { name: 'Anläggning utan avdelning' })).toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-card"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-sub-place-options"]')).not.toBeInTheDocument();
     expect(document.querySelector('[data-cy="facility-label-preview"]')).not.toBeInTheDocument();
+  });
+  it('associates searchable-field errors and rich help while the error summary reaches the Astryx trigger', () => {
+    render(
+      <SchemaForm
+        schemaId="searchable-field-accessibility:1"
+        schema={{
+          type: 'object',
+          required: ['category'],
+          properties: {
+            category: {
+              type: 'string',
+              title: 'Kategori',
+              enum: ['A', 'B'],
+              description: 'Läs <a href="https://example.com/help">anvisningen</a> före valet.',
+            },
+          },
+        }}
+        uiSchema={{ category: { 'ui:widget': 'combobox' } }}
+        hideSubmitButton
+        showValidation
+      />
+    );
+    const trigger = screen.getByRole('button', { name: /^Kategori/ });
+    expect(trigger).toHaveAttribute('aria-required', 'true');
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAccessibleDescription('validation:required');
+    const field = screen.getByRole('group', { name: 'Kategori' });
+    expect(field).toHaveAccessibleDescription('Läs anvisningen före valet.');
+    expect(within(field).getByRole('link', { name: 'anvisningen' })).toHaveAttribute(
+      'href',
+      'https://example.com/help'
+    );
+    expect(focusInvalidField('root_category')).toBe(true);
+    expect(trigger).toHaveFocus();
+  });
+  it('references only rendered description, help and error elements before and after validation', () => {
+    const schema: RJSFSchema = {
+      type: 'object',
+      required: ['plain', 'choice', 'hiddenError'],
+      properties: {
+        plain: { type: 'string', title: 'Utan hjälptext' },
+        explained: {
+          type: 'string',
+          title: 'Med beskrivning',
+          description: '<p>Läs <a href="https://example.com/help" target="_blank">hjälpen</a>.</p>',
+        },
+        hiddenDescription: { type: 'string', title: 'Dold beskrivning', description: 'Den här texten är dold.' },
+        removedDescription: { type: 'string', title: 'Sanerad beskrivning', description: '<script>alert(1)</script>' },
+        hiddenError: { type: 'string', title: 'Dolt fel' },
+        choice: { type: 'string', title: 'Val med hjälp', enum: ['Ja', 'Nej'] },
+      },
+    };
+    const uiSchema: FormUiSchema = {
+      plain: { 'ui:widget': 'textarea' },
+      hiddenDescription: { 'ui:options': { hideDescription: true } },
+      hiddenError: { 'ui:hideError': true },
+      choice: { 'ui:widget': 'radio', 'ui:help': 'Välj det alternativ som gäller.' },
+    };
+    const form = (showValidation: boolean) => (
+      <SchemaForm
+        schemaId="rendered-description-contract:1"
+        schema={schema}
+        uiSchema={uiSchema}
+        hideSubmitButton
+        showValidation={showValidation}
+      />
+    );
+    const { container, rerender } = render(form(false));
+    const expectResolvedReferences = () => {
+      for (const control of container.querySelectorAll('[aria-describedby]')) {
+        for (const id of control.getAttribute('aria-describedby')?.split(/\s+/) ?? []) {
+          expect(document.getElementById(id), `${control.tagName} references missing ${id}`).toBeInTheDocument();
+        }
+      }
+    };
+    expect(screen.getByRole('textbox', { name: /^Utan hjälptext/ })).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByRole('textbox', { name: /^Dold beskrivning/ })).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByRole('textbox', { name: /^Sanerad beskrivning/ })).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByRole('group', { name: /^Val med hjälp/ })).toHaveAccessibleDescription(
+      'Välj det alternativ som gäller.'
+    );
+    expectResolvedReferences();
+    rerender(form(true));
+    expect(screen.getByRole('textbox', { name: /^Utan hjälptext/ })).toHaveAccessibleDescription('validation:required');
+    expect(screen.getByRole('textbox', { name: /^Dolt fel/ })).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByRole('textbox', { name: /^Dolt fel/ })).toHaveAttribute('aria-invalid', 'false');
+    expect(screen.getByRole('group', { name: /^Val med hjälp/ })).toHaveAccessibleDescription(
+      'Välj det alternativ som gäller. validation:required'
+    );
+    expectResolvedReferences();
   });
 });

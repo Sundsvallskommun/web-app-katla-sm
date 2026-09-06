@@ -1,8 +1,9 @@
 'use client';
 
+import { Button } from '@astryxdesign/core/Button';
+import { Spinner } from '@astryxdesign/core/Spinner';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
-import { Button, Spinner } from '@sk-web-gui/react';
 import { useTranslation } from 'react-i18next';
 
 import { MobileErrandCard } from './mobile-errand-card.component';
@@ -25,25 +26,28 @@ export const MobileErrandsList: React.FC<MobileErrandsListProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-8 px-16 pb-24">
-      {/* Felen står först, av samma skäl som i tabellen: ett stående laddläge får inte dölja dem. */}
+    <div className="flex flex-col gap-4 px-4 pb-6">
       <ErrorAlertList messages={errors} />
       {isLoading && rows.length === 0 && (
-        <div className="flex justify-center py-40">
-          <Spinner />
+        <div className="flex justify-center py-10">
+          <Spinner size="xl" label={t('common:errand-table.loading')} />
         </div>
       )}
       {!isLoading && rows.length === 0 && errors.length === 0 && (
-        <div className="text-center py-40 text-dark-secondary">{t('errand-information:no_errands')}</div>
+        <div className="text-center py-10 text-muted">{t('errand-information:no_errands')}</div>
       )}
-      {rows.map((errand, index) => (
-        <MobileErrandCard key={`mobile-errand-${index}`} errand={errand} />
+      {rows.map((errand) => (
+        <MobileErrandCard key={errand.errandNumber} errand={errand} />
       ))}
       {hasMore && (
-        <div className="pt-8 pb-16">
-          <Button variant="tertiary" color="vattjom" loading={isLoading} onClick={loadMore} className="w-full">
-            {t('filtering:load_more')}
-          </Button>
+        <div className="pt-2 pb-4">
+          <Button
+            label={t('filtering:load_more')}
+            variant="secondary"
+            isLoading={isLoading}
+            onClick={loadMore}
+            width="100%"
+          />
         </div>
       )}
     </div>

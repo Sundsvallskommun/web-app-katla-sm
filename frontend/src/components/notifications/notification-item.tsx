@@ -1,7 +1,7 @@
+import { useToast } from '@astryxdesign/core/Toast';
 import { NotificationDTO } from '@data-contracts/backend/data-contracts';
 import { acknowledgeNotification, getNotifications } from '@services/errand-service/errand-service';
 import { prettyTime } from '@services/helper-service';
-import { cx, useSnackbar } from '@sk-web-gui/react';
 import NextLink from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from 'src/stores/notification-store';
@@ -9,7 +9,7 @@ import { useNotificationStore } from 'src/stores/notification-store';
 import { NotificationRenderIcon } from './notification-render-icon';
 
 export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ notification }) => {
-  const toastMessage = useSnackbar();
+  const toastMessage = useToast();
   const { t } = useTranslation();
   const { setNotifications } = useNotificationStore();
 
@@ -18,10 +18,8 @@ export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ 
       await acknowledgeNotification(notification);
     } catch {
       toastMessage({
-        position: 'bottom',
-        closeable: false,
-        message: t('api_errors.acknowledge_notification'),
-        status: 'error',
+        body: t('api_errors.acknowledge_notification'),
+        type: 'error',
       });
       return;
     }
@@ -30,10 +28,8 @@ export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ 
       setNotifications(await getNotifications());
     } catch {
       toastMessage({
-        position: 'bottom',
-        closeable: false,
-        message: t('api_errors.notifications'),
-        status: 'error',
+        body: t('api_errors.notifications'),
+        type: 'error',
       });
     }
   };
@@ -45,8 +41,8 @@ export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ 
   const senderName = !sender || sender.toUpperCase() === 'UNKNOWN' ? t('notification.unknown_sender') : sender;
 
   return (
-    <div className="p-16 flex gap-12 items-start justify-between text-small">
-      <div className="flex items-center my-xs">
+    <div className="grid grid-cols-[2rem_minmax(0,1fr)_auto] gap-3 border-b border-default py-4 text-sm">
+      <div className="flex items-center my-1">
         <NotificationRenderIcon notification={notification} />
       </div>
       <div className="flex-grow">
@@ -58,7 +54,8 @@ export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ 
             onClick={() => {
               void handleAcknowledge();
             }}
-            className="underline whitespace-nowrap"
+            rel="noopener noreferrer"
+            className="underline break-words"
           >
             {(notification.errandNumber ?? '') || t('notification.to_errand')}
           </NextLink>
@@ -68,15 +65,10 @@ export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ 
           <div>{t('notification.event', { label: subTypeLabel })}</div>
         : null}
       </div>
-      <span className="whitespace-nowrap">{prettyTime(notification.created ?? '', t)}</span>
+      <span className="col-start-2 text-xs text-muted">{prettyTime(notification.created ?? '', t)}</span>
       {!notification.acknowledged && (
-        <div>
-          <span
-            className={cx(
-              `w-12 h-12 my-xs rounded-full flex items-center justify-center text-lg`,
-              `bg-vattjom-surface-primary`
-            )}
-          />
+        <div className="col-start-3 row-start-1" aria-hidden="true">
+          <span className="block h-2 w-2 rounded-full bg-accent" />
         </div>
       )}
     </div>

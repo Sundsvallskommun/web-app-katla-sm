@@ -1,8 +1,7 @@
-import { ModalLayer } from '@components/modal-layer/modal-layer.component';
-import { CenterDiv } from '@layouts/center-div.component';
-import { Button, Dialog } from '@sk-web-gui/react';
+import { Button } from '@astryxdesign/core/Button';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { useFocusTrap } from '@astryxdesign/core/hooks';
 import { CircleAlert } from 'lucide-react';
-import { useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface CancelErrandDialogProps {
@@ -13,35 +12,33 @@ interface CancelErrandDialogProps {
 
 export const CancelErrandDialog: React.FC<CancelErrandDialogProps> = ({ show, onClose, onConfirm }) => {
   const { t } = useTranslation();
-  const dialogId = useId();
-  const backButtonRef = useRef<HTMLButtonElement>(null);
-  const title = t('errand-information:cancel_confirm.title');
-
+  const { containerRef } = useFocusTrap<HTMLDialogElement>({ isActive: show });
   return (
-    <ModalLayer id={dialogId} variant="dialog" show={show} onClose={onClose} initialFocus={backButtonRef} label={title}>
-      <div className="sk-modal-dialog-header">
-        <div className="sk-modal-dialog-header-title">
-          <CenterDiv className="max-w-[32rem] mx-auto">
-            <CircleAlert size={32} className="mb-[1.6rem] text-warning-surface-primary" aria-hidden="true" />
-            <h3 className="text-h3-md text-dark-primary mb-0">{title}</h3>
-          </CenterDiv>
-        </div>
+    <Dialog
+      purpose="form"
+      ref={containerRef}
+      isOpen={show}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+      width={480}
+    >
+      <DialogHeader
+        title={t('errand-information:cancel_confirm.title')}
+        startContent={<CircleAlert size={24} aria-hidden="true" />}
+      />
+      <div className="px-5 pb-5">
+        <p>{t('errand-information:cancel_confirm.description')}</p>
       </div>
-      <Dialog.Content>
-        <CenterDiv className="max-w-[32rem] mx-auto">
-          <span className="text-dark-secondary text-md text-center">
-            {t('errand-information:cancel_confirm.description')}
-          </span>
-        </CenterDiv>
-      </Dialog.Content>
-      <Dialog.Buttons className="justify-center">
-        <Button ref={backButtonRef} variant="secondary" onClick={onClose}>
-          {t('errand-information:cancel_confirm.back')}
-        </Button>
-        <Button variant="primary" color="vattjom" onClick={onConfirm}>
-          {t('errand-information:cancel_confirm.confirm')}
-        </Button>
-      </Dialog.Buttons>
-    </ModalLayer>
+      <div className="flex flex-wrap justify-end gap-3 px-5 pb-5">
+        <Button
+          data-autofocus
+          label={t('errand-information:cancel_confirm.back')}
+          variant="secondary"
+          onClick={onClose}
+        />
+        <Button label={t('errand-information:cancel_confirm.confirm')} variant="primary" onClick={onConfirm} />
+      </div>
+    </Dialog>
   );
 };

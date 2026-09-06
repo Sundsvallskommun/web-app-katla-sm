@@ -1,11 +1,11 @@
 import { pathWithoutLocale } from '@app/locale-path';
+import { DropdownMenu, DropdownMenuDivider } from '@astryxdesign/core/DropdownMenu';
 import { StatusLabel } from '@components/misc/status-label.component';
 import { LinkButton } from '@components/navigation/link-button.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { AppHeader } from '@layouts/app-header.component';
 import { createUserMenuGroups } from '@layouts/userMenuGroup';
 import { useUserStore } from '@services/user-service/user-service';
-import { Divider, Link, PopupMenu } from '@sk-web-gui/react';
 import { storeErrandFormHandover } from '@utils/errand-form-handover';
 import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -41,74 +41,70 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
   const errandNumber = watch('errandNumber');
   const status = watch('status');
 
-  // Andra raden bär sidans sammanhang: under registreringen finns inget ärende att peka ut,
-  // och då står appens undertitel där i stället för ärendets nummer.
+  // Visa appens undertitel tills rapporten har ett ärendenummer.
   const brandSubtitle = registerNewErrand ? t('layout:header.subtitle') : errandNumber;
 
   return (
-    <div className="bg-background-content flex h-screen max-h-screen min-h-screen w-full flex-col overflow-hidden">
+    <div className="bg-canvas flex h-dvh max-h-dvh min-h-dvh w-full flex-col overflow-hidden">
       <AppHeader
         subtitle={brandSubtitle}
-        logoHref={registerNewErrand ? undefined : `${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
-        brandAside={registerNewErrand ? undefined : <StatusLabel status={status} />}
+        logoHref={registerNewErrand ? undefined : '/oversikt'}
+        brandAside={
+          registerNewErrand ? undefined : (
+            <span data-cy="case-status">
+              <StatusLabel status={status} />
+            </span>
+          )
+        }
         onBeforeLanguageSwitch={saveFormBeforeLanguageSwitch}
         actions={
           // Genvägen till registreringen döljs på registreringssidan – där leder den tillbaka
           // till sidan man redan står på.
           registerNewErrand ? undefined : (
             <>
-              <Divider orientation="vertical" className="mx-24" />
               <LinkButton
                 href="/arende/registrera"
                 data-cy="register-new-errand-button"
-                color="primary"
                 variant="secondary"
-                inverted
-              >
-                {t('filtering:new_errand')}
-              </LinkButton>
+                label={t('filtering:new_errand')}
+              />
             </>
           )
         }
         mobileMenu={
-          // Registreringen saknar meny med flit – den ska inte erbjuda vägar bort från
-          // formuläret. Språkvalet ligger utanför menyn och finns kvar även där.
-          registerNewErrand ? undefined
-            // Eget block, av samma skäl som i LanguageSwitchButton: panelen placeras utifrån sin
-            // statiska position, och raden runt omkring är en flex-container som annars
-            // centrerar den över knappen.
-          : (
-            <div className="relative">
-              <PopupMenu align="end">
-                <PopupMenu.Button inverted iconButton aria-label={t('layout:controls.open_menu')}>
-                  <Menu />
-                </PopupMenu.Button>
-                <PopupMenu.Panel>
-                  <PopupMenu.Group>
-                    <div className="font-bold">{`${user.name} (${user.username})`}</div>
-                  </PopupMenu.Group>
-                  <PopupMenu.Items>
-                    <PopupMenu.Group>
-                      <PopupMenu.Item>
-                        <Link href={`${process.env.NEXT_PUBLIC_BASE_PATH}/arende/registrera`}>
-                          {t('filtering:new_errand')}
-                        </Link>
-                      </PopupMenu.Item>
-                    </PopupMenu.Group>
-
-                    {userMenuGroups.map((group, groupindex) => (
-                      <PopupMenu.Group key={`mobilegroup-${groupindex}`}>
-                        {group.elements.map((item, itemindex) => (
-                          <PopupMenu.Item key={`mobilegroup-${groupindex}-${itemindex}`}>
-                            {item.element()}
-                          </PopupMenu.Item>
-                        ))}
-                      </PopupMenu.Group>
-                    ))}
-                  </PopupMenu.Items>
-                </PopupMenu.Panel>
-              </PopupMenu>
-            </div>
+          registerNewErrand ? undefined : (
+            <DropdownMenu
+              alignment="end"
+              menuWidth={280}
+              hasChevron={false}
+              button={{
+                label: t('layout:controls.open_menu'),
+                icon: <Menu aria-hidden="true" size={20} />,
+                isIconOnly: true,
+                variant: 'ghost',
+              }}
+            >
+              <div className="px-3 py-2 font-bold">{`${user.name} (${user.username})`}</div>
+              <DropdownMenuDivider />
+              <LinkButton
+                href="/arende/registrera"
+                role="menuitem"
+                tabIndex={-1}
+                label={t('filtering:new_errand')}
+                variant="ghost"
+                width="100%"
+              />
+              <DropdownMenuDivider />
+              {userMenuGroups.map((group) => (
+                <div role="group" aria-label={group.label} key={group.label}>
+                  {group.elements.map((item) => (
+                    <div role="presentation" key={item.label}>
+                      {item.element()}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </DropdownMenu>
           )
         }
       />

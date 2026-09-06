@@ -1,5 +1,8 @@
-import '@styles/tailwind.scss';
-import '../../public/fonts/fonts.css';
+import '@styles/tailwind.css';
+import '@astryxdesign/core/reset.css';
+import '@astryxdesign/core/astryx.css';
+import '../theme/generated/katla.css';
+import '@styles/katla.css';
 
 import AppLayout from '@layouts/app/app-layout.component';
 import { headers } from 'next/headers';
@@ -15,7 +18,7 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
   const locale = localeFromPath((await headers()).get('x-path'));
 
   return (
-    <html lang={locale}>
+    <html lang={locale} data-astryx-theme="katla" data-theme="system" suppressHydrationWarning>
       <body>
         <Suspense>
           <AppLayout>{children}</AppLayout>

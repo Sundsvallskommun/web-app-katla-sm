@@ -1,7 +1,8 @@
 'use client';
 
+import { Badge } from '@astryxdesign/core/Badge';
+import { Button } from '@astryxdesign/core/Button';
 import { ErrorAlert } from '@components/misc/error-alert.component';
-import { Badge, Button } from '@sk-web-gui/react';
 import { capitalize } from 'lodash';
 import { useStatusButtons } from 'src/hooks/use-status-buttons';
 
@@ -10,35 +11,34 @@ export const MobileStatusTabs: React.FC = () => {
 
   return (
     <div>
-      {error && <ErrorAlert className="mx-16 mt-8" message={error} />}
-      <div className="flex gap-8 overflow-x-auto px-16 py-8 no-scrollbar">
+      {error && <ErrorAlert className="mx-4 mt-2" message={error} />}
+      <div className="flex gap-2 overflow-x-auto px-4 py-2 ">
         {statusButtons.map((button) => {
           const isActive = activeStatus === button.key;
           return (
             <Button
-              key={button.label}
+              key={button.key}
+              label={capitalize(button.label)}
               onClick={() => {
                 onSelectStatus(button);
               }}
               variant={isActive ? 'primary' : 'ghost'}
-              size="sm"
-              className="flex-shrink-0 min-h-[44px] gap-8"
-              leftIcon={button.icon}
+              size="lg"
+              className="flex-shrink-0 min-h-[44px] gap-2"
+              icon={button.icon}
               aria-label={`status-${button.label}`}
-            >
-              {capitalize(button.label)}
-              <Badge
-                className="min-w-fit px-4 ml-4"
-                inverted={!isActive}
-                color={isActive ? 'tertiary' : 'vattjom'}
-                counter={
-                  isLoading ? '-'
-                  : button.errandsCount > 999 ?
-                    '999+'
-                  : button.errandsCount || '0'
-                }
-              />
-            </Button>
+              aria-current={isActive ? 'page' : undefined}
+              endContent={
+                <Badge
+                  label={
+                    isLoading ? '-'
+                    : button.errandsCount > 999 ?
+                      '999+'
+                    : button.errandsCount || '0'
+                  }
+                />
+              }
+            />
           );
         })}
       </div>

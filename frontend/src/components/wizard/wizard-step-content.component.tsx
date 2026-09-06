@@ -1,3 +1,6 @@
+import { Heading } from '@astryxdesign/core/Heading';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@astryxdesign/core/Text';
 import { AboutErrandContent } from '@components/errand-sections/about-errand.component';
 import { DeviationInformation } from '@components/errand-sections/deviation-information.component';
 import { OtherPartiesContent } from '@components/errand-sections/other-parties.component';
@@ -26,11 +29,11 @@ export const WizardStepContent: React.FC = () => {
           <>
             <ReporterContent />
             {appConfig.features.otherPartiesDisclosure && (
-              <div className="mt-24">
+              <div className="mt-6">
                 <SectionHeader
                   as="h2"
-                  headingClassName="text-h4-md"
-                  className="mb-12"
+                  headingClassName="text-lg"
+                  className="mb-3"
                   title={t('errand-information:other_parties.title')}
                   description={t('errand-information:other_parties.description')}
                 />
@@ -51,13 +54,12 @@ export const WizardStepContent: React.FC = () => {
   };
 
   return (
-    <div className="px-16 py-24">
+    <div className="px-4 py-6">
       {step?.id !== 'summary' && (
-        <SectionHeader
-          className="mb-16"
-          title={t(step?.titleKey)}
-          description={step?.descriptionKey ? t(step.descriptionKey) : undefined}
-        />
+        <Stack gap={2} className="mb-4">
+          <Heading level={1}>{t(step?.titleKey)}</Heading>
+          {step?.descriptionKey && <Text color="secondary">{t(step.descriptionKey)}</Text>}
+        </Stack>
       )}
       {renderStepContent()}
     </div>

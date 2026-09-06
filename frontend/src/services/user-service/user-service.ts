@@ -1,6 +1,5 @@
 import { User } from '@data-contracts/backend/data-contracts';
 import { ServiceResponse } from '@interfaces/services';
-import { __DEV__ } from '@sk-web-gui/react';
 import { AxiosError } from 'axios';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
@@ -61,6 +60,6 @@ export const useUserStore = create<State & Actions>()(
         set(initialState);
       },
     }),
-    { enabled: __DEV__ }
+    { enabled: process.env.NODE_ENV !== 'production' }
   )
 );

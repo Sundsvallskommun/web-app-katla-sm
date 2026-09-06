@@ -1,22 +1,22 @@
 import { RichTextEditor } from '@components/rich-text-editor/rich-text-editor.component';
-import type { TextEditorProps } from '@sk-web-gui/text-editor';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { createInstance } from 'i18next';
+import Quill from 'quill';
+import { StrictMode } from 'react';
+import { I18nextProvider } from 'react-i18next';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('next/dynamic', () => ({
-  default: () => {
-    function TextEditorStub({ className, readOnly }: TextEditorProps) {
-      return (
-        <div className={className}>
-          <div className="ql-editor" contentEditable={!readOnly} aria-label="Text editor" />
-        </div>
-      );
-    }
+import editorSv from '../../../locales/sv/editor.json';
 
-    return TextEditorStub;
-  },
-}));
+const i18n = createInstance();
+
+beforeEach(async () => {
+  await i18n.init({ lng: 'sv', resources: { sv: { editor: editorSv } } });
+});
+
+Range.prototype.getBoundingClientRect = () => new DOMRect();
+Range.prototype.getClientRects = () => Object.assign([], { item: () => null });
 
 describe('RichTextEditor accessibility', () => {
   it('connects the editing surface to its label and descriptions and clears stale validation attributes', async () => {
@@ -39,7 +39,7 @@ describe('RichTextEditor accessibility', () => {
     );
 
     const { rerender } = render(editor(true));
-    const textbox = screen.getByRole('textbox', { name: 'Meddelande' });
+    const textbox = await screen.findByRole('textbox', { name: 'Meddelande' });
 
     expect(textbox).toHaveAttribute('id', 'message');
     expect(textbox).toHaveAttribute('aria-multiline', 'true');
@@ -59,7 +59,7 @@ describe('RichTextEditor accessibility', () => {
     expect(textbox).not.toHaveAccessibleDescription();
   });
 
-  it('keeps disabled and readonly states distinct while preventing editing in both states', () => {
+  it('keeps disabled and readonly states distinct while preventing editing in both states', async () => {
     const editor = (disabled: boolean, readOnly: boolean) => (
       <>
         <label id="message-label" htmlFor="message">
@@ -69,7 +69,7 @@ describe('RichTextEditor accessibility', () => {
       </>
     );
     const { rerender } = render(editor(true, false));
-    const textbox = screen.getByRole('textbox', { name: 'Meddelande' });
+    const textbox = await screen.findByRole('textbox', { name: 'Meddelande' });
 
     expect(textbox).toHaveAttribute('contenteditable', 'false');
     expect(textbox).toHaveAttribute('aria-disabled', 'true');
@@ -88,26 +88,69 @@ describe('RichTextEditor accessibility', () => {
     expect(textbox).toHaveAttribute('aria-readonly', 'false');
   });
 
-  it('applies the accessible name and description when Quill replaces its editing surface', async () => {
-    render(
-      <>
+  it('exports semantic lists and inline formatting, accepts external reset and uses the latest callback', async () => {
+    const user = userEvent.setup();
+    const firstChange = vi.fn();
+    const latestChange = vi.fn();
+    const editor = (markup: string, onChange = firstChange) => (
+      <I18nextProvider i18n={i18n}>
         <label id="message-label" htmlFor="message">
           Meddelande
         </label>
-        <p id="message-help">Max 10 000 tecken</p>
-        <RichTextEditor id="message" labelledBy="message-label" describedBy="message-help" />
-      </>
+        <RichTextEditor id="message" labelledBy="message-label" value={{ markup }} onChange={onChange} />
+      </I18nextProvider>
     );
-    const previousTextbox = screen.getByRole('textbox', { name: 'Meddelande' });
-    const replacement = document.createElement('div');
-    replacement.className = 'ql-editor';
-    replacement.setAttribute('contenteditable', 'true');
-
-    previousTextbox.replaceWith(replacement);
-
+    const { rerender } = render(editor('<ul><li>Första</li><li>Andra</li></ul>'));
+    const textbox = await screen.findByRole('textbox', { name: 'Meddelande' });
     await waitFor(() => {
-      expect(screen.getByRole('textbox', { name: 'Meddelande' })).toBe(replacement);
-      expect(replacement).toHaveAccessibleDescription('Max 10 000 tecken');
+      expect(textbox).toHaveTextContent('FörstaAndra');
     });
+    if (!textbox.parentElement) throw new Error('Expected an editor container');
+    const instance = Quill.find(textbox.parentElement);
+    if (!(instance instanceof Quill)) throw new Error('Expected a mounted Quill editor');
+    expect(instance.getSemanticHTML()).toBe('<ul><li>Första</li><li>Andra</li></ul>');
+
+    act(() => {
+      instance.setSelection(0, 6);
+    });
+    await user.click(screen.getByRole('button', { name: 'Fet' }));
+    expect(firstChange).toHaveBeenLastCalledWith({
+      markup: '<ul><li><strong>Första</strong></li><li>Andra</li></ul>',
+      plainText: 'Första\nAndra\n',
+    });
+
+    rerender(editor('', latestChange));
+    await waitFor(() => {
+      expect(textbox).toHaveTextContent('');
+    });
+    expect(instance.getText()).toBe('\n');
+    expect(latestChange).not.toHaveBeenCalled();
+    fireEvent.input(textbox, { target: { textContent: 'Nytt' } });
+    await waitFor(() => {
+      expect(latestChange).toHaveBeenLastCalledWith({ markup: '<p>Nytt</p>', plainText: 'Nytt\n' });
+    });
+  });
+
+  it('owns one editor through StrictMode remounts and stops publishing changes after unmount', async () => {
+    const onChange = vi.fn();
+    const { unmount } = render(
+      <StrictMode>
+        <label id="message-label" htmlFor="message">
+          Meddelande
+        </label>
+        <RichTextEditor id="message" labelledBy="message-label" onChange={onChange} />
+      </StrictMode>
+    );
+    const textbox = await screen.findByRole('textbox', { name: 'Meddelande' });
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
+    if (!textbox.parentElement) throw new Error('Expected an editor container');
+    const instance = Quill.find(textbox.parentElement);
+    if (!(instance instanceof Quill)) throw new Error('Expected a mounted Quill editor');
+    unmount();
+    act(() => {
+      instance.setText('After unmount');
+    });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(document.querySelector('.ql-container')).toBeNull();
   });
 });

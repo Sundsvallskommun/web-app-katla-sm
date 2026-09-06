@@ -3,5 +3,5 @@ interface EmptyLayoutProps {
 }
 
 export default function EmptyLayout({ children }: EmptyLayoutProps) {
-  return <div className="bg-background-content min-h-screen">{children}</div>;
+  return <div className="bg-surface min-h-screen">{children}</div>;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert } from '@sk-web-gui/react';
+import { Banner } from '@astryxdesign/core/Banner';
 
 interface ErrorAlertProps {
   className?: string;
@@ -9,18 +9,11 @@ interface ErrorAlertProps {
 
 /**
  * Gemensam presentation av ett API-fel. Äger rollen, uppmärkningen och
- * ikonen så att felmeddelanden ser likadana ut och annonseras likadant
+ * ikonen genom Banner så att felmeddelanden annonseras en gång och ser likadana ut
  * oavsett vilken yta som visar dem.
  */
 export const ErrorAlert: React.FC<ErrorAlertProps> = ({ className, message }) => (
-  <div role="alert" className={className}>
-    <Alert type="error">
-      <Alert.Icon />
-      <Alert.Content>
-        <Alert.Content.Description>{message}</Alert.Content.Description>
-      </Alert.Content>
-    </Alert>
-  </div>
+  <Banner status="error" title={message} className={className} />
 );
 
 interface ErrorAlertListProps {

@@ -1,4 +1,4 @@
-import { ColorSchemeMode } from '@sk-web-gui/react';
+export type ColorSchemeMode = 'light' | 'dark' | 'system';
 
 export type TableProperty = string;
 

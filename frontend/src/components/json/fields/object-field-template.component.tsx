@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
 import { ErrandContentLock } from '@components/errand-content-lock/errand-content-lock.component';
 import { SectionHeader } from '@components/misc/section-header.component';
 import type { ObjectFieldTemplateProps, RJSFSchema, UiSchema } from '@rjsf/utils';
@@ -26,10 +27,10 @@ interface RowDefinition {
   layout?: 'narrow';
 }
 
-const NARROW_ROW_GAP_CLASS = 'gap-40';
+const NARROW_ROW_GAP_CLASS = 'gap-10';
 /**
  * Fälten i en smal rad ställs i linje med varandra genom att etikettblocket har plats för en
- * rubrik med hjälptext under: 2,4rem rubrik + 0,8rem mellanrum + 1,8rem hjälptext. Fältet utan
+ * rubrik med hjälptext under: 24px rubrik + 8px mellanrum + 18px hjälptext. Fältet utan
  * hjälptext hamnar då på samma höjd som grannens i stället för att hoppa upp till etiketten.
  *
  * Höjden är satt, inte växande: ett felmeddelande under fältet gör annars den kolumnen högre,
@@ -39,7 +40,7 @@ const NARROW_ROW_GAP_CLASS = 'gap-40';
  * det sista som står där är en rubrik eller en hjälptext. Utfyllnaden hamnar ovanför i stället.
  */
 const NARROW_ROW_FIELD_CLASS =
-  'flex w-[32rem] max-w-full [&>.form-row]:flex [&>.form-row]:flex-col [&_.field-label-block]:min-h-[5rem] [&_.field-label-block]:justify-end';
+  'flex w-[20rem] max-w-full [&>.form-row]:flex [&>.form-row]:flex-col [&_.field-label-block]:min-h-[3.125rem] [&_.field-label-block]:justify-end';
 
 interface SectionDefinition {
   id: string;
@@ -130,11 +131,13 @@ interface FormSectionProps {
 
 function FormSection({ section, children }: FormSectionProps) {
   return (
-    <section className="bg-background-color-mixin-1 rounded-utility w-full p-16 md:p-32">
-      <div className="mb-32">
-        <SectionHeader as="h3" title={section.title} description={section.description} />
-      </div>
-      <ErrandContentLock>{children}</ErrandContentLock>
+    <section className="w-full">
+      <Card padding={6}>
+        <div className="mb-8">
+          <SectionHeader as="h3" title={section.title} description={section.description} />
+        </div>
+        <ErrandContentLock>{children}</ErrandContentLock>
+      </Card>
     </section>
   );
 }
@@ -169,9 +172,9 @@ function renderFields(
 
       const narrow = row.layout === 'narrow';
       const rowGapClass =
-        compact ? 'flex-col gap-32'
+        compact ? 'flex-col gap-8'
         : narrow ? NARROW_ROW_GAP_CLASS
-        : (row.gap ?? '') || 'gap-32';
+        : (row.gap ?? '') || 'gap-8';
       const rowFieldClass =
         compact ? ''
         : narrow ? NARROW_ROW_FIELD_CLASS
@@ -241,7 +244,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   if (sections.length === 0) {
     const renderedRows = new Set<string>();
     return (
-      <div className="flex flex-col gap-32">
+      <div className="flex flex-col gap-8">
         {renderFields(order, properties, visibleFields, rows, rowFieldNames, renderedRows, compact)}
       </div>
     );
@@ -259,7 +262,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   return (
     // Korten skiljs åt av luften mellan dem, och behöver mer än fälten inuti ett kort.
     // Wizarden har inga kort och behåller sitt tätare avstånd.
-    <div className={`flex flex-col ${compact ? 'gap-32' : 'gap-48'}`}>
+    <div className={`flex flex-col ${compact ? 'gap-8' : 'gap-12'}`}>
       {/* Render sections */}
       {sections.map((section) => {
         // Get visible fields for this section in order
@@ -270,7 +273,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
 
         if (compact) {
           return (
-            <div key={section.id} className="flex flex-col gap-32">
+            <div key={section.id} className="flex flex-col gap-8">
               {renderFields(
                 sectionFieldsInOrder,
                 properties,
@@ -286,7 +289,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
 
         return (
           <FormSection key={section.id} section={section}>
-            <div className="flex flex-col gap-40">
+            <div className="flex flex-col gap-10">
               {renderFields(sectionFieldsInOrder, properties, visibleFields, rows, rowFieldNames, renderedRows)}
             </div>
           </FormSection>
@@ -295,7 +298,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
 
       {/* Render fields not in any section */}
       {unsectionedFields.length > 0 && (
-        <div className="flex flex-col gap-32">
+        <div className="flex flex-col gap-8">
           {renderFields(unsectionedFields, properties, visibleFields, rows, rowFieldNames, renderedRows, compact)}
         </div>
       )}

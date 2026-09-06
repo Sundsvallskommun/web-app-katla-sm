@@ -1,11 +1,14 @@
 'use client';
 
+import { Button } from '@astryxdesign/core/Button';
+import { Divider } from '@astryxdesign/core/Divider';
+import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList';
+import { Spinner } from '@astryxdesign/core/Spinner';
 import { MessageComposer } from '@components/messages/message-composer.component';
 import { MessageItem } from '@components/messages/message-item.component';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { SectionHeader } from '@components/misc/section-header.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { Button, Divider, RadioButton, Spinner } from '@sk-web-gui/react';
 import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -37,7 +40,7 @@ export const ErrandMessages: React.FC = () => {
   const errors = [error, attachmentError].filter((message): message is string => message !== null);
 
   return (
-    <div className="flex flex-col gap-32">
+    <div className="flex flex-col gap-8">
       <SectionHeader title={t('messages:title')} description={t('messages:description')} />
 
       <ErrorAlertList messages={errors} />
@@ -49,43 +52,41 @@ export const ErrandMessages: React.FC = () => {
       <div>
         <Button
           variant="secondary"
-          leftIcon={<RefreshCw aria-hidden="true" />}
+          icon={<RefreshCw aria-hidden="true" />}
+          label={t('messages:refresh')}
           onClick={reload}
-          disabled={isLoading || isRefreshing || isLoadingMore}
-          loading={isRefreshing}
+          isDisabled={isLoading || isRefreshing || isLoadingMore}
+          isLoading={isRefreshing}
+        />
+      </div>
+      <div data-cy="message-filter">
+        <RadioList
+          label={t('messages:filter_label')}
+          className="[&_[role=radiogroup]]:flex-wrap"
+          isLabelHidden
+          orientation="horizontal"
+          value={filter}
+          onChange={(value) => {
+            const selected = MESSAGE_FILTERS.find((option) => option === value);
+            if (selected) setFilter(selected);
+          }}
         >
-          {t('messages:refresh')}
-        </Button>
+          {MESSAGE_FILTERS.map((option) => (
+            <RadioListItem key={option} value={option} label={t(FILTER_LABEL_KEYS[option])} />
+          ))}
+        </RadioList>
       </div>
 
-      <RadioButton.Group inline data-cy="message-filter">
-        {MESSAGE_FILTERS.map((option) => (
-          <RadioButton
-            key={option}
-            value={option}
-            checked={filter === option}
-            onChange={() => {
-              setFilter(option);
-            }}
-          >
-            {t(FILTER_LABEL_KEYS[option])}
-          </RadioButton>
-        ))}
-      </RadioButton.Group>
-
-      {isLoading && (
-        <div role="status" aria-live="polite" className="flex justify-center py-40">
+      {isLoading ?
+        <div role="status" aria-live="polite" className="flex justify-center py-10">
           <Spinner aria-hidden="true" />
           <span className="sr-only">{t('messages:loading')}</span>
         </div>
-      )}
-      {!isLoading && showEmptyState && (
-        <p data-cy="no-messages" className="text-dark-secondary py-24">
+      : showEmptyState ?
+        <p data-cy="no-messages" className="text-muted py-6">
           {t('messages:empty')}
         </p>
-      )}
-      {!isLoading && !showEmptyState && (
-        <div className="flex flex-col gap-16" data-cy="message-list">
+      : <div className="flex flex-col gap-4" data-cy="message-list">
           {visibleMessages.map((message) => (
             <MessageItem
               key={`${message.conversationId}:${message.messageId ?? message.sent}`}
@@ -95,17 +96,16 @@ export const ErrandMessages: React.FC = () => {
             />
           ))}
         </div>
-      )}
+      }
       {hasMore && (
         <div>
           <Button
             variant="secondary"
+            label={t('messages:load_more')}
             onClick={loadMore}
-            loading={isLoadingMore}
-            disabled={isLoading || isRefreshing || isLoadingMore}
-          >
-            {t('messages:load_more')}
-          </Button>
+            isLoading={isLoadingMore}
+            isDisabled={isLoading || isRefreshing || isLoadingMore}
+          />
         </div>
       )}
     </div>

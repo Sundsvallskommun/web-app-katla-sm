@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 export const OtherPartiesContent: React.FC = () => {
   return (
-    <div className="flex flex-col gap-32">
+    <div className="flex flex-col gap-6">
       <StakeholderList roles={['CONTACT']} employeeSearch hideRoleSelect />
     </div>
   );

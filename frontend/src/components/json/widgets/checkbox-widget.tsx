@@ -1,8 +1,8 @@
 'use client';
 import { FieldRequirementIndicator } from '@components/form-field-label/form-field-label.component';
 import type { WidgetProps } from '@rjsf/utils';
-import { Checkbox, FormControl } from '@sk-web-gui/react';
 
+import styles from './schema-widgets.module.css';
 import { getCommonProps } from './types';
 
 const DEFAULT_CLASS = 'w-full';
@@ -25,25 +25,28 @@ export function CheckboxWidget(props: WidgetProps) {
   } = getCommonProps(props, DEFAULT_CLASS);
 
   return (
-    <FormControl className={className} invalid={invalid}>
-      <Checkbox
-        id={id}
-        checked={!!value}
-        disabled={disabled || readonly}
-        required={required}
-        aria-describedby={describedBy}
-        aria-invalid={invalid}
-        onBlur={onBlur}
-        onFocus={onFocus}
-        onChange={(e) => {
-          onChange(e.currentTarget.checked);
-        }}
-      >
+    <div className={className}>
+      <label htmlFor={id} className={styles.choiceLabel}>
+        <input
+          type="checkbox"
+          className={styles.choice}
+          id={id}
+          checked={!!value}
+          disabled={disabled || readonly}
+          required={required}
+          aria-describedby={describedBy}
+          aria-invalid={invalid}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          onChange={(e) => {
+            onChange(e.currentTarget.checked);
+          }}
+        />
         <span className={hideLabel ? 'sr-only' : undefined}>
           {label}
           <FieldRequirementIndicator required={required} />
         </span>
-      </Checkbox>
-    </FormControl>
+      </label>
+    </div>
   );
 }

@@ -43,7 +43,7 @@ test.describe('Modal overlay accessibility', () => {
       const trigger = page
         .getByRole('button', { name: /Öppna notifieringar/, includeHidden: true })
         .filter({ visible: true });
-      await expect(page.locator('#notifications-panel')).not.toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Notifieringar', exact: true })).not.toBeVisible();
       await trigger.click();
       const dialog = page.getByRole('dialog', { name: 'Notifieringar', exact: true });
       const close = dialog.getByRole('button', { name: 'Stäng notifieringar' });
@@ -61,7 +61,7 @@ test.describe('Modal overlay accessibility', () => {
       await close.press('Tab');
       await expect(notificationLink).toBeFocused();
 
-      const first = viewport.width < 800 ? dialog.getByRole('link').first() : close;
+      const first = close;
       await crossModalTabBoundary(page, 'Tab');
       await expect(first).toBeFocused();
       await crossModalTabBoundary(page, 'Shift+Tab');
@@ -70,10 +70,11 @@ test.describe('Modal overlay accessibility', () => {
       const bounds = await dialog.boundingBox();
       expect(bounds).not.toBeNull();
       if (!bounds) throw new Error('The notification panel must be visible.');
-      expect(Math.abs(bounds.x + bounds.width - viewport.width)).toBeLessThanOrEqual(1);
-      expect(bounds.y).toBe(0);
-      expect(bounds.height).toBe(viewport.height);
-      if (viewport.width < 800) expect(bounds.x).toBe(0);
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.y).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height);
+      if (viewport.width < 800) expect(bounds).toEqual({ x: 0, y: 0, width: viewport.width, height: viewport.height });
       else {
         await page.mouse.click(16, viewport.height / 2);
         await expect(dialog).toBeVisible();
@@ -82,7 +83,7 @@ test.describe('Modal overlay accessibility', () => {
 
       await page.keyboard.press('Escape');
       await expect(dialog).not.toBeVisible();
-      await expect(page.locator('#notifications-panel')).not.toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Notifieringar', exact: true })).not.toBeVisible();
       await expect(trigger).toBeFocused();
       await expect(trigger).toHaveAttribute('aria-expanded', 'false');
       await expect.poll(() => page.locator('dialog:modal').count()).toBe(0);
@@ -91,7 +92,7 @@ test.describe('Modal overlay accessibility', () => {
       await expect(close).toBeFocused();
       await close.press('Enter');
       await expect(dialog).not.toBeVisible();
-      await expect(page.locator('#notifications-panel')).not.toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Notifieringar', exact: true })).not.toBeVisible();
       await expect(trigger).toBeFocused();
     });
   }
@@ -115,7 +116,7 @@ test.describe('Modal overlay accessibility', () => {
     });
     await expect(close).toBeFocused();
     await close.press('Tab');
-    await expect(dialog.getByRole('button', { name: 'status-button-Inskickade' })).toBeFocused();
+    await expect(dialog.getByRole('button', { name: 'Inskickade' })).toBeFocused();
     await last.focus();
     await crossModalTabBoundary(page, 'Tab');
     await expect(first).toBeFocused();

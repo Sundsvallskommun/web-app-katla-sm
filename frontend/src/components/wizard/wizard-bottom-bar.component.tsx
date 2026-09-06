@@ -1,18 +1,19 @@
 import i18nConfig from '@app/i18nConfig';
+import { Button } from '@astryxdesign/core/Button';
+import { useToast } from '@astryxdesign/core/Toast';
 import { CancelErrandDialog } from '@components/cancel-errand-dialog.component';
 import {
   errandFormDataContractErrorMessage,
   jsonParametersToErrandFormData,
   validateErrandFormData,
 } from '@components/json/utils/schema-utils';
-import { ModalLayer } from '@components/modal-layer/modal-layer.component';
+import { SubmitErrandDialog } from '@components/submit-errand-dialog.component';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
-import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useId, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
@@ -26,16 +27,13 @@ export const WizardBottomBar: React.FC = () => {
   const { t } = useTranslation();
   const { t: tForms, i18n } = useTranslation('forms');
   const locale = i18n.resolvedLanguage ?? i18nConfig.defaultLocale;
-  const toastMessage = useSnackbar();
+  const toast = useToast();
   const router = useRouter();
   const { getValues, reset, watch } = useFormContext<ErrandFormDTO>();
   const { setShowValidation, focusFirstError } = useFormValidation();
   const { currentStep, goNext, goBack, setStepErrors } = useWizardStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
-  const submitDialogId = useId();
-  const cancelSubmitButtonRef = useRef<HTMLButtonElement>(null);
-  const submitTitle = t('errand-information:submit_confirm.title');
   const { prepareErrandForApi, getFacilityStatus } = usePrepareErrand();
 
   const steps = useActiveWizardSteps();
@@ -49,14 +47,13 @@ export const WizardBottomBar: React.FC = () => {
       const errandData = prepareErrandForApi(getValues(), 'DRAFT');
       const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
       const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
-      toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
+      toast({ type: 'info', body: t('errand-information:save_message.draft') });
       reset({ ...errand, errandFormData });
       router.push(`/arende/${errand.errandNumber}/grundinformation`);
     } catch (error: unknown) {
-      toastMessage({
-        position: 'bottom',
-        status: 'error',
-        message: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
+      toast({
+        type: 'error',
+        body: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
       });
     }
   };
@@ -67,20 +64,18 @@ export const WizardBottomBar: React.FC = () => {
       const errandData = prepareErrandForApi(getValues(), 'NEW');
       const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
       const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
-      toastMessage({
-        position: 'bottom',
-        status: 'success',
-        message: t('errand-information:save_message.register'),
+      toast({
+        type: 'info',
+        body: t('errand-information:save_message.register'),
       });
       reset({ ...errand, errandFormData });
       // Kvittosidan, inte ärendet: rapportören är klar och ska inte landa i ett formulär
       // som inte längre går att ändra.
       router.push('/arende/inskickad');
     } catch (error: unknown) {
-      toastMessage({
-        position: 'bottom',
-        status: 'error',
-        message: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
+      toast({
+        type: 'error',
+        body: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
       });
     }
   };
@@ -88,7 +83,7 @@ export const WizardBottomBar: React.FC = () => {
   // Felmeddelandet berättar vad som saknas och fokus flyttas till fältet, så att det går att
   // åtgärda direkt även när fältet ligger långt ner i steget.
   const reportValidationError = (message: string) => {
-    toastMessage({ position: 'bottom', status: 'error', message });
+    toast({ type: 'error', body: message });
     focusFirstError();
   };
 
@@ -144,67 +139,62 @@ export const WizardBottomBar: React.FC = () => {
 
   return (
     <>
-      <div className="flex items-center justify-center px-16 py-12 bg-background-content border-t-1 border-divider gap-12">
+      <div className="flex flex-wrap items-center justify-center px-4 py-3 bg-surface border-t border-default gap-3">
         {!isFirstStep && (
           <Button
+            label={t('errand-information:wizard.back')}
             size="sm"
-            variant="tertiary"
-            leftIcon={<ChevronLeft size={18} />}
+            variant="ghost"
+            icon={<ChevronLeft size={18} />}
             onClick={() => {
               setShowValidation(false);
               goBack();
             }}
             className="flex-1"
-          >
-            {t('errand-information:wizard.back')}
-          </Button>
+          />
         )}
         <Button
+          label={t('errand-information:wizard.cancel')}
           size="sm"
           variant="secondary"
           onClick={() => {
             setIsCancelOpen(true);
           }}
           className="flex-1"
-        >
-          {t('errand-information:wizard.cancel')}
-        </Button>
+        />
         {draftEnabled && (
           <Button
+            label={t('errand-information:wizard.save')}
             size="sm"
             variant="primary"
             onClick={() => {
               void onSaveDraft();
             }}
             className="flex-1"
-          >
-            {t('errand-information:wizard.save')}
-          </Button>
+          />
         )}
         {isLastStep ?
           <Button
+            label={t('errand-information:wizard.submit')}
             size="sm"
             variant="primary"
-            color="vattjom"
+
             onClick={() => {
               void handleSubmit();
             }}
             className="flex-1"
-          >
-            {t('errand-information:wizard.submit')}
-          </Button>
+          />
         : <Button
+            label={t('errand-information:wizard.next')}
             size="sm"
             variant="primary"
-            color="vattjom"
-            rightIcon={<ChevronRight size={18} />}
+
+            endContent={<ChevronRight size={18} />}
             onClick={() => {
               void handleNext();
             }}
             className="flex-1"
-          >
-            {t('errand-information:wizard.next')}
-          </Button>
+          />
         }
       </div>
 
@@ -219,46 +209,13 @@ export const WizardBottomBar: React.FC = () => {
       />
 
       {/* Samma besked som på stor skärm, så att frågan lyder likadant var man än fyller i. */}
-      <ModalLayer
-        id={submitDialogId}
-        variant="dialog"
-        show={isOpen}
-        onClose={() => {
-          setIsOpen(false);
+      <SubmitErrandDialog
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        onConfirm={() => {
+          void onRegister();
         }}
-        initialFocus={cancelSubmitButtonRef}
-        label={submitTitle}
-      >
-        <div className="sk-modal-dialog-header">
-          <div className="sk-modal-dialog-header-title">
-            <h2 className="text-h4-sm text-dark-primary">{submitTitle}</h2>
-          </div>
-        </div>
-        <Dialog.Content className="flex flex-col items-start gap-12 text-left">
-          <p>{t('errand-information:submit_confirm.question')}</p>
-        </Dialog.Content>
-        <Dialog.Buttons className="flex-col items-start gap-16 sm:flex-row sm:items-center sm:justify-start">
-          <Button
-            ref={cancelSubmitButtonRef}
-            variant="secondary"
-            onClick={() => {
-              setIsOpen(false);
-            }}
-          >
-            {t('errand-information:cancel')}
-          </Button>
-          <Button
-            data-cy="submit-button"
-            variant="primary"
-            color="vattjom"
-            onClick={() => {
-              void onRegister();
-            }}
-          >
-            {t('errand-information:submit_confirm.submit')}
-          </Button>
-        </Dialog.Buttons>
-      </ModalLayer>
+      />
     </>
   );
 };

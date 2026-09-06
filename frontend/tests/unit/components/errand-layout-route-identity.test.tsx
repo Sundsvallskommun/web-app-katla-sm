@@ -122,27 +122,6 @@ vi.mock('@layouts/errand-button-group.component', async () => {
   };
 });
 
-vi.mock('@sk-web-gui/react', () => {
-  const Tabs = Object.assign(({ children }: PropsWithChildren) => <div data-testid="errand-tabs">{children}</div>, {
-    Button: ({ children }: PropsWithChildren) => <div>{children}</div>,
-    Content: ({ children }: PropsWithChildren) => <div>{children}</div>,
-    Item: ({ children }: PropsWithChildren) => <div>{children}</div>,
-  });
-  const AlertContent = Object.assign(({ children }: PropsWithChildren) => <div>{children}</div>, {
-    Description: ({ children }: PropsWithChildren) => <div>{children}</div>,
-  });
-  const Alert = Object.assign(({ children }: PropsWithChildren) => <div>{children}</div>, {
-    Content: AlertContent,
-    Icon: () => null,
-  });
-
-  return {
-    Alert,
-    Spinner: ({ 'aria-label': ariaLabel }: { 'aria-label': string }) => <div aria-label={ariaLabel} />,
-    Tabs,
-  };
-});
-
 const getErrandMock = vi.mocked(getErrandUsingErrandNumber);
 
 const createDeferred = <T,>() => {
@@ -344,13 +323,19 @@ describe('errand layout route identity', () => {
     getErrandMock.mockResolvedValueOnce({ id: 'id-a', errandNumber: 'ERRAND-A', status: 'DRAFT', jsonParameters: [] });
 
     const view = render(<ErrandLayoutContent>registration-content</ErrandLayoutContent>);
-    expect(await screen.findByTestId('errand-tabs')).toBeInTheDocument();
+    expect(await screen.findByRole('navigation')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'common:tabs.basic_information' })).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('link', { name: 'common:tabs.messages' })).toHaveAttribute(
+      'href',
+      '/arende/ERRAND-A/meddelanden'
+    );
+    expect(screen.getAllByText('registration-content')).toHaveLength(1);
 
     mocks.pathname.value = '/arende/registrera';
     mocks.params.value.errandnumber = undefined;
     view.rerender(<ErrandLayoutContent>registration-content</ErrandLayoutContent>);
 
-    expect(screen.queryByTestId('errand-tabs')).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     expect(screen.getByText('registration-content')).toBeInTheDocument();
   });
 

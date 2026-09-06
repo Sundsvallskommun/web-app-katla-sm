@@ -22,6 +22,13 @@
   "unknown_sender": "Okänd avsändare",
   "attachment_fallback_name": "Bilaga",
   "attachment_error": "Bilagan kunde inte hämtas.",
+  "validation_status": "Meddelandestatus",
+  "filter_label": "Visa meddelanden",
+  "add_attachments": "Bifoga filer",
+  "choose_attachments": "Välj filer",
+  "attached_files": "Bifogade filer",
+  "remove_attachment": "Ta bort {{name}}",
+  "file_size": "{{size}} kB",
   "refresh": "Uppdatera meddelanden",
   "load_more": "Visa äldre meddelanden"
 }

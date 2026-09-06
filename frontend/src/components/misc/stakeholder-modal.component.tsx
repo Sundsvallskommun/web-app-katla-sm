@@ -1,17 +1,18 @@
-import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
-import { ModalLayer } from '@components/modal-layer/modal-layer.component';
+import { Button } from '@astryxdesign/core/Button';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { useFocusTrap } from '@astryxdesign/core/hooks';
+import { Selector } from '@astryxdesign/core/Selector';
+import { TextInput } from '@astryxdesign/core/TextInput';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, FormControl, FormErrorMessage, Input, Modal, Select } from '@sk-web-gui/react';
 import { createStakeholderSchema, phoneNumberFormatter, shouldShowContactDetails } from '@utils/stakeholder';
-import { X } from 'lucide-react';
-import { useEffect, useId, useMemo, useRef } from 'react';
-import { Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import { useEffect, useLayoutEffect, useMemo } from 'react';
+import { Controller, Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import * as yup from 'yup';
 
-export const StakeholderFormModal: React.FC<{
+interface StakeholderFormModalProps {
   index?: number;
   onClose: () => void;
   show: boolean;
@@ -19,10 +20,21 @@ export const StakeholderFormModal: React.FC<{
   initialValues?: StakeholderDTO;
   edit?: boolean;
   editableFields?: (keyof StakeholderDTO)[];
-}> = ({ index, onClose, show, roles, edit, initialValues, editableFields }) => {
+}
+
+// Each opening owns a fresh form and its focus lifecycle.
+export const StakeholderFormModal: React.FC<StakeholderFormModalProps> = ({ show, ...props }) =>
+  show ? <OpenStakeholderFormModal {...props} /> : null;
+
+const OpenStakeholderFormModal: React.FC<Omit<StakeholderFormModalProps, 'show'>> = ({
+  index,
+  onClose,
+  roles,
+  edit,
+  initialValues,
+  editableFields,
+}) => {
   const { t } = useTranslation();
-  const dialogId = useId();
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const showField = (field: keyof StakeholderDTO) => !editableFields || editableFields.includes(field);
   const { metadata } = useMetadataStore();
   const context = useFormContext<ErrandDTO>();
@@ -51,15 +63,28 @@ export const StakeholderFormModal: React.FC<{
     resolver: yupResolver(schema) as unknown as Resolver<StakeholderDTO>,
   });
 
-  const { handleSubmit, register, reset, formState } = method;
+  const { handleSubmit, control, reset } = method;
+  const { containerRef, focusFirst } = useFocusTrap<HTMLDialogElement>({ isActive: true });
 
+  // Native close restores the trigger before this per-opening form leaves the DOM.
+  useLayoutEffect(() => {
+    const dialog = containerRef.current;
+    const trigger = document.activeElement;
+    return () => {
+      if (dialog?.open) dialog.close();
+      if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus();
+    };
+  }, [containerRef]);
+
+  const defaultRole = roles[0];
   useEffect(() => {
-    reset(initialValues);
-  }, [onClose]);
+    reset({ role: defaultRole, ...initialValues });
+  }, [initialValues, reset, defaultRole]);
 
-  // Behåll avmontering när dialogen är stängd: flera partavsnitt äger varsin
-  // instans, men bara det öppna formuläret ska finnas i DOM.
-  if (!show) return null;
+  // The form mounts on open; keep the close action focused after the header mounts.
+  useEffect(() => {
+    focusFirst();
+  }, [focusFirst]);
 
   const onSave = (data: StakeholderDTO) => {
     const merged = editableFields ? { ...initialValues, ...data } : data;
@@ -78,165 +103,159 @@ export const StakeholderFormModal: React.FC<{
     onClose();
   };
 
-  const title =
-    edit ? t('errand-information:stakeholder.modal.edit_title') : t('errand-information:stakeholder.modal.add_title');
+  const fields: {
+    name: 'firstName' | 'lastName' | 'emails.0' | 'phoneNumbers.0' | 'address' | 'careOf' | 'zipCode' | 'city';
+    owner: keyof StakeholderDTO;
+    label: string;
+    testId: string;
+    required?: boolean;
+  }[] = [
+    {
+      name: 'firstName',
+      owner: 'firstName',
+      label: t('errand-information:stakeholder.modal.first_name'),
+      testId: 'modal-firstName-input',
+      required: true,
+    },
+    {
+      name: 'lastName',
+      owner: 'lastName',
+      label: t('errand-information:stakeholder.modal.last_name'),
+      testId: 'modal-lastName-input',
+      required: true,
+    },
+    {
+      name: 'emails.0',
+      owner: 'emails',
+      label: t('errand-information:stakeholder.email'),
+      testId: 'modal-email-input',
+    },
+    {
+      name: 'phoneNumbers.0',
+      owner: 'phoneNumbers',
+      label: t('errand-information:stakeholder.phone'),
+      testId: 'modal-phone-input',
+    },
+    {
+      name: 'address',
+      owner: 'address',
+      label: t('errand-information:stakeholder.modal.address'),
+      testId: 'modal-address-input',
+    },
+    {
+      name: 'careOf',
+      owner: 'careOf',
+      label: t('errand-information:stakeholder.modal.care_of'),
+      testId: 'modal-careOf-input',
+    },
+    {
+      name: 'zipCode',
+      owner: 'zipCode',
+      label: t('errand-information:stakeholder.modal.zip_code'),
+      testId: 'modal-zipCode-input',
+    },
+    { name: 'city', owner: 'city', label: t('errand-information:stakeholder.modal.city'), testId: 'modal-city-input' },
+  ];
+  const roleOptions =
+    metadata?.roles
+      ?.filter((role) => roles.includes(role.name))
+      .map((role) => ({ value: role.name, label: role.displayName })) ?? [];
 
   return (
-    <ModalLayer
-      id={dialogId}
-      variant="dialog"
+    <Dialog
+      ref={containerRef}
       data-cy="manual-person-modal"
-      show={show}
-      onClose={onClose}
-      initialFocus={closeButtonRef}
-      label={title}
-      className="overflow-x-hidden"
+      isOpen
+      width={640}
+      purpose="form"
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <div className="sk-modal-dialog-header">
-        <h2 className="sk-modal-dialog-header-title">{title}</h2>
-        <Button
-          ref={closeButtonRef}
-          className="sk-modal-dialog-close"
-          variant="tertiary"
-          iconButton
-          showBackground={false}
-          size="sm"
-          aria-label={`${t('layout:controls.close')} ${title}`}
-          onClick={onClose}
-        >
-          <X aria-hidden="true" />
-        </Button>
-      </div>
-      <Modal.Content>
-        {(showField('firstName') || showField('lastName')) && (
-          <div className="flex gap-8">
-            {showField('firstName') && (
-              <FormControl required className="min-w-0 flex-1">
-                <FormFieldLabel>{t('errand-information:stakeholder.modal.first_name')}</FormFieldLabel>
-                <Input data-cy="modal-firstName-input" {...register(`firstName`)} />
-                {formState.errors.firstName && (
-                  <FormErrorMessage data-cy="firstName-input-error">
-                    {formState.errors.firstName.message}
-                  </FormErrorMessage>
-                )}
-              </FormControl>
-            )}
-            {showField('lastName') && (
-              <FormControl required className="min-w-0 flex-1">
-                <FormFieldLabel>{t('errand-information:stakeholder.modal.last_name')}</FormFieldLabel>
-                <Input data-cy="modal-lastName-input" {...register(`lastName`)} />
-                {formState.errors.lastName && (
-                  <FormErrorMessage data-cy="lastName-input-error">
-                    {formState.errors.lastName.message}
-                  </FormErrorMessage>
-                )}
-              </FormControl>
-            )}
+      <DialogHeader
+        title={
+          edit ?
+            t('errand-information:stakeholder.modal.edit_title')
+          : t('errand-information:stakeholder.modal.add_title')
+        }
+        onOpenChange={(open) => {
+          if (!open) onClose();
+        }}
+      />
+      <div className="grid min-h-0 min-w-0 gap-4 overflow-y-auto py-4 sm:grid-cols-2">
+        {fields
+          .filter((field) => showField(field.owner) && (Boolean(field.required) || shouldShowContactDetails(roles)))
+          .map((config) => (
+            <Controller
+              key={config.name}
+              control={control}
+              name={config.name}
+              render={({ field, fieldState }) => (
+                <TextInput
+                  ref={field.ref}
+                  htmlName={field.name}
+                  data-cy={config.testId}
+                  label={config.label}
+                  value={field.value ?? ''}
+                  onChange={(value) => {
+                    field.onChange(value);
+                  }}
+                  onBlur={field.onBlur}
+                  isRequired={config.required}
+                  isOptional={!config.required}
+                  width="100%"
+                  status={fieldState.error ? { type: 'error', message: fieldState.error.message } : undefined}
+                  statusVariant="detached"
+                />
+              )}
+            />
+          ))}
+        {showField('role') && (
+          <div className="sm:col-span-2">
+            <Controller
+              control={control}
+              name="role"
+              defaultValue={initialValues?.role ?? roleOptions[0]?.value ?? ''}
+              render={({ field, fieldState }) => (
+                <Selector
+                  data-cy="modal-stakeholder-role-select"
+                  label={t('errand-information:stakeholder.modal.role')}
+                  value={field.value ?? ''}
+                  onChange={(value) => {
+                    field.onChange(value);
+                  }}
+                  onBlur={field.onBlur}
+                  options={roleOptions}
+                  isRequired
+                  width="100%"
+                  status={fieldState.error ? { type: 'error', message: fieldState.error.message } : undefined}
+                  statusVariant="detached"
+                />
+              )}
+            />
           </div>
         )}
-
-        {shouldShowContactDetails(roles) && (
-          <>
-            {(showField('emails') || showField('phoneNumbers')) && (
-              <div className="flex gap-8">
-                {showField('emails') && (
-                  <FormControl className="min-w-0 flex-1">
-                    <FormFieldLabel>{t('errand-information:stakeholder.email')}</FormFieldLabel>
-                    <Input data-cy="modal-email-input" {...register('emails.0')} />
-                    {formState.errors.emails?.[0]?.message && (
-                      <FormErrorMessage data-cy="modal-email-input-error">
-                        {formState.errors.emails[0].message}
-                      </FormErrorMessage>
-                    )}
-                  </FormControl>
-                )}
-                {showField('phoneNumbers') && (
-                  <FormControl className="min-w-0 flex-1">
-                    <FormFieldLabel>{t('errand-information:stakeholder.phone')}</FormFieldLabel>
-                    <Input data-cy="modal-phone-input" {...register('phoneNumbers.0')} />
-                    {formState.errors.phoneNumbers?.[0]?.message && (
-                      <FormErrorMessage data-cy="modal-phone-input-error" className="truncate">
-                        {formState.errors.phoneNumbers[0].message}
-                      </FormErrorMessage>
-                    )}
-                  </FormControl>
-                )}
-              </div>
-            )}
-
-            {(showField('address') || showField('careOf')) && (
-              <div className="flex gap-8">
-                {showField('address') && (
-                  <FormControl className="min-w-0 flex-1">
-                    <FormFieldLabel>{t('errand-information:stakeholder.modal.address')}</FormFieldLabel>
-                    <Input data-cy="modal-address-input" {...register(`address`)} />
-                  </FormControl>
-                )}
-                {showField('careOf') && (
-                  <FormControl className="min-w-0 flex-1">
-                    <FormFieldLabel>{t('errand-information:stakeholder.modal.care_of')}</FormFieldLabel>
-                    <Input data-cy="modal-careOf-input" {...register(`careOf`)} />
-                  </FormControl>
-                )}
-              </div>
-            )}
-
-            {(showField('zipCode') || showField('city')) && (
-              <div className="flex gap-8">
-                {showField('zipCode') && (
-                  <FormControl className="min-w-0 flex-1">
-                    <FormFieldLabel>{t('errand-information:stakeholder.modal.zip_code')}</FormFieldLabel>
-                    <Input data-cy="modal-zipCode-input" {...register(`zipCode`)} />
-                  </FormControl>
-                )}
-                {showField('city') && (
-                  <FormControl className="min-w-0 flex-1">
-                    <FormFieldLabel>{t('errand-information:stakeholder.modal.city')}</FormFieldLabel>
-                    <Input data-cy="modal-city-input" {...register(`city`)} />
-                  </FormControl>
-                )}
-              </div>
-            )}
-          </>
-        )}
-
-        {showField('role') && (
-          <FormControl required className="w-full">
-            <FormFieldLabel>{t('errand-information:stakeholder.modal.role')}</FormFieldLabel>
-            <Select data-cy="modal-stakeholder-role-select" className="w-full" {...register(`role`)}>
-              {metadata?.roles?.map(
-                (role) =>
-                  roles?.includes(role.name) && (
-                    <Select.Option key={role.name} value={role.name}>
-                      {role.displayName}
-                    </Select.Option>
-                  )
-              )}
-            </Select>
-          </FormControl>
-        )}
-      </Modal.Content>
-
-      {/* Avbryt står först och spara sist, som i formulärets övriga beslut: den bekräftande
-          åtgärden ligger där blicken slutar. */}
-      <Modal.Footer className="max-sm:flex-col max-sm:gap-8">
-        <Button data-cy="modal-cancel-person-button" variant="secondary" onClick={onClose} className="max-sm:w-full">
-          {t('errand-information:stakeholder.modal.cancel')}
-        </Button>
+      </div>
+      <div className="flex flex-wrap justify-end gap-3 pt-4">
+        <Button
+          data-cy="modal-cancel-person-button"
+          label={t('errand-information:stakeholder.modal.cancel')}
+          variant="secondary"
+          onClick={onClose}
+        />
         <Button
           data-cy="modal-add-person-button"
+          label={
+            edit ?
+              t('errand-information:stakeholder.modal.save_edit')
+            : t('errand-information:stakeholder.modal.save_add')
+          }
           variant="primary"
-          color="vattjom"
-          onClick={(e) => {
-            void handleSubmit(onSave)(e);
+          onClick={(event) => {
+            void handleSubmit(onSave)(event);
           }}
-          className="max-sm:w-full"
-        >
-          {edit ?
-            t('errand-information:stakeholder.modal.save_edit')
-          : t('errand-information:stakeholder.modal.save_add')}
-        </Button>
-      </Modal.Footer>
-    </ModalLayer>
+        />
+      </div>
+    </Dialog>
   );
 };

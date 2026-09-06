@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 export const UserContent: React.FC = () => {
   return (
-    <div className="flex flex-col gap-32">
+    <div className="flex flex-col gap-6">
       <StakeholderList roles={['PRIMARY']} hideRoleSelect sectionCards fieldId={USER_FIELD_ID} />
     </div>
   );

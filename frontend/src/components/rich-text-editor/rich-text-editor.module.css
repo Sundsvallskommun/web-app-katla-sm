@@ -1,0 +1,79 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--color-border-emphasized);
+  border-radius: var(--radius-element);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+.editor:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.editor[data-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.editor[data-disabled='true'] {
+  opacity: 0.6;
+}
+
+.toolbar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-background-muted);
+}
+
+.toolbar button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+.toolbar button[aria-pressed='true'] {
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+}
+
+.surface {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.surface :global(.ql-container) {
+  flex: 1 1 auto;
+  height: 12.5rem;
+  min-height: 0;
+  font: inherit;
+}
+
+.surface :global(.ql-editor) {
+  padding: 1rem;
+  font: inherit;
+  overflow-wrap: anywhere;
+}
+
+.surface :global(.ql-editor h1) {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.surface :global(.ql-editor h2) {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.surface :global(.ql-editor a) {
+  color: var(--color-accent);
+  text-decoration: underline;
+}

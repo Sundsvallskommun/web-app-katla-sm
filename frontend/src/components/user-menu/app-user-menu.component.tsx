@@ -1,18 +1,20 @@
 'use client';
 
-import { Avatar, cx, PopupMenu, UserMenuProps } from '@sk-web-gui/react';
-import { forwardRef, ReactNode } from 'react';
+import { Avatar } from '@astryxdesign/core/Avatar';
+import type { ButtonSize } from '@astryxdesign/core/Button';
+import { DropdownMenu, DropdownMenuDivider } from '@astryxdesign/core/DropdownMenu';
+import type { UserMenuGroup } from '@layouts/userMenuGroup';
+import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-interface AppUserMenuProps extends UserMenuProps {
+interface AppUserMenuProps extends HTMLAttributes<HTMLDivElement> {
   buttonLabel?: string;
-  /** Sidhuvudet i ärendevyn är mörkt; knappen måste då rita sig ljus för att synas. */
-  buttonInverted?: boolean;
-  /**
-   * Ersätter avataren i knappen. Används där namnet redan står utskrivet bredvid menyn –
-   * avataren upprepar då bara det som redan syns, och knappen behöver bara visa att den öppnar.
-   */
   buttonIcon?: ReactNode;
+  buttonSize?: ButtonSize;
+  initials?: string;
+  menuTitle?: string;
+  menuSubTitle?: string;
+  menuGroups: UserMenuGroup[];
 }
 
 export const AppUserMenu = forwardRef<HTMLDivElement, AppUserMenuProps>((props, ref) => {
@@ -20,64 +22,48 @@ export const AppUserMenu = forwardRef<HTMLDivElement, AppUserMenuProps>((props, 
   const {
     buttonLabel = t('layout:controls.open_user_menu'),
     buttonIcon,
-    buttonInverted = false,
-    buttonRounded = true,
     buttonSize = 'lg',
     className,
-    image,
-    imageAlt = '',
-    imageElem,
     initials,
     menuGroups,
     menuSubTitle,
     menuTitle,
-    placeholderImage,
     ...rest
   } = props;
 
   return (
-    <div ref={ref} className={cx('sk-usermenu', className)} {...rest}>
-      <PopupMenu align="end">
-        <PopupMenu.Button
-          aria-label={buttonLabel}
-          size={buttonSize}
-          showBackground={false}
-          className="sk-usermenu-button"
-          rounded={buttonRounded}
-          inverted={buttonInverted}
-          variant="tertiary"
-          iconButton
-        >
-          {buttonIcon ?? (
-            <Avatar
-              size={buttonSize}
-              rounded={buttonRounded}
-              initials={initials}
-              imageUrl={image}
-              imageAlt={imageAlt}
-              placeholderImage={placeholderImage}
-              imageElement={imageElem}
-            />
-          )}
-        </PopupMenu.Button>
-        <PopupMenu.Panel>
-          {[menuTitle, menuSubTitle].some(Boolean) && (
-            <PopupMenu.Group>
+    <div ref={ref} className={className} {...rest}>
+      <DropdownMenu
+        alignment="end"
+        menuWidth={280}
+        hasChevron={false}
+        button={{
+          label: buttonLabel,
+          size: buttonSize,
+          variant: 'ghost',
+          isIconOnly: true,
+          icon: buttonIcon ?? <Avatar name={initials} alt="" size={32} tooltip={false} />,
+        }}
+      >
+        {[menuTitle, menuSubTitle].some(Boolean) && (
+          <>
+            <div className="px-3 py-2">
               <div className="font-bold">{menuTitle}</div>
-              <small>{menuSubTitle}</small>
-            </PopupMenu.Group>
-          )}
-          <PopupMenu.Items>
-            {menuGroups.map((group, groupIndex) => (
-              <PopupMenu.Group aria-label={group.label} role="group" key={`app-user-menu-${groupIndex}`}>
-                {group.elements.map((item, itemIndex) => (
-                  <PopupMenu.Item key={`app-user-menu-${groupIndex}-${itemIndex}`}>{item.element()}</PopupMenu.Item>
-                ))}
-              </PopupMenu.Group>
+              {menuSubTitle && <small>{menuSubTitle}</small>}
+            </div>
+            <DropdownMenuDivider />
+          </>
+        )}
+        {menuGroups.map((group) => (
+          <div aria-label={group.label} role="group" key={group.label}>
+            {group.elements.map((item) => (
+              <div role="presentation" key={item.label}>
+                {item.element()}
+              </div>
             ))}
-          </PopupMenu.Items>
-        </PopupMenu.Panel>
-      </PopupMenu>
+          </div>
+        ))}
+      </DropdownMenu>
     </div>
   );
 });

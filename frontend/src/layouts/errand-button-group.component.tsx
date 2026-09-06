@@ -1,4 +1,6 @@
 import i18nConfig from '@app/i18nConfig';
+import { Button } from '@astryxdesign/core/Button';
+import { useToast } from '@astryxdesign/core/Toast';
 import { CancelErrandDialog } from '@components/cancel-errand-dialog.component';
 import { COLLEAGUE_FIELD_ID, FACILITY_FIELD_ID, USER_FIELD_ID } from '@components/errand-sections/section-field-ids';
 import {
@@ -7,14 +9,13 @@ import {
   ErrandFormValidationError,
   jsonParametersToErrandFormData,
 } from '@components/json/utils/schema-utils';
-import { ModalLayer } from '@components/modal-layer/modal-layer.component';
+import { SubmitErrandDialog } from '@components/submit-errand-dialog.component';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
-import { Button, Dialog, Link, useSnackbar } from '@sk-web-gui/react';
 import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
 import { useRouter } from 'next/navigation';
-import { useId, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
@@ -31,16 +32,13 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   const { t } = useTranslation();
   const { t: tForms, i18n } = useTranslation('forms');
   const locale = i18n.resolvedLanguage ?? i18nConfig.defaultLocale;
-  const toastMessage = useSnackbar();
+  const toast = useToast();
   const router = useRouter();
   const context = useFormContext<ErrandFormDTO>();
   const { getValues, reset, watch } = context;
   const { setShowValidation, setErrors } = useFormValidation();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isCancelOpen, setIsCancelOpen] = useState<boolean>(false);
-  const submitDialogId = useId();
-  const cancelSubmitButtonRef = useRef<HTMLButtonElement>(null);
-  const submitTitle = t('errand-information:submit_confirm.title');
   const { prepareErrandForApi, getFacilityStatus } = usePrepareErrand();
 
   const errandStatus = watch('status');
@@ -55,17 +53,16 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       const errandData = prepareErrandForApi(getValues(), 'DRAFT');
       const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
       const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
-      toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
+      toast({ type: 'info', body: t('errand-information:save_message.draft') });
       reset({ ...errand, errandFormData });
 
       if (isNewErrand) {
         router.push(`/arende/${errand.errandNumber}/grundinformation`);
       }
     } catch (error: unknown) {
-      toastMessage({
-        position: 'bottom',
-        status: 'error',
-        message: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
+      toast({
+        type: 'error',
+        body: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
       });
     }
   };
@@ -77,17 +74,16 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       const errandData = prepareErrandForApi(getValues(), 'NEW');
       const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
       const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
-      toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.register') });
+      toast({ type: 'info', body: t('errand-information:save_message.register') });
       reset({ ...errand, errandFormData });
 
       // Kvittosidan, inte ärendet: rapportören är klar och ska inte landa i ett formulär
       // som inte längre går att ändra.
       router.push('/arende/inskickad');
     } catch (error: unknown) {
-      toastMessage({
-        position: 'bottom',
-        status: 'error',
-        message: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
+      toast({
+        type: 'error',
+        body: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
       });
     }
   };
@@ -156,44 +152,36 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   }
 
   return (
-    // Dialogerna ligger utanför knappraden: som flexbarn där lade radens gap ut ett tomrum
-    // efter sista knappen, ett för varje osynlig dialog.
     <div>
-      <div className="flex flex-wrap items-center gap-16 md:gap-24">
-        {/* Avbryt är utgången ur formuläret, inte en av dess åtgärder. Som understruken länk
-            konkurrerar den inte visuellt med Skicka rapport, som är det man är här för att göra. */}
+      <div className="flex flex-wrap items-center gap-4 md:gap-6">
         {isNewErrand && (
-          <Link
-            as="button"
-            type="button"
+          <Button
+            label={t('errand-information:cancel')}
+            variant="ghost"
             onClick={() => {
               setIsCancelOpen(true);
             }}
-          >
-            {t('errand-information:cancel')}
-          </Link>
+          />
         )}
         {draftEnabled && (
           <Button
+            label={t('errand-information:save_draft')}
             data-cy="save-draft-errand"
             variant="primary"
             onClick={() => {
               void onSaveDraft();
             }}
-          >
-            {t('errand-information:save_draft')}
-          </Button>
+          />
         )}
         <Button
+          label={t('errand-information:register')}
           data-cy="register-errand"
           variant="primary"
-          color="vattjom"
+
           onClick={() => {
             void onValidateBeforeRegister();
           }}
-        >
-          {t('errand-information:register')}
-        </Button>
+        />
       </div>
       <CancelErrandDialog
         show={isCancelOpen}
@@ -206,47 +194,13 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       />
       {/* Beskedet står vänsterställt som en fråga med sitt svar, inte som en centrerad notis:
           det är ett beslut som ska läsas innan knapparna, inte en bekräftelse i efterhand. */}
-      <ModalLayer
-        id={submitDialogId}
-        variant="dialog"
-        show={isOpen}
-        onClose={() => {
-          setIsOpen(false);
+      <SubmitErrandDialog
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        onConfirm={() => {
+          void onRegister();
         }}
-        initialFocus={cancelSubmitButtonRef}
-        label={submitTitle}
-      >
-        <div className="sk-modal-dialog-header">
-          <div className="sk-modal-dialog-header-title">
-            <h2 className="text-h4-sm text-dark-primary">{submitTitle}</h2>
-          </div>
-        </div>
-        <Dialog.Content className="flex flex-col items-start gap-12 text-left">
-          <p>{t('errand-information:submit_confirm.question')}</p>
-        </Dialog.Content>
-
-        <Dialog.Buttons className="flex-col items-start gap-16 sm:flex-row sm:items-center sm:justify-start">
-          <Button
-            ref={cancelSubmitButtonRef}
-            variant="secondary"
-            onClick={() => {
-              setIsOpen(false);
-            }}
-          >
-            {t('errand-information:cancel')}
-          </Button>
-          <Button
-            data-cy="submit-button"
-            variant="primary"
-            color="vattjom"
-            onClick={() => {
-              void onRegister();
-            }}
-          >
-            {t('errand-information:submit_confirm.submit')}
-          </Button>
-        </Dialog.Buttons>
-      </ModalLayer>
+      />
     </div>
   );
 };

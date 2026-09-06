@@ -1,9 +1,9 @@
 'use client';
 
+import { IconButton } from '@astryxdesign/core/IconButton';
 import { LinkButton } from '@components/navigation/link-button.component';
 import { NotificationsBell } from '@components/notifications/notification-bell';
 import { NotificationsWrapper } from '@components/notifications/notification-wrapper';
-import { Button } from '@sk-web-gui/react';
 import { capitalize } from 'lodash';
 import { Menu, Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -33,48 +33,42 @@ export const MobileOverviewLayout: React.FC = () => {
     <>
       <MainPageMobileHeader
         actions={
-          <div className="flex items-center gap-12">
-            <div className="[&>button]:!mx-0">
-              <NotificationsBell
-                inverted
-                expanded={showNotifications}
-                toggleShow={() => {
-                  setShowNotifications((current) => !current);
-                }}
-              />
-            </div>
-            <Button
-              inverted
-              iconButton
-              variant="tertiary"
-              aria-label={t('layout:controls.open_menu')}
+          <div className="flex items-center gap-3">
+            <NotificationsBell
+              expanded={showNotifications}
+              toggleShow={() => {
+                setShowNotifications((current) => !current);
+              }}
+            />
+            <IconButton
+              variant="ghost"
+              label={t('layout:controls.open_menu')}
+              icon={<Menu aria-hidden="true" />}
               aria-controls={overlay === 'menu' ? 'mobile-overview-menu' : undefined}
               aria-expanded={overlay === 'menu'}
               onClick={() => {
                 setOverlay('menu');
               }}
-            >
-              <Menu />
-            </Button>
+            />
           </div>
         }
       >
-        <div className="px-24 py-12">
+        <div className="px-6 py-3">
           <LinkButton
             href="/arende/registrera"
-            color="vattjom"
+            label={t('filtering:new_errand_mobile')}
             variant="primary"
             className="w-full"
-            leftIcon={<Plus aria-hidden="true" />}
+            icon={<Plus aria-hidden="true" />}
           >
             {t('filtering:new_errand_mobile')}
           </LinkButton>
         </div>
 
-        <div className="px-24 pt-8 pb-12">
-          <h2 className="text-h3-md">{statusLabel}</h2>
+        <div className="px-6 pt-2 pb-3">
+          <h2 className="text-xl font-semibold">{statusLabel}</h2>
           {rows.length < totalElements && (
-            <span className="text-small text-dark-secondary">
+            <span className="text-sm text-muted">
               {t('filtering:showing_of', { shown: rows.length, total: totalElements })}
             </span>
           )}
@@ -83,13 +77,12 @@ export const MobileOverviewLayout: React.FC = () => {
         <MobileErrandsList rows={rows} isLoading={isLoading} hasMore={hasMore} loadMore={loadMore} errors={errors} />
       </MainPageMobileHeader>
 
-      {overlay === 'menu' && (
-        <MobileMenuBody
-          onClose={() => {
-            setOverlay(null);
-          }}
-        />
-      )}
+      <MobileMenuBody
+        show={overlay === 'menu'}
+        onClose={() => {
+          setOverlay(null);
+        }}
+      />
 
       <NotificationsWrapper show={showNotifications} setShow={setShowNotifications} />
     </>

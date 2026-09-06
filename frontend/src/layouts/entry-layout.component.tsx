@@ -1,39 +1,31 @@
+import { Stack } from '@astryxdesign/core/Stack';
 import { LanguageSwitchButton } from '@components/misc/language-switch-button.component';
-import { cx, Logo } from '@sk-web-gui/react';
+import type { ReactNode } from 'react';
 
-import EmptyLayout from './empty-layout/empty-layout.component';
+import styles from './app-shell.module.css';
+import { MunicipalityLogo } from './municipality-logo.component';
 
-export const EntryLayout: React.FC<{
-  children: React.ReactNode;
+export const EntryLayout = ({
+  children,
+  className,
+  logoClasses,
+}: {
+  children: ReactNode;
   className?: string;
   logoClasses?: string;
-}> = ({ children, className, logoClasses }) => {
-  return (
-    <EmptyLayout>
-      <div className="relative">
-        {/* Inloggningen ligger före allt annat i flödet, och det är här en användare som
-            inte läser svenska först möter appen. Utan språkvalet här måste hen logga in på
-            ett språk hen inte förstår för att sedan kunna byta. */}
-        <div className="absolute top-0 right-0 z-10 p-16 pt-[calc(1.6rem+env(safe-area-inset-top))] lg:p-24">
-          <LanguageSwitchButton />
-        </div>
-        <div className="absolute w-full bg-vattjom-background-200">
-          <div className="h-[26.4rem] max-w-[100rem] mx-auto relative overflow-hidden">
-            <div className="hidden lg:block -mt-[4rem] -ml-34 absolute w-[36rem]">
-              <Logo variant="symbol" className="text-vattjom-surface-accent" />
-            </div>
-          </div>
-        </div>
-        <div
-          className={cx('relative flex flex-col items-center justify-center px-20 py-40 lg:py-80 lg:px-40', className)}
-        >
-          <Logo
-            variant="logo"
-            className={cx(`text-black w-[16.4rem] h-[5.6rem] lg:h-[7.2rem] mb-32 lg:mb-48`, logoClasses)}
-          />
-          {children}
-        </div>
-      </div>
-    </EmptyLayout>
-  );
-};
+}) => (
+  <Stack minHeight="100dvh" padding={6} gap={8}>
+    <Stack direction="horizontal" justify="end">
+      <LanguageSwitchButton />
+    </Stack>
+    <Stack
+      align="center"
+      gap={8}
+      paddingBlock={8}
+      className={[styles.entryContent, className].filter(Boolean).join(' ')}
+    >
+      <MunicipalityLogo className={logoClasses} />
+      {children}
+    </Stack>
+  </Stack>
+);

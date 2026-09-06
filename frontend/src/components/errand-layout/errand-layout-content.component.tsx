@@ -1,6 +1,10 @@
 'use client';
 
 import { pathWithoutLocale } from '@app/locale-path';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Spinner } from '@astryxdesign/core/Spinner';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Tab, TabList } from '@astryxdesign/core/TabList';
 import { jsonParametersToErrandFormData } from '@components/json/utils/schema-utils';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { getVisibleTabs } from '@components/tabs/tabs';
@@ -12,7 +16,6 @@ import BaseErrandLayout from '@layouts/base-errand-layout/base-errand-layout.com
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
 import Main from '@layouts/main/main.component';
 import { getErrandUsingErrandNumber } from '@services/errand-service/errand-service';
-import { Spinner, Tabs } from '@sk-web-gui/react';
 import { ErrandFormHandover, takeErrandFormHandover } from '@utils/errand-form-handover';
 import { default as NextLink } from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
@@ -73,25 +76,6 @@ interface ErrandRouteContentProps {
   children: React.ReactNode;
   route: ErrandRoute;
 }
-
-// Tabs identifierar sitt direkta Button-barn via komponentreferens. Att skicka
-// de polymorfa länkpropsen genom ett objekt bevarar den identiteten och går
-// samtidigt runt den installerade deklarationen, som inte exponerar målets props.
-const createLinkTabProps = (href: string) => ({ as: NextLink, href });
-
-/**
- * Registreringen visar bara ett innehåll och får därför ingen fliklist — en ensam flik är
- * en kontroll som inte leder någonstans. Innehållsytan delas med flikvyn, så att sidorna
- * ser likadana ut när ärendet väl finns och flikarna tillkommer.
- *
- * Formuläret har inget eget ytterkort: avsnitten bär sina egna kort, och ett kort runt dem
- * hade bara ramat in ramarna. Sidmarginalen behövs därför bara på smal skärm, där innehållet
- * annars går ända ut i kanten.
- */
-const ERRAND_CONTENT_CLASS = 'mx-auto w-full max-w-[160rem] px-16 md:px-[12rem]';
-const ERRAND_PANEL_CLASS = 'pt-24 pb-80';
-/** Kvittot har ingen rubrikrad ovanför sig och behöver därför sitt eget toppavstånd. */
-const RECEIPT_PANEL_CLASS = 'pt-64 pb-80';
 
 const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route }) => {
   const { t } = useTranslation();
@@ -212,10 +196,10 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   if (loadErrors.length > 0 || loadState !== 'ready' || metadataLoadState !== 'ready' || !metadata) {
     return (
       <FormProvider {...methods}>
-        <div className="bg-background-content h-screen min-h-screen flex items-center justify-center p-24">
+        <div className="bg-canvas min-h-dvh flex items-center justify-center p-6">
           {loadErrors.length > 0 ?
             <ErrorAlertList messages={loadErrors} />
-          : <Spinner aria-label={t('forms:loading')} />}
+          : <Spinner label={t('forms:loading')} />}
         </div>
       </FormProvider>
     );
@@ -226,9 +210,9 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
       <FormValidationProvider>
         <a
           href="#content"
-          // Över sidhuvudet (15), under modala bakgrunder (19+). Vanlig ankarnavigering
-          // flyttar fokus till sidans gemensamma, programmässigt fokuserbara main.
-          className="sr-only rounded-button-md bg-background-content text-dark-primary focus:not-sr-only focus:fixed focus:top-16 focus:left-16 focus:z-[18] focus:w-max focus:max-w-[calc(100vw-3.2rem)] focus:p-12 focus:ring focus:ring-offset-2"
+          // Länken ligger över sidhuvudet. Ankarnavigering flyttar fokus till
+          // sidans gemensamma, programmässigt fokuserbara main.
+          className="sr-only rounded bg-surface text-foreground focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[18] focus:w-max focus:max-w-[calc(100vw-2rem)] focus:p-3 focus:ring focus:ring-offset-2"
         >
           {t('layout:header.goto_content')}
         </a>
@@ -239,61 +223,42 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
         <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
           {showMobileWizard ?
             <MobileWizard />
-          : <div className="grow shrink overflow-y-auto">
-              <div className="bg-transparent">
-                <div className="mb-xl">
-                  {/* Kvittot bär sitt eget besked i kortet och har inga åtgärder kvar, så hela
-                      raden med rubrik och knappar utgår där. */}
-                  {/* Raden följer med vid skroll så att åtgärderna alltid är nåbara — rapporten
-                      är lång, och utan detta måste man skrolla tillbaka upp för att skicka in.
-                      Egen bakgrund krävs: kortet skulle annars synas rakt igenom raden.
-                      Klistrar mot skrollytan (.grow.shrink.overflow-y-auto), inte mot fönstret. */}
-                  {!submittedView && (
-                    <div
-                      className={
-                        // Raden klistrar sig mot sidhuvudet vid skroll, och en toppmarginal försvinner då ur
-                        // beräkningen. Utan den är avståndet detsamma överst på sidan som under skroll.
-                        `sticky top-0 z-10 bg-background-content flex flex-col md:flex-row justify-between py-24 gap-12 ${ERRAND_CONTENT_CLASS}`
-                      }
-                    >
-                      <h1 className="text-h2-sm md:text-h2-lg">{getHeaderTitle()}</h1>
-                      <ErrandButtonGroup isNewErrand={registerNewErrand} />
-                    </div>
-                  )}
-                  <Main>
-                    {registerNewErrand || submittedView ?
-                      <div className={ERRAND_CONTENT_CLASS}>
-                        <div className={submittedView ? RECEIPT_PANEL_CLASS : ERRAND_PANEL_CLASS}>{children}</div>
-                      </div>
-                    : <Tabs
-                        className={`${ERRAND_CONTENT_CLASS} pt-22`}
-                        tabslistClassName="border-0 -m-b-12 flex-wrap ml-10 overflow-x-auto"
-                        panelsClassName="border-t-1"
-                        size="sm"
-                        // Vilken flik som är vald ligger i adressen, inte i komponentens eget läge:
-                        // varje flik är en länk, och en direktlänk ska markera rätt flik.
-                        current={activeTabIndex}
-                      >
-                        {tabs.map((tab, index) => {
-                          return (
-                            <Tabs.Item key={tab.path}>
-                              <Tabs.Button {...createLinkTabProps(tab.path)} className="text-base whitespace-nowrap">
-                                {t(tab.labelKey)}
-                              </Tabs.Button>
-                              <Tabs.Content>
-                                {/* Varje flik är en egen sida, och children är den sida som just nu
-                                    är laddad. Bara den valda flikens panel får innehållet — annars
-                                    hade sidan renderats en gång per flik. */}
-                                <div className={ERRAND_PANEL_CLASS}>{index === activeTabIndex ? children : null}</div>
-                              </Tabs.Content>
-                            </Tabs.Item>
-                          );
-                        })}
-                      </Tabs>
-                    }
-                  </Main>
+          : <div className="flex-1 min-h-0 overflow-y-auto">
+              {!submittedView && (
+                <div className="sticky top-0 z-10 border-b border-default bg-surface">
+                  <Stack
+                    direction="horizontal"
+                    align="center"
+                    justify="between"
+                    wrap="wrap"
+                    gap={4}
+                    padding={6}
+                    maxWidth={1200}
+                    style={{ marginInline: 'auto' }}
+                  >
+                    <Heading level={1}>{getHeaderTitle()}</Heading>
+                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                  </Stack>
                 </div>
-              </div>
+              )}
+              <Main>
+                <Stack gap={6} padding={6} maxWidth={1200} style={{ marginInline: 'auto' }}>
+                  {!registerNewErrand && !submittedView && (
+                    <TabList
+                      value={tabs[activeTabIndex]?.path ?? ''}
+                      // The route is the sole owner of selection; native link navigation changes it.
+                      onChange={() => undefined}
+                      aria-label={getHeaderTitle()}
+                      hasDivider
+                    >
+                      {tabs.map((tab) => (
+                        <Tab key={tab.path} value={tab.path} label={t(tab.labelKey)} href={tab.path} as={NextLink} />
+                      ))}
+                    </TabList>
+                  )}
+                  {children}
+                </Stack>
+              </Main>
             </div>
           }
         </BaseErrandLayout>

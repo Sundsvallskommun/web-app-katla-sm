@@ -1,15 +1,17 @@
 import { ErrandTable } from '@components/errand-table/errand-table.component';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import type { useOverviewErrands } from 'src/hooks/use-overview-errands';
+import { useSortStore } from 'src/stores/sort-store';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import commonSv from '../../../locales/sv/common.json';
 
 type ErrandTableData = Pick<
   ReturnType<typeof useOverviewErrands>,
-  'rows' | 'isLoading' | 'totalPages' | 'totalElements'
+  'rows' | 'isLoading' | 'totalPages' | 'totalElements' | 'errandsError' | 'metadataError'
 >;
 
 const useOverviewErrandsMock = vi.fn<() => ErrandTableData>();
@@ -40,6 +42,7 @@ describe('ErrandTable', () => {
 
   beforeEach(() => {
     useOverviewErrandsMock.mockReset();
+    useSortStore.getState().reset();
   });
 
   it('renders valid table body markup and exposes navigation as a named link', () => {
@@ -55,6 +58,8 @@ describe('ErrandTable', () => {
       isLoading: false,
       totalPages: 1,
       totalElements: 1,
+      errandsError: null,
+      metadataError: null,
     });
 
     const { container } = render(
@@ -70,7 +75,14 @@ describe('ErrandTable', () => {
   });
 
   it('announces the initial loading state', () => {
-    useOverviewErrandsMock.mockReturnValue({ rows: [], isLoading: true, totalPages: 1, totalElements: 0 });
+    useOverviewErrandsMock.mockReturnValue({
+      rows: [],
+      isLoading: true,
+      totalPages: 1,
+      totalElements: 0,
+      errandsError: null,
+      metadataError: null,
+    });
 
     render(
       <I18nextProvider i18n={i18n}>
@@ -78,6 +90,29 @@ describe('ErrandTable', () => {
       </I18nextProvider>
     );
 
-    expect(screen.getByRole('status')).toHaveTextContent('Laddar ärenden');
+    expect(screen.getByRole('status')).toHaveAccessibleName('Laddar ärenden');
+  });
+
+  it('changes sorting through named controls and announces the active sort direction', async () => {
+    useOverviewErrandsMock.mockReturnValue({
+      rows: [{ errandNumber: 'AIA-25120019', status: 'NEW', touched: '2026-08-12T08:00:00Z', labels: [] }],
+      isLoading: false,
+      totalPages: 1,
+      totalElements: 1,
+      errandsError: null,
+      metadataError: null,
+    });
+    const user = userEvent.setup();
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ErrandTable />
+      </I18nextProvider>
+    );
+    const sortButton = screen.getByRole('button', { name: commonSv['errand-table'].header.errandNumber });
+    await user.click(sortButton);
+    expect(sortButton.closest('th')).toHaveAttribute('aria-sort', 'descending');
+    await user.click(sortButton);
+    expect(sortButton.closest('th')).toHaveAttribute('aria-sort', 'ascending');
+    expect(useSortStore.getState()).toMatchObject({ sortColumn: 'errandNumber', sortOrder: 'asc', page: 0 });
   });
 });

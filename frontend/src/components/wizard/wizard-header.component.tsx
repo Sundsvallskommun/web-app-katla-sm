@@ -1,4 +1,6 @@
-import { ProgressBar, ProgressStepper } from '@sk-web-gui/react';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Step, Stepper } from '@astryxdesign/core/Stepper';
 import { useTranslation } from 'react-i18next';
 import { useActiveWizardSteps } from 'src/hooks/use-active-wizard-steps';
 import { useWizardStore } from 'src/stores/wizard-store';
@@ -9,27 +11,19 @@ interface WizardHeaderProps {
 
 export const WizardHeader: React.FC<WizardHeaderProps> = ({ variant = 'bar' }) => {
   const { t } = useTranslation();
-  const currentStep = useWizardStore((s) => s.currentStep);
+  const currentStep = useWizardStore((state) => state.currentStep);
   const steps = useActiveWizardSteps();
-
+  const label = t('errand-information:wizard.step_indicator', { current: currentStep + 1, total: steps.length });
   return (
-    <div className="flex flex-col gap-12 px-16 py-12 bg-background-content border-b-1 border-divider">
-      <span className="text-small font-bold">
-        {t('errand-information:wizard.step_indicator', {
-          current: currentStep + 1,
-          total: steps.length,
-        })}
-      </span>
+    <Stack padding={4} className="border-b border-default bg-surface">
       {variant === 'bar' ?
-        <ProgressBar steps={steps.length} current={currentStep + 1} size="sm" color="vattjom" />
-      : <ProgressStepper
-          steps={steps.map((step) => t(step.titleKey))}
-          current={currentStep}
-          size="sm"
-          labelPosition="bottom"
-          noWrap
-        />
+        <ProgressBar label={label} value={currentStep + 1} max={steps.length} />
+      : <Stepper label={label} activeStep={currentStep}>
+          {steps.map((step, index) => (
+            <Step key={step.id} step={index} label={t(step.titleKey)} />
+          ))}
+        </Stepper>
       }
-    </div>
+    </Stack>
   );
 };

@@ -1,6 +1,6 @@
 'use client';
+import { Button } from '@astryxdesign/core/Button';
 import { SubmitButtonProps } from '@rjsf/utils';
-import { Button } from '@sk-web-gui/react';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,14 +19,17 @@ export function SubmitButtonFieldTemplate(props: SubmitButtonProps<Record<string
 
   const label = (buttonOptions.label ?? '') || t('submit_button_default');
   const variant = buttonOptions.variant ?? 'primary';
-  const className = (buttonOptions.className ?? '') || 'mt-[3.2rem]';
+  const className = (buttonOptions.className ?? '') || 'mt-8';
   const leadingIcon = buttonOptions.leadingIcon !== false;
 
   return (
     <div className={className}>
-      <Button type="submit" variant={variant} leftIcon={leadingIcon ? <Plus /> : undefined}>
-        {label}
-      </Button>
+      <Button
+        type="submit"
+        label={label}
+        variant={variant === 'tertiary' ? 'ghost' : variant}
+        icon={leadingIcon ? <Plus aria-hidden="true" /> : undefined}
+      />
     </div>
   );
 }

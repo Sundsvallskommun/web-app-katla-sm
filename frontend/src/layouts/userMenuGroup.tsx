@@ -1,60 +1,47 @@
+import { DropdownMenuSubMenu } from '@astryxdesign/core/DropdownMenu';
 import { LogoutButton } from '@components/buttons/logout-button.component';
 import { ColorSchemeItems } from '@components/misc/color-scheme-items.component';
 import { LanguageItems } from '@components/misc/language-items.component';
-import type { MenuItemGroup } from '@sk-web-gui/react';
-import { PopupMenu } from '@sk-web-gui/react';
 import type { TFunction } from 'i18next';
-import { ChevronRight, Languages, Monitor } from 'lucide-react';
+import { Languages, Monitor } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 interface UserMenuOptions {
-  /**
-   * Språkvalet finns både här och som egen knapp i sidhuvudet. Båda navigerar, så båda
-   * måste ge sidan samma chans att rädda undan det som bara ligger i minnet.
-   */
+  /** Both language controls preserve the same form state before navigating. */
   onBeforeLanguageSwitch?: () => void;
 }
 
-export const createUserMenuGroups = (t: TFunction, options: UserMenuOptions = {}): MenuItemGroup[] => [
+export interface UserMenuGroup {
+  label: string;
+  elements: { label: string; element: () => ReactNode }[];
+}
+
+export const createUserMenuGroups = (t: TFunction, options: UserMenuOptions = {}): UserMenuGroup[] => [
   {
     label: t('layout:controls.open_user_menu'),
     elements: [
       {
         label: t('layout:language.label'),
         element: () => (
-          <PopupMenu position="right" align="start">
-            <PopupMenu.Button className="justify-between w-full" data-cy="language-menu-button">
-              <Languages aria-hidden="true" />
-              <span className="w-full flex justify-between">
-                {t('layout:language.label')}
-                <ChevronRight aria-hidden="true" />
-              </span>
-            </PopupMenu.Button>
-            <PopupMenu.Panel>
-              <LanguageItems onBeforeSwitch={options.onBeforeLanguageSwitch} />
-            </PopupMenu.Panel>
-          </PopupMenu>
+          <DropdownMenuSubMenu
+            label={<span data-cy="language-menu-button">{t('layout:language.label')}</span>}
+            icon={<Languages aria-hidden="true" size={18} />}
+          >
+            <LanguageItems onBeforeSwitch={options.onBeforeLanguageSwitch} />
+          </DropdownMenuSubMenu>
         ),
       },
       {
         label: t('layout:color_scheme.label'),
         element: () => (
-          <PopupMenu position="right" align="start">
-            <PopupMenu.Button className="justify-between w-full">
-              <Monitor aria-hidden="true" />
-              <span className="w-full flex justify-between">
-                {t('layout:color_scheme.label')}
-                <ChevronRight aria-hidden="true" />
-              </span>
-            </PopupMenu.Button>
-            <PopupMenu.Panel>
-              <ColorSchemeItems />
-            </PopupMenu.Panel>
-          </PopupMenu>
+          <DropdownMenuSubMenu label={t('layout:color_scheme.label')} icon={<Monitor aria-hidden="true" size={18} />}>
+            <ColorSchemeItems />
+          </DropdownMenuSubMenu>
         ),
       },
       {
         label: t('common:logout'),
-        element: () => <LogoutButton testId="user-menu-logout-button" />,
+        element: () => <LogoutButton inMenu testId="user-menu-logout-button" />,
       },
     ],
   },

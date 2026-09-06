@@ -1,9 +1,10 @@
 'use client';
 
+import { Heading } from '@astryxdesign/core/Heading';
+import { VStack } from '@astryxdesign/core/VStack';
 import { ErrandTable } from '@components/errand-table/errand-table.component';
 import { MobileOverviewLayout } from '@components/mobile/mobile-overview-layout.component';
 import { useIsOverviewMobile } from '@contexts/overview-mobile-context';
-import Main from '@layouts/main/main.component';
 import { useActiveStatusLabel } from 'src/hooks/use-status-buttons';
 
 export default function Oversikt() {
@@ -15,12 +16,10 @@ export default function Oversikt() {
   }
 
   return (
-    <Main>
+    <VStack gap={6}>
       {/* Rubriken namnger listan man tittar på, samma namn som den valda posten i sidopanelen. */}
-      <div className="flex flex-col gap-24 px-40 py-32">
-        <h1 className="text-h1-md text-dark-primary">{activeStatusLabel}</h1>
-        <ErrandTable />
-      </div>
-    </Main>
+      <Heading level={1}>{activeStatusLabel}</Heading>
+      <ErrandTable />
+    </VStack>
   );
 }

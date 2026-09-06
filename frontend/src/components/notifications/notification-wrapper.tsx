@@ -1,12 +1,13 @@
 'use client';
 
+import { Button } from '@astryxdesign/core/Button';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { useFocusTrap } from '@astryxdesign/core/hooks';
+import { Spinner } from '@astryxdesign/core/Spinner';
 import { ErrorAlert } from '@components/misc/error-alert.component';
-import { MainPageMobileHeader } from '@components/mobile/main-page-mobile-header.component';
-import { ModalLayer } from '@components/modal-layer/modal-layer.component';
 import { getNotifications } from '@services/errand-service/errand-service';
-import { Button, cx, Divider, Header, Spinner } from '@sk-web-gui/react';
 import { Mail, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
 import { useMediaQuery } from 'src/hooks/use-media-query';
@@ -21,10 +22,9 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
   const { t } = useTranslation();
   const { activeNotifications, acknowledgedNotifications, setNotifications } = useNotificationStore();
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
+  const { containerRef } = useFocusTrap<HTMLDialogElement>({ isActive: show });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
   useEffect(() => {
     let active = true;
     setIsLoading(true);
@@ -49,19 +49,15 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
   const hasNotifications = activeNotifications.length > 0 || acknowledgedNotifications.length > 0;
 
   const notificationContent = (
-    <div className="flex-grow mt-sm mb-0 p-24 pt-0 flex flex-col gap-24 overflow-auto">
+    <div className="flex flex-col gap-6 overflow-auto p-5">
       {error && <ErrorAlert message={error} />}
       {isLoading && !hasNotifications && !error ?
-        <div className="flex justify-center p-24">
-          <Spinner aria-label={t('layout:notifications.loading')} />
+        <div className="flex justify-center p-6">
+          <Spinner label={t('layout:notifications.loading')} />
         </div>
       : <>
-          <div className="flex flex-col gap-4">
-            <Divider.Section>
-              <div className="flex gap-sm items-center">
-                <h2 className="text-h4-sm">{t('layout:notifications.new')}</h2>
-              </div>
-            </Divider.Section>
+          <div className="flex flex-col gap-1">
+            <h2 className="border-b border-default pb-3 font-semibold">{t('layout:notifications.new')}</h2>
             {activeNotifications.length > 0 ?
               <ul>
                 {activeNotifications.map((notification) => (
@@ -71,15 +67,11 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
                 ))}
               </ul>
             : !error && !isLoading ?
-              <div className="m-md">{t('layout:notifications.none_new')}</div>
+              <div className="my-4">{t('layout:notifications.none_new')}</div>
             : null}
           </div>
           <div>
-            <Divider.Section>
-              <div className="flex gap-sm items-center">
-                <h2 className="text-h4-sm">{t('layout:notifications.previous')}</h2>
-              </div>
-            </Divider.Section>
+            <h2 className="border-b border-default pb-3 font-semibold">{t('layout:notifications.previous')}</h2>
             {acknowledgedNotifications.length > 0 ?
               <ul>
                 {acknowledgedNotifications.map((notification) => (
@@ -89,7 +81,7 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
                 ))}
               </ul>
             : !error && !isLoading ?
-              <div className="m-md">{t('layout:notifications.none_previous')}</div>
+              <div className="my-4">{t('layout:notifications.none_previous')}</div>
             : null}
           </div>
         </>
@@ -99,48 +91,37 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
 
   const closeButton = (
     <Button
-      ref={closeButtonRef}
-      inverted={isMobile}
-      aria-label={t('layout:notifications.close')}
-      iconButton
-      variant="tertiary"
+      data-autofocus
+      label={t('layout:notifications.close')}
+      icon={<X aria-hidden="true" data-cy="close-message-wrapper-icon" size={20} />}
+      isIconOnly
+      variant="ghost"
       onClick={() => {
         setShow(false);
       }}
       data-cy="close-message-wrapper"
-    >
-      <X aria-hidden="true" data-cy="close-message-wrapper-icon" />
-    </Button>
+    />
   );
 
   return (
-    <ModalLayer
+    <Dialog
+      ref={containerRef}
       id="notifications-panel"
-      show={show}
-      onClose={() => {
-        setShow(false);
-      }}
-      label={t('layout:notifications.panel')}
-      initialFocus={closeButtonRef}
-      className={cx(
-        'inset-y-0 right-0 h-[100dvh] w-full gap-0 rounded-none shadow-100',
-        isMobile ?
-          'left-0 pb-[env(safe-area-inset-bottom)]'
-        : 'left-auto border-1 border-y-0 border-r-0 md:min-w-[50rem] md:w-[50vw] lg:w-[38vw]'
-      )}
+      isOpen={show}
+      onOpenChange={setShow}
+      aria-label={t('layout:notifications.panel')}
+      purpose="form"
+      variant={isMobile ? 'fullscreen' : 'standard'}
+      width="min(560px, 100vw)"
+      maxHeight="100dvh"
+      padding={0}
     >
-      {isMobile ?
-        <MainPageMobileHeader actions={closeButton}>{notificationContent}</MainPageMobileHeader>
-      : <>
-          <Header className="h-[64px] shrink-0 flex justify-between" wrapperClasses="py-4 px-40">
-            <div className="text-h4-sm flex items-center gap-12">
-              <Mail aria-hidden="true" /> {t('layout:notifications.panel')}
-            </div>
-            {closeButton}
-          </Header>
-          {notificationContent}
-        </>
-      }
-    </ModalLayer>
+      <DialogHeader
+        title={t('layout:notifications.panel')}
+        startContent={<Mail aria-hidden="true" />}
+        endContent={closeButton}
+      />
+      {notificationContent}
+    </Dialog>
   );
 };

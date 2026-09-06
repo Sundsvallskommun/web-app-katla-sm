@@ -1,5 +1,5 @@
+import { DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@astryxdesign/core/DropdownMenu';
 import { colorSchemeOptions } from '@components/misc/color-scheme-options';
-import { PopupMenu, RadioButton } from '@sk-web-gui/react';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
 import { useTranslation } from 'react-i18next';
 
@@ -8,21 +8,27 @@ export const ColorSchemeItems = () => {
   const { t } = useTranslation();
 
   return (
-    <PopupMenu.Items aria-label={t('layout:color_scheme.label')}>
+    <DropdownMenuRadioGroup
+      label={t('layout:color_scheme.label')}
+      id="user-menu-color-scheme"
+      value={colorScheme}
+      hasCloseOnSelect={false}
+      onChange={(value) => {
+        const option = colorSchemeOptions.find((candidate) => {
+          const optionValue: string = candidate.value;
+          return optionValue === value;
+        });
+        if (option) setColorScheme(option.value);
+      }}
+    >
       {colorSchemeOptions.map(({ value, labelKey, icon: Icon }) => (
-        <PopupMenu.Item key={value} closeOnClick={false}>
-          <RadioButton
-            name="user-menu-color-scheme"
-            value={value}
-            onChange={() => {
-              setColorScheme(value);
-            }}
-            checked={colorScheme === value}
-          >
-            {t(labelKey)} <Icon aria-hidden="true" className={colorScheme === value ? '' : 'opacity-50'} />
-          </RadioButton>
-        </PopupMenu.Item>
+        <DropdownMenuRadioItem
+          key={value}
+          value={value}
+          label={t(labelKey)}
+          icon={<Icon aria-hidden="true" size={18} />}
+        />
       ))}
-    </PopupMenu.Items>
+    </DropdownMenuRadioGroup>
   );
 };

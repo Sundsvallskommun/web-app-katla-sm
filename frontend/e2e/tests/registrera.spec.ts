@@ -76,8 +76,8 @@ const registerErrandAndExpectDraft = async (page: Page, expectedStakeholderCount
 };
 
 const selectRequiredErrandParameters = async (page: Page) => {
-  const eventType = page.getByTestId('event-type-deviation');
-  const eventConcerns = page.getByTestId('event-concerns-individual');
+  const eventType = page.getByTestId('event-type-deviation').getByRole('radio');
+  const eventConcerns = page.getByTestId('event-concerns-individual').getByRole('radio');
 
   await eventType.check();
   await expect(eventType).toBeChecked();
@@ -158,8 +158,8 @@ test.describe('Register new errand page', () => {
     expect(response.status()).toBe(502);
 
     await expect(page).toHaveURL(/\/arende\/registrera$/);
-    await expect(page.getByTestId('event-type-deviation')).toBeChecked();
-    await expect(page.getByTestId('event-concerns-individual')).toBeChecked();
+    await expect(page.getByTestId('event-type-deviation').getByRole('radio')).toBeChecked();
+    await expect(page.getByTestId('event-concerns-individual').getByRole('radio')).toBeChecked();
     await expect(page.getByText('Något gick fel när ärendet sparades')).toBeVisible();
     await expect(page.getByText('Ärendet skickades in')).toHaveCount(0);
   });
@@ -172,18 +172,18 @@ test.describe('Register new errand page', () => {
 
     //Brukare
     const brukare = sectionByTitle(page, 'Enskild brukare');
-    await brukare.getByTestId('add-manual-person-button').dispatchEvent('click');
+    await brukare.getByTestId('add-manual-person-button').click();
 
     await manuallyAddStakeholder(page);
-    await page.getByTestId('modal-cancel-person-button').click();
-    await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
+    await page.getByTestId('modal-cancel-person-button').filter({ visible: true }).click();
+    await expect(page.getByTestId('manual-person-modal').filter({ visible: true })).toHaveCount(0);
 
     await expect(brukare.getByTestId('reporter-card')).toHaveCount(0);
-    await brukare.getByTestId('add-manual-person-button').dispatchEvent('click');
+    await brukare.getByTestId('add-manual-person-button').click();
 
     await manuallyAddStakeholder(page);
-    await page.getByTestId('modal-add-person-button').click();
-    await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
+    await page.getByTestId('modal-add-person-button').filter({ visible: true }).click();
+    await expect(page.getByTestId('manual-person-modal').filter({ visible: true })).toHaveCount(0);
 
     await expect(brukare.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
@@ -191,18 +191,18 @@ test.describe('Register new errand page', () => {
 
     //Övriga parter
     const ovrigaParter = sectionByTitle(page, 'Övriga parter');
-    await ovrigaParter.getByTestId('add-manual-person-button').dispatchEvent('click');
+    await ovrigaParter.getByTestId('add-manual-person-button').click();
 
     await manuallyAddStakeholder(page);
-    await page.getByTestId('modal-cancel-person-button').click();
-    await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
+    await page.getByTestId('modal-cancel-person-button').filter({ visible: true }).click();
+    await expect(page.getByTestId('manual-person-modal').filter({ visible: true })).toHaveCount(0);
 
     await expect(ovrigaParter.getByTestId('reporter-card')).toHaveCount(0);
-    await ovrigaParter.getByTestId('add-manual-person-button').dispatchEvent('click');
+    await ovrigaParter.getByTestId('add-manual-person-button').click();
 
     await manuallyAddStakeholder(page);
-    await page.getByTestId('modal-add-person-button').click();
-    await expect(page.getByTestId('manual-person-modal')).toHaveCount(0);
+    await page.getByTestId('modal-add-person-button').filter({ visible: true }).click();
+    await expect(page.getByTestId('manual-person-modal').filter({ visible: true })).toHaveCount(0);
 
     await expect(ovrigaParter.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(ovrigaParter.getByTestId('remove-card-button')).toBeVisible();
@@ -223,7 +223,7 @@ test.describe('Register new errand page', () => {
     await expect(brukare.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(brukare.getByTestId('remove-card-button')).toBeVisible();
     await expect(brukare.getByTestId('add-manual-person-button')).toHaveCount(0);
-    await brukare.getByTestId('remove-card-button').dispatchEvent('click');
+    await brukare.getByTestId('remove-card-button').click();
     await expect(brukare.getByTestId('add-manual-person-button')).toBeVisible();
     await addStakeholder(page, brukare, 'PRIMARY');
     await expect(brukare.getByTestId('edit-card-button')).toHaveCount(0);
@@ -261,7 +261,7 @@ test.describe('Register new errand page', () => {
     await expect(ovrigaParter.getByTestId('edit-card-button')).toHaveCount(0);
     await expect(ovrigaParter.getByTestId('remove-card-button')).toBeVisible();
     await expect(ovrigaParter.getByTestId('add-manual-person-button')).toBeVisible();
-    await ovrigaParter.getByTestId('remove-card-button').dispatchEvent('click');
+    await ovrigaParter.getByTestId('remove-card-button').click();
 
     await addEmployeeStakeholder(page, ovrigaParter, 'CONTACT');
     await expect(ovrigaParter.getByTestId('edit-card-button')).toHaveCount(0);
@@ -310,17 +310,21 @@ test.describe('Register new errand page', () => {
     // Rapportören står först, och brukaren finns inte alls innan händelsen berör en
     // enskild brukare. Uppgifter kring avvikelsen renderas som schemaformulär med egna
     // underrubriker (h3) och ingår därför inte i listan.
-    await expect(page.locator('section h2')).toHaveText(['Rapportör', 'Om rapporten', 'Övriga parter']);
+    await expect(page.locator('section h2').filter({ visible: true })).toHaveText([
+      'Rapportör',
+      'Om rapporten',
+      'Övriga parter',
+    ]);
 
-    await page.getByTestId('event-concerns-individual').check();
-    await expect(page.locator('section h2')).toHaveText([
+    await page.getByTestId('event-concerns-individual').getByRole('radio').check();
+    await expect(page.locator('section h2').filter({ visible: true })).toHaveText([
       'Rapportör',
       'Om rapporten',
       'Enskild brukare',
       'Övriga parter',
     ]);
 
-    await page.getByTestId('event-concerns-group-activity').check();
+    await page.getByTestId('event-concerns-group-activity').getByRole('radio').check();
     await expect(sectionByTitle(page, 'Enskild brukare')).toHaveCount(0);
   });
 
@@ -340,10 +344,8 @@ test.describe('Register new errand page', () => {
     // Hjälptexten för Om rapporten står före radioknapparna, och båda fälten har sina rubriker
     const aboutDescription = page.getByText('Ange vilken typ av händelse det gäller och vem eller vilka som berörs.');
     await expect(aboutDescription).toBeVisible();
-    // Etiketterna matchas via klassen, eftersom obligatoriska fält får en asterisk efter texten
-    const formLabels = page.locator('.sk-form-label');
-    await expect(formLabels.filter({ hasText: 'Typ av rapport' })).toBeVisible();
-    await expect(formLabels.filter({ hasText: 'Vem eller vilka berör rapporten?' })).toBeVisible();
+    await expect(page.getByRole('radiogroup', { name: /Typ av rapport/ })).toBeVisible();
+    await expect(page.getByRole('radiogroup', { name: /Vem eller vilka berör rapporten/ })).toBeVisible();
 
     const aboutDescriptionBox = await aboutDescription.boundingBox();
     const eventTypeGroupBox = await page.getByTestId('event-type-group').boundingBox();
@@ -360,8 +362,7 @@ test.describe('Register new errand page', () => {
     await expect(deviationDescription).toBeVisible();
     await expect(misconductDescription).toBeVisible();
 
-    // Designsystemets etikett har fast höjd. Utan höjdöverstyrningen lägger sig
-    // alternativens textblock över varandra i stället för att staplas.
+    // Båda beskrivningarna ska ha egen plats även när texten radbryts.
     const deviationBox = await deviationDescription.boundingBox();
     const misconductBox = await misconductDescription.boundingBox();
     if (!deviationBox || !misconductBox) throw new Error('Saknar mått för hjälptexterna');
@@ -369,10 +370,10 @@ test.describe('Register new errand page', () => {
   });
 
   test('Sections are plain headings without disclosures or icons', async ({ page }) => {
-    await page.getByTestId('event-concerns-individual').check();
+    await page.getByTestId('event-concerns-individual').getByRole('radio').check();
 
     // Inga hopfällbara avsnitt kvar, varken de handkodade eller schemaformulärets
-    await expect(page.locator('.sk-disclosure')).toHaveCount(0);
+    await expect(page.locator('section summary, section button[aria-expanded]')).toHaveCount(0);
 
     // Rubrikerna är kvar och innehållet syns utan att något behöver fällas ut
     const rapportor = sectionByTitle(page, 'Rapportör');

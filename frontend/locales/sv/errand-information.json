@@ -97,7 +97,9 @@
       "save_edit": "Spara",
       "save_add": "Lägg till",
       "cancel": "Avbryt"
-    }
+    },
+    "clear_search": "Rensa sökning",
+    "search_mode": "Sökmetod"
   },
   "submit_confirm": {
     "question": "När du skickar rapporten registreras den och kan inte längre ändras.",

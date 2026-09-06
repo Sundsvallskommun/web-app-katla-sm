@@ -1,5 +1,7 @@
 'use client';
 
+import { Card } from '@astryxdesign/core/Card';
+import { VStack } from '@astryxdesign/core/VStack';
 import { ErrandContentLock } from '@components/errand-content-lock/errand-content-lock.component';
 import { SectionHeader } from '@components/misc/section-header.component';
 import { ReactNode } from 'react';
@@ -17,8 +19,12 @@ export const ErrandSection: React.FC<{
   description?: string;
   children: ReactNode;
 }> = ({ header, description, children }) => (
-  <section className="bg-background-color-mixin-1 rounded-utility flex w-full flex-col gap-32 p-16 md:p-32">
-    <SectionHeader title={header} description={description} />
-    <ErrandContentLock className="w-full">{children}</ErrandContentLock>
+  <section>
+    <Card>
+      <VStack gap={5}>
+        <SectionHeader title={header} description={description} />
+        <ErrandContentLock className="w-full">{children}</ErrandContentLock>
+      </VStack>
+    </Card>
   </section>
 );

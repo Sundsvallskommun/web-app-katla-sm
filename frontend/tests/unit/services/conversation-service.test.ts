@@ -5,7 +5,6 @@ import {
   sendConversationMessage,
   unreadMessageIds,
 } from '@services/conversation-service/conversation-service';
-import { UploadFile } from '@sk-web-gui/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const apiMocks = vi.hoisted(() => ({
@@ -33,14 +32,17 @@ const message = (values: Partial<ConversationMessageDTO>): ConversationMessageDT
 
 describe('conversation service', () => {
   it('skickar meddelandet som JSON i ett multipartfält, med bilagorna bredvid', async () => {
-    const file = { file: new File(['innehåll'], 'bilaga.pdf', { type: 'application/pdf' }) } as UploadFile;
+    const file = new File(['innehåll'], 'bilaga.pdf', { type: 'application/pdf' });
 
     await sendConversationMessage('errand-1', 'conv-1', '<p>Hej</p>', [file]);
 
     const [url, formData, config] = apiMocks.post.mock.calls[0] as [string, FormData, { headers: unknown }];
     expect(url).toBe('supportmanagement/errand/errand-1/conversations/conv-1/messages');
     expect(formData.get('message')).toBe(JSON.stringify({ content: '<p>Hej</p>' }));
-    expect(formData.getAll('attachments')).toHaveLength(1);
+    expect(formData.getAll('attachments')).toEqual([file]);
+    const attachment = formData.get('attachments');
+    expect(attachment).toBeInstanceOf(File);
+    expect(attachment).toMatchObject({ name: 'bilaga.pdf', type: 'application/pdf', size: file.size });
     expect(config.headers).toEqual({ 'Content-Type': 'multipart/form-data' });
   });
 

@@ -1,15 +1,17 @@
 'use client';
 
+import { Avatar } from '@astryxdesign/core/Avatar';
+import { Button } from '@astryxdesign/core/Button';
+import { Dialog } from '@astryxdesign/core/Dialog';
+import { useFocusTrap } from '@astryxdesign/core/hooks';
+import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList';
 import { LogoutButton } from '@components/buttons/logout-button.component';
 import { colorSchemeOptions } from '@components/misc/color-scheme-options';
 import { languageOptions } from '@components/misc/language-options';
-import { ModalLayer } from '@components/modal-layer/modal-layer.component';
 import { OverviewStatusNav } from '@components/sidebars/overview-status-nav.component';
 import { useUserStore } from '@services/user-service/user-service';
-import { Avatar, Button, Divider, RadioButton } from '@sk-web-gui/react';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
 import { X } from 'lucide-react';
-import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguageSwitch } from 'src/hooks/use-language-switch';
 import { useShallow } from 'zustand/react/shallow';
@@ -17,116 +19,95 @@ import { useShallow } from 'zustand/react/shallow';
 import { MainPageMobileHeader } from './main-page-mobile-header.component';
 
 interface MobileMenuBodyProps {
+  show?: boolean;
   onClose: () => void;
 }
 
-export const MobileMenuBody: React.FC<MobileMenuBodyProps> = ({ onClose }) => {
+export const MobileMenuBody: React.FC<MobileMenuBodyProps> = ({ show = true, onClose }) => {
   const { t } = useTranslation();
   const user = useUserStore(useShallow((s) => s.user));
   const { colorScheme, setColorScheme } = useLocalStorage();
   const { currentLanguage, switchTo } = useLanguageSwitch();
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const { containerRef } = useFocusTrap<HTMLDialogElement>({ isActive: show });
 
   return (
-    <ModalLayer
+    <Dialog
+      ref={containerRef}
       id="mobile-overview-menu"
-      show
-      onClose={onClose}
-      label={t('filtering:menu_title')}
-      initialFocus={closeButtonRef}
-      className="inset-0 h-[100dvh] w-full gap-0 rounded-none pb-[env(safe-area-inset-bottom)]"
+      isOpen={show}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
+      aria-label={t('filtering:menu_title')}
+      variant="fullscreen"
+      purpose="form"
+      padding={0}
     >
       <MainPageMobileHeader
         actions={
           <Button
-            ref={closeButtonRef}
-            inverted
-            iconButton
-            variant="tertiary"
-            aria-label={t('layout:controls.close_menu')}
+            data-autofocus
+            isIconOnly
+            variant="ghost"
+            label={t('layout:controls.close_menu')}
+            icon={<X aria-hidden="true" size={20} />}
             onClick={onClose}
-          >
-            <X aria-hidden="true" />
-          </Button>
+          />
         }
       >
-        <div className="flex flex-col gap-16 px-24 py-16">
-          <div className="flex items-center gap-12">
-            <Avatar initials={user.initials} size="md" />
-            <div className="flex flex-col">
-              <span className="font-bold text-base">{user.name}</span>
-              <span className="text-small text-dark-secondary">{user.username}</span>
+        <div className="flex flex-col gap-6 px-6 py-6">
+          <div className="flex items-center gap-3">
+            <Avatar name={user.name} size={40} tooltip={false} />
+            <div className="flex min-w-0 flex-col">
+              <span className="break-words font-bold text-base">{user.name}</span>
+              <span className="break-words text-sm text-muted">{user.username}</span>
             </div>
           </div>
 
-          <Divider />
-
-          <div className="flex flex-col gap-8">
+          <div className="border-y border-default py-4">
             <OverviewStatusNav />
           </div>
 
-          <Divider />
+          <RadioList
+            label={t('layout:color_scheme.label')}
+            htmlName="mobile-color-scheme"
+            value={colorScheme}
+            onChange={(value) => {
+              const option = colorSchemeOptions.find((candidate) => {
+                const optionValue: string = candidate.value;
+                return optionValue === value;
+              });
+              if (option) setColorScheme(option.value);
+            }}
+          >
+            {colorSchemeOptions.map(({ value, labelKey, icon: Icon }) => (
+              <RadioListItem
+                key={value}
+                value={value}
+                label={t(labelKey)}
+                endContent={<Icon aria-hidden="true" size={18} />}
+              />
+            ))}
+          </RadioList>
 
-          <div className="flex flex-col gap-8">
-            <span id="mobile-color-scheme-label" className="text-small font-bold">
-              {t('layout:color_scheme.label')}
-            </span>
-            <RadioButton.Group
-              aria-labelledby="mobile-color-scheme-label"
-              className="flex gap-8"
-              name="mobile-color-scheme"
-              value={colorScheme}
-            >
-              {colorSchemeOptions.map(({ value, labelKey, icon: Icon }) => (
-                <RadioButton
-                  key={value}
-                  value={value}
-                  checked={colorScheme === value}
-                  onChange={() => {
-                    setColorScheme(value);
-                  }}
-                >
-                  <Icon aria-hidden="true" className={colorScheme === value ? '' : 'opacity-50'} size={16} />{' '}
-                  {t(labelKey)}
-                </RadioButton>
-              ))}
-            </RadioButton.Group>
+          <RadioList
+            label={t('layout:language.label')}
+            htmlName="mobile-language"
+            value={currentLanguage}
+            onChange={switchTo}
+          >
+            {languageOptions.map(({ value, labelKey }) => (
+              <div key={value} lang={value}>
+                <RadioListItem value={value} data-cy={`mobile-language-option-${value}`} label={t(labelKey)} />
+              </div>
+            ))}
+          </RadioList>
+
+          <div className="border-t border-default pt-4">
+            <LogoutButton smallSideBar={false} />
           </div>
-
-          <Divider />
-
-          <div className="flex flex-col gap-8">
-            <span id="mobile-language-label" className="text-small font-bold">
-              {t('layout:language.label')}
-            </span>
-            <RadioButton.Group
-              aria-labelledby="mobile-language-label"
-              className="flex gap-8"
-              name="mobile-language"
-              value={currentLanguage}
-            >
-              {languageOptions.map(({ value, labelKey }) => (
-                <RadioButton
-                  key={value}
-                  value={value}
-                  lang={value}
-                  data-cy={`mobile-language-option-${value}`}
-                  checked={currentLanguage === value}
-                  onChange={() => {
-                    switchTo(value);
-                  }}
-                >
-                  <span lang={value}>{t(labelKey)}</span>
-                </RadioButton>
-              ))}
-            </RadioButton.Group>
-          </div>
-
-          <Divider />
-
-          <LogoutButton smallSideBar={false} />
         </div>
       </MainPageMobileHeader>
-    </ModalLayer>
+    </Dialog>
   );
 };

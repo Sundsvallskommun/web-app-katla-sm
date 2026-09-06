@@ -31,7 +31,7 @@ test.describe('Manual stakeholder modal accessibility', () => {
         const trigger = page.getByTestId('add-manual-person-button').filter({ visible: true }).last();
         const backgroundLanguage = page.getByTestId('language-switch-button').filter({ visible: true });
         const title = locale === 'sv' ? 'Lägg till person manuellt' : 'Add person manually';
-        const closeLabel = `${locale === 'sv' ? 'Stäng' : 'Close'} ${title}`;
+        const closeLabel = locale === 'sv' ? 'Stäng' : 'Close';
         const dialog = page.getByRole('dialog', { name: title, exact: true });
         const close = dialog.getByRole('button', { name: closeLabel, exact: true });
         const save = dialog.getByTestId('modal-add-person-button');
@@ -42,6 +42,7 @@ test.describe('Manual stakeholder modal accessibility', () => {
         await trigger.press('Enter');
         await expect(dialog).toBeVisible();
         await expect(dialog.getByRole('heading', { name: title, exact: true })).toHaveCount(1);
+        await dialog.evaluate((element) => Promise.all(element.getAnimations().map((animation) => animation.finished)));
         await expect(close).toBeFocused();
         await expect(dialog).toHaveAttribute('aria-modal', 'true');
         await expect.poll(() => dialog.evaluate((element) => element.matches(':modal'))).toBe(true);
@@ -67,7 +68,8 @@ test.describe('Manual stakeholder modal accessibility', () => {
         expect(Math.abs(bounds.x + bounds.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(1);
         expect(Math.abs(bounds.y + bounds.height / 2 - viewport.height / 2)).toBeLessThanOrEqual(1);
         expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
-        for (const control of await dialog.locator('button, input, select').all()) {
+        for (const control of await dialog.locator('button, input, select').filter({ visible: true }).all()) {
+          await control.scrollIntoViewIfNeeded();
           const box = await control.boundingBox();
           if (!box) throw new Error('Every person-form control must be visible.');
           expect(box.x).toBeGreaterThanOrEqual(bounds.x);
@@ -98,8 +100,9 @@ test.describe('Manual stakeholder modal accessibility', () => {
         await expect(close).toBeFocused();
         await expect(firstName).toHaveValue('');
         await save.click();
-        await expect(dialog.getByTestId('firstName-input-error')).toBeVisible();
-        await expect(dialog.getByTestId('lastName-input-error')).toBeVisible();
+        await expect(firstName).toHaveAttribute('aria-invalid', 'true');
+        await expect(firstName).toHaveAccessibleDescription(/.+/);
+        await expect(dialog.getByTestId('modal-lastName-input')).toHaveAttribute('aria-invalid', 'true');
         await firstName.fill('Modaltest');
         await dialog.getByTestId('modal-lastName-input').fill('Testsson');
         await save.click();

@@ -1,4 +1,3 @@
-import { ColorSchemeMode } from '@sk-web-gui/react';
 import { Monitor, Moon, Sun } from 'lucide-react';
 
 /**
@@ -6,7 +5,7 @@ import { Monitor, Moon, Sun } from 'lucide-react';
  * mobilmenyn aldrig kan gå isär i värden, etiketter eller ikoner.
  */
 export const colorSchemeOptions = [
-  { value: ColorSchemeMode.Light, labelKey: 'layout:color_scheme.light', icon: Sun },
-  { value: ColorSchemeMode.Dark, labelKey: 'layout:color_scheme.dark', icon: Moon },
-  { value: ColorSchemeMode.System, labelKey: 'layout:color_scheme.system', icon: Monitor },
+  { value: 'light', labelKey: 'layout:color_scheme.light', icon: Sun },
+  { value: 'dark', labelKey: 'layout:color_scheme.dark', icon: Moon },
+  { value: 'system', labelKey: 'layout:color_scheme.system', icon: Monitor },
 ] as const;

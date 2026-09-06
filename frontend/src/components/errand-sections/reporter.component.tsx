@@ -1,10 +1,11 @@
+import { CheckboxInput } from '@astryxdesign/core/CheckboxInput';
+import { Spinner } from '@astryxdesign/core/Spinner';
 import { StakeholderCard } from '@components/card/stakeholder-card.component';
 import { ErrandSection } from '@components/errand-sections/errand-section.component';
 import { COLLEAGUE_FIELD_ID } from '@components/errand-sections/section-field-ids';
 import { SectionHeader } from '@components/misc/section-header.component';
 import { StakeholderList } from '@components/misc/stakeholder.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { Checkbox, Spinner } from '@sk-web-gui/react';
 import { getReporterStakeholder } from '@utils/stakeholder';
 import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
@@ -31,8 +32,7 @@ export const ReporterContent: React.FC = () => {
     }
   }, [stakeholders]);
 
-  const handleOtherReporterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
+  const handleOtherReporterChange = (checked: boolean) => {
     setValue('reportingForColleague', checked);
 
     if (!checked) {
@@ -48,7 +48,7 @@ export const ReporterContent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-32">
+    <div className="flex flex-col gap-8">
       {getReporterStakeholder(stakeholders) ?
         <>
           <StakeholderCard
@@ -59,11 +59,13 @@ export const ReporterContent: React.FC = () => {
             wide
             roles={['REPORTER']}
           />
-          <Checkbox checked={otherReporter} onChange={handleOtherReporterChange}>
-            {t('errand-information:stakeholder.reporting_for_colleague')}
-          </Checkbox>
+          <CheckboxInput
+            value={otherReporter}
+            onChange={handleOtherReporterChange}
+            label={t('errand-information:stakeholder.reporting_for_colleague')}
+          />
           {otherReporter && (
-            <div className="flex flex-col gap-32">
+            <div className="flex flex-col gap-8">
               <SectionHeader
                 as="h3"
                 title={t('errand-information:other_reporter.title')}
@@ -80,7 +82,7 @@ export const ReporterContent: React.FC = () => {
             </div>
           )}
         </>
-      : <Spinner />}
+      : <Spinner label={t('common:loading_information')} />}
     </div>
   );
 };

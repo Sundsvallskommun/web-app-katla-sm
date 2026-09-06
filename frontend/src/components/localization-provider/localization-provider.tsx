@@ -1,6 +1,9 @@
 'use client';
 
 import initLocalization from '@app/i18n';
+import { InternationalizationProvider } from '@astryxdesign/core/i18n';
+import { LayerProvider } from '@astryxdesign/core/Layer';
+import swedishMessages from '@astryxdesign/core/locales/sv-SE.json';
 import { setDayjsLocale } from '@utils/dayjs-locale';
 import { createInstance, Resource } from 'i18next';
 import { memo, ReactNode, useEffect } from 'react';
@@ -25,7 +28,13 @@ const LocalizationProvider = memo<LocalizationProviderProps>(({ children, locale
     setDayjsLocale(locale);
   }, [locale]);
 
-  return <I18nextProvider {...{ i18n }}>{children}</I18nextProvider>;
+  return (
+    <I18nextProvider {...{ i18n }}>
+      <InternationalizationProvider locale={locale} messages={{ sv: swedishMessages }}>
+        <LayerProvider toast={{ position: 'bottomEnd' }}>{children}</LayerProvider>
+      </InternationalizationProvider>
+    </I18nextProvider>
+  );
 });
 
 LocalizationProvider.displayName = 'LocalizationProvider';

@@ -1,18 +1,17 @@
+import { FieldStatus } from '@astryxdesign/core/FieldStatus';
 import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { isRadioWidgetName } from '@components/json/widgets/radio-widget-names';
-import { ariaDescribedByIds, descriptionId, errorId, type FieldTemplateProps, titleId } from '@rjsf/utils';
-import { FormControl, FormErrorMessage } from '@sk-web-gui/react';
+import { descriptionId, errorId, type FieldTemplateProps, titleId } from '@rjsf/utils';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import { useTranslation } from 'react-i18next';
 
-import { sanitizeFieldDescription } from './sanitize-field-description';
+import { getFieldPresentation } from '../widgets/types';
 
 export function FieldTemplate(props: FieldTemplateProps) {
   const { t } = useTranslation('forms');
-  const { id, label, required, displayLabel, help, children, uiSchema, rawErrors, schema, disabled, readonly } = props;
+  const { id, label, required, displayLabel, help, children, uiSchema, rawErrors, disabled, readonly } = props;
 
   const hideLabel = uiSchema?.['ui:options']?.hideLabel;
-  const hideDescription = uiSchema?.['ui:options']?.hideDescription;
   const descriptionBelow = uiSchema?.['ui:options']?.descriptionBelow;
   const classNameOption = uiSchema?.['ui:options']?.className;
   const className = typeof classNameOption === 'string' ? classNameOption : undefined;
@@ -22,26 +21,29 @@ export function FieldTemplate(props: FieldTemplateProps) {
     return <>{children}</>;
   }
 
-  const hasError = Boolean(rawErrors?.length);
-  const formControlClassName = className ? `form-row ${className}` : 'form-row w-full';
+  const {
+    description: sanitizedDescription,
+    showDescription,
+    newTabAnnouncementId,
+    hasError,
+    ownsField,
+    describedBy,
+  } = getFieldPresentation(props);
+  const formControlClassName =
+    className ? `form-row flex flex-col gap-2 ${className}` : 'form-row flex flex-col gap-2 w-full';
   const isRadioGroup = isRadioWidgetName(uiSchema?.['ui:widget']);
   // Märker fältet så att felnavigeringen hittar det, oavsett var i formuläret det ligger.
   const invalidFieldProps = hasError ? { [INVALID_FIELD_ATTRIBUTE]: id } : {};
 
-  const uiDescription = uiSchema?.['ui:description'];
-  const descriptionText = typeof uiDescription === 'string' ? uiDescription : (schema.description ?? '');
-  const newTabAnnouncementId = `${descriptionId(id)}__new-tab`;
-  const sanitizedDescription = sanitizeFieldDescription(descriptionText, newTabAnnouncementId);
-
   const renderDescription = (position: 'above' | 'below') => {
-    if (!sanitizedDescription.html || hideDescription) return null;
+    if (!showDescription) return null;
     // Ovanför fältet sitter hjälptexten i etikettblocket, som äger avståndet ned till fältet.
-    const marginClass = position === 'above' ? '' : 'mt-8';
+    const marginClass = position === 'above' ? '' : 'mt-2';
     return (
       <>
         <div
           id={descriptionId(id)}
-          className={`text-small text-dark-secondary ${marginClass} [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4`}
+          className={`text-sm text-muted ${marginClass} [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4`}
           dangerouslySetInnerHTML={{ __html: sanitizedDescription.html }}
         />
         {sanitizedDescription.hasNewTabLink && (
@@ -54,9 +56,10 @@ export function FieldTemplate(props: FieldTemplateProps) {
   };
 
   const labelElement =
-    displayLabel ?
+    displayLabel && !ownsField ?
       <FormFieldLabel
         id={titleId(id)}
+        required={required}
         {...(isRadioGroup ? { as: 'legend' } : { htmlFor: id })}
         className={hideLabel ? 'sr-only' : undefined}
       >
@@ -75,7 +78,7 @@ export function FieldTemplate(props: FieldTemplateProps) {
           {labelElement}
           {!descriptionBelow && renderDescription('above')}
         </>
-      : <div className="field-label-block flex flex-col gap-8">
+      : <div className="field-label-block flex flex-col gap-2">
           {labelElement}
           {!descriptionBelow && renderDescription('above')}
         </div>
@@ -85,10 +88,8 @@ export function FieldTemplate(props: FieldTemplateProps) {
 
       {descriptionBelow && renderDescription('below')}
 
-      {hasError && (
-        <FormErrorMessage id={errorId(id)} className="text-error">
-          {rawErrors?.[0]}
-        </FormErrorMessage>
+      {hasError && !ownsField && (
+        <FieldStatus id={errorId(id)} type="error" message={rawErrors?.[0] ?? ''} variant="detached" />
       )}
 
       {help}
@@ -97,37 +98,29 @@ export function FieldTemplate(props: FieldTemplateProps) {
 
   if (isRadioGroup) {
     return (
-      <FormControl
-        className={formControlClassName}
-        required={required}
-        invalid={hasError}
-        disabled={disabled || readonly}
-        readOnly={readonly}
-        {...invalidFieldProps}
-      >
+      <div className={formControlClassName} {...invalidFieldProps}>
         <fieldset
           id={id}
           className="m-0 min-w-0 w-full border-0 p-0"
           disabled={disabled || readonly}
-          aria-describedby={ariaDescribedByIds(id)}
+          aria-describedby={describedBy}
           aria-invalid={hasError}
         >
           {fieldContent}
         </fieldset>
-      </FormControl>
+      </div>
     );
   }
 
   return (
-    <FormControl
+    <div
       className={formControlClassName}
-      required={required}
-      invalid={hasError}
-      disabled={disabled}
-      readOnly={readonly}
       {...invalidFieldProps}
+      role={ownsField ? 'group' : undefined}
+      aria-label={ownsField ? label : undefined}
+      aria-describedby={ownsField ? describedBy : undefined}
     >
       {fieldContent}
-    </FormControl>
+    </div>
   );
 }

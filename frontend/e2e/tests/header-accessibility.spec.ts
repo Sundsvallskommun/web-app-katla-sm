@@ -1,6 +1,10 @@
+import { writeFile } from 'node:fs/promises';
+
 import type { Locator } from '@playwright/test';
 
+import { getMe } from '../fixtures/getMe';
 import { mockErrand } from '../fixtures/mockErrand';
+import { mockErrands } from '../fixtures/mockErrands';
 import { mockMetadata } from '../fixtures/mockMetadata';
 import { mockReporterStakeholder } from '../fixtures/mockStakeholder';
 import { jsonRoute } from '../utils/routes';
@@ -28,6 +32,9 @@ const textContrast = (locator: Locator) =>
   locator.evaluate(async (element) => {
     await new Promise<number>(requestAnimationFrame);
     await Promise.all(element.getAnimations().map((animation) => animation.finished));
+    // Responsive hydration can replace the element during the animation frame.
+    // Return a failing sample so expect.poll resolves the current locator again.
+    if (!element.isConnected) return 0;
     type Color = [number, number, number, number];
     const parseColor = (value: string): Color => {
       const channels = value.match(/[\d.]+/g)?.map(Number);
@@ -52,8 +59,16 @@ const textContrast = (locator: Locator) =>
     let ancestor: Element | null = element;
     while (ancestor) {
       const style = getComputedStyle(ancestor);
-      if (style.backgroundImage !== 'none') throw new Error('An image background requires a visual contrast review.');
-      backgrounds.unshift(parseColor(style.backgroundColor));
+      const surface = parseColor(style.backgroundColor);
+      // Astryx interaction surfaces use a uniform linear gradient as a tint layer.
+      // Composite every such layer; a varying gradient still needs visual review.
+      const images = style.backgroundImage;
+      const uniformLayers = [...images.matchAll(/linear-gradient\((rgba?\([^)]+\)), \1\)/g)];
+      if (images !== 'none' && uniformLayers.map(([image]) => image).join(', ') !== images) {
+        throw new Error(`A nonuniform image background requires visual contrast review: ${images}`);
+      }
+      backgrounds.unshift(surface, ...uniformLayers.map(([, color]) => parseColor(color)).reverse());
+      if (surface[3] === 1) break;
       ancestor = ancestor.parentElement;
     }
     const background = backgrounds.reduce((result, layer) => composite(layer, result), [255, 255, 255, 1]);
@@ -77,23 +92,27 @@ test.describe('Shared errand header accessibility', () => {
       test(`Keeps the ${locale} case context and controls inside the header at ${width} CSS pixels`, async ({
         appUrl,
         page,
-      }) => {
+      }, testInfo) => {
         await page.setViewportSize({ width, height: 960 });
         const prefix = locale === 'en' ? '/en' : '';
         await page.goto(appUrl(`${prefix}/arende/${mockErrand.errandNumber}/meddelanden`));
         await expect(page.getByTestId('message-composer')).toBeVisible();
         await page.evaluate(() => document.fonts.ready);
 
-        // Closed native dialogs keep their own header in the DOM; measure the painted app header.
-        const header = page.locator('.sk-header').filter({ visible: true });
-        await expect(header).toHaveCount(1);
+        const header = page.getByRole('banner');
         const context = header.getByText(mockErrand.errandNumber ?? '', { exact: true });
         const headerBounds = await measure(header);
+        expect(headerBounds.height).toBeLessThanOrEqual(width < 800 ? 128 : 72);
+        await header.screenshot({ path: testInfo.outputPath(`header-${locale}-${width}.png`) });
+        await writeFile(
+          testInfo.outputPath('header-dimensions.json'),
+          JSON.stringify({ locale, width, height: headerBounds.height })
+        );
         const controls = header.getByRole('button').filter({ visible: true });
         expect(await controls.count()).toBeGreaterThanOrEqual(3);
 
         const links = header.getByRole('link').filter({ visible: true });
-        const caseStatus = header.locator('.sk-label');
+        const caseStatus = header.getByTestId('errand-status');
         await expect(caseStatus).toBeVisible();
         for (const element of [context, caseStatus, ...(await controls.all()), ...(await links.all())]) {
           const bounds = await measure(element);
@@ -131,7 +150,36 @@ test.describe('Shared errand header accessibility', () => {
     }
   }
 
+  test('Keeps the mobile Report menu entry as a keyboard-operable native link', async ({ appUrl, page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(appUrl(`/arende/${mockErrand.errandNumber}/meddelanden`));
+    await expect(page.getByTestId('message-composer')).toBeVisible();
+    const trigger = page.getByRole('button', { name: 'Öppna meny', exact: true });
+    await trigger.focus();
+    await trigger.press('Enter');
+    const report = page.getByRole('menuitem', { name: 'Rapportera', exact: true });
+    await expect(report).toHaveAttribute('href', /\/arende\/registrera$/);
+    await expect(report).toBeFocused();
+    await report.press('Enter');
+    await expect(page).toHaveURL(/\/arende\/registrera$/);
+  });
+
   for (const colorScheme of ['light', 'dark'] as const) {
+    test(`Keeps the app identity readable in both headers in ${colorScheme} mode`, async ({ appUrl, page }) => {
+      await page.emulateMedia({ colorScheme });
+      await page.route('**/supportmanagement/errands?*', jsonRoute(mockErrands));
+      await page.route('**/supportmanagement/count?*', jsonRoute({ count: mockErrands.totalElements }));
+      for (const width of [390, 1536]) {
+        await page.setViewportSize({ width, height: 960 });
+        for (const path of ['/oversikt', `/arende/${mockErrand.errandNumber}/meddelanden`]) {
+          await page.goto(appUrl(path));
+          const identity = page.getByRole('banner').getByText(process.env.NEXT_PUBLIC_APP_NAME ?? '', { exact: true });
+          await expect(identity).toBeVisible();
+          await expect.poll(() => textContrast(identity)).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    });
+
     test(`Keeps the Report link contrast above AA in ${colorScheme} mode`, async ({ appUrl, page }) => {
       await page.emulateMedia({ colorScheme });
       await page.goto(appUrl(`/arende/${mockErrand.errandNumber}/meddelanden`));
@@ -160,7 +208,7 @@ test.describe('Shared errand header accessibility', () => {
         await page.evaluate(() => document.fonts.ready);
         const skipLink = page.getByRole('link', { name: 'Hoppa till innehåll' });
         // Start from the first header link, independently of navigation's initial focus.
-        await page.locator('.sk-header').filter({ visible: true }).getByRole('link').first().focus();
+        await page.getByRole('banner').getByRole('link').first().focus();
         await page.keyboard.press('Shift+Tab');
         await expect(skipLink).toBeFocused();
         await expect.poll(() => isUnobscured(skipLink)).toBe(true);
@@ -173,4 +221,26 @@ test.describe('Shared errand header accessibility', () => {
       }
     });
   }
+});
+
+test('keeps long user names and all header controls reachable at a narrow desktop width', async ({ page, appUrl }) => {
+  await page.route(
+    '**/api/me',
+    jsonRoute({
+      ...getMe,
+      name: 'Alexandra Margareta Andersson Lindström',
+      username: 'alexandra.margareta.andersson.lindstrom',
+    })
+  );
+  await page.route('**/supportmanagement/notifications', jsonRoute([]));
+  await page.route('**/employee/personal/*', jsonRoute(mockReporterStakeholder));
+  await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadata));
+  await page.setViewportSize({ width: 800, height: 900 });
+  await page.goto(appUrl('/arende/registrera'));
+  await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
+  const header = page.getByRole('banner');
+  for (const button of await header.getByRole('button').filter({ visible: true }).all()) {
+    await expect.poll(() => isUnobscured(button)).toBe(true);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(800);
 });

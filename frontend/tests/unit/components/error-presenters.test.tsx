@@ -1,3 +1,4 @@
+import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { render, screen } from '@testing-library/react';
 import { ErrandTable } from 'src/components/errand-table/errand-table.component';
 import { MobileErrandsList } from 'src/components/mobile/mobile-errands-list.component';
@@ -54,6 +55,19 @@ afterEach(() => {
 });
 
 describe('API error presenters', () => {
+  it('announces each concurrent error once and keeps every message visible', () => {
+    render(<ErrorAlertList messages={['Kunde inte hämta ärenden.', 'Kunde inte hämta metadata.']} />);
+
+    const alerts = screen.getAllByRole('alert');
+    expect(alerts).toHaveLength(2);
+    expect(alerts[0]).toHaveTextContent('Kunde inte hämta ärenden.');
+    expect(alerts[1]).toHaveTextContent('Kunde inte hämta metadata.');
+    expect(screen.getAllByText('Kunde inte hämta ärenden.')).toHaveLength(1);
+    expect(screen.getAllByText('Kunde inte hämta metadata.')).toHaveLength(1);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
   it('replaces the desktop false-empty state with an error alert', () => {
     render(<ErrandTable />);
 

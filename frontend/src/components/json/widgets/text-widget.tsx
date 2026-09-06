@@ -1,7 +1,9 @@
 'use client';
+import { inputStatusFocusStyles, inputWrapperStyles } from '@astryxdesign/core/Field';
 import type { WidgetProps } from '@rjsf/utils';
-import { Input } from '@sk-web-gui/react';
+import * as stylex from '@stylexjs/stylex';
 
+import styles from './schema-widgets.module.css';
 import { getCommonProps, getWidgetOptions, requiredProps } from './types';
 
 const DEFAULT_CLASS = 'w-full';
@@ -11,12 +13,19 @@ export function TextWidget(props: WidgetProps) {
     getCommonProps(props, DEFAULT_CLASS);
   const placeholder = (props.uiSchema?.['ui:placeholder'] ?? '') || getWidgetOptions(props.options).placeholder;
 
+  const appearance = stylex.props(
+    inputWrapperStyles.base,
+    disabled && inputWrapperStyles.disabled,
+    invalid && inputStatusFocusStyles.error
+  );
+
   return (
-    <Input
+    <input
+      {...appearance}
       id={id}
-      className={className}
+      className={`${appearance.className} ${styles.control} ${className}`}
       placeholder={placeholder}
-      value={(value as string) ?? ''}
+      value={typeof value === 'string' || typeof value === 'number' ? value : ''}
       disabled={disabled}
       readOnly={readonly}
       {...requiredProps(required)}

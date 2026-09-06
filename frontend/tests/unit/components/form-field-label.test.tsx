@@ -1,7 +1,6 @@
 import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import SchemaForm from '@components/json/schema/schema-form.component';
 import type { RJSFSchema } from '@rjsf/utils';
-import { FormControl, Input } from '@sk-web-gui/react';
 import { act, render, screen, within } from '@testing-library/react';
 import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
@@ -20,20 +19,24 @@ describe('application field labels', () => {
   it('writes both requirements in the label and preserves the required state without a star', () => {
     const { container } = render(
       <I18nextProvider i18n={i18n}>
-        <FormControl required>
-          <FormFieldLabel>Namn</FormFieldLabel>
-          <Input />
-        </FormControl>
-        <FormControl>
-          <FormFieldLabel>E-post</FormFieldLabel>
-          <Input />
-        </FormControl>
+        <div>
+          <FormFieldLabel htmlFor="name" required>
+            Namn
+          </FormFieldLabel>
+          <input id="name" required />
+        </div>
+        <div>
+          <FormFieldLabel htmlFor="email" required={false}>
+            E-post
+          </FormFieldLabel>
+          <input id="email" />
+        </div>
       </I18nextProvider>
     );
 
     expect(screen.getByRole('textbox', { name: 'Namn (obligatoriskt)' })).toBeRequired();
     expect(screen.getByRole('textbox', { name: 'E-post (frivilligt)' })).not.toBeRequired();
-    expect(container.querySelector('.sk-form-required-indicator')).not.toBeInTheDocument();
+    expect(container).not.toHaveTextContent('*');
     expect(screen.getAllByText('(obligatoriskt)')).toHaveLength(1);
     expect(screen.getAllByText('(frivilligt)')).toHaveLength(1);
   });
@@ -41,14 +44,18 @@ describe('application field labels', () => {
   it('updates the suffix when the language changes', async () => {
     render(
       <I18nextProvider i18n={i18n}>
-        <FormControl required>
-          <FormFieldLabel>Namn</FormFieldLabel>
-          <Input />
-        </FormControl>
-        <FormControl>
-          <FormFieldLabel>E-post</FormFieldLabel>
-          <Input />
-        </FormControl>
+        <div>
+          <FormFieldLabel htmlFor="name" required>
+            Namn
+          </FormFieldLabel>
+          <input id="name" required />
+        </div>
+        <div>
+          <FormFieldLabel htmlFor="email" required={false}>
+            E-post
+          </FormFieldLabel>
+          <input id="email" />
+        </div>
       </I18nextProvider>
     );
 
@@ -124,6 +131,6 @@ describe('application field labels', () => {
 
     rerender(form(false));
     expect(screen.getByRole('textbox', { name: 'Uppgifter (frivilligt)' })).not.toBeRequired();
-    expect(container.querySelector('.sk-form-required-indicator')).not.toBeInTheDocument();
+    expect(container).not.toHaveTextContent('*');
   });
 });

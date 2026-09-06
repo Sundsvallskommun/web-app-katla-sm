@@ -1,0 +1,645 @@
+[
+  {
+    "name": "login",
+    "mode": "dark",
+    "width": 1536,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_1inebmqbnlb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              ".ghost"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_1inebmqbnlb_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "login",
+    "mode": "light",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_1inebmqbnlb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              ".ghost"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_1inebmqbnlb_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "login",
+    "mode": "dark",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_1inebmqbnlb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              ".ghost"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_1inebmqbnlb_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "login",
+    "mode": "light",
+    "width": 1536,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_1inebmqbnlb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              ".ghost"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_1inebmqbnlb_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "messages",
+    "mode": "dark",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_1n_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_1n_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_1q_\" aria-label=\"Öppna meny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              "button[aria-controls=\"_r_1q_\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_1q_\""
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "serious",
+            "html": "<span class=\"x1agbcgv xcrlgei\">Grundinformation</span>",
+            "target": [
+              ".astryx-tab.xt3l3uh.x1u3b27q:nth-child(1) > .xwz0xwf > .x1agbcgv.xcrlgei:nth-child(1)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+          },
+          {
+            "impact": "serious",
+            "html": "<span class=\"x1agbcgv xcrlgei\">Meddelanden</span>",
+            "target": [
+              "a[aria-current=\"true\"] > .xwz0xwf > .x1agbcgv.xcrlgei:nth-child(1)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "messages",
+    "mode": "light",
+    "width": 1536,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_2_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_2_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_5_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              ".xssyfek"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_5_\""
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "serious",
+            "html": "<span class=\"x1agbcgv xcrlgei\">Grundinformation</span>",
+            "target": [
+              ".astryx-tab.xt3l3uh.x1u3b27q:nth-child(1) > .xwz0xwf > .x1agbcgv.xcrlgei:nth-child(1)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+          },
+          {
+            "impact": "serious",
+            "html": "<span class=\"x1agbcgv xcrlgei\">Meddelanden</span>",
+            "target": [
+              "a[aria-current=\"true\"] > .xwz0xwf > .x1agbcgv.xcrlgei:nth-child(1)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "messages",
+    "mode": "light",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_1n_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_1n_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_1q_\" aria-label=\"Öppna meny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              "button[aria-controls=\"_r_1q_\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_1q_\""
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "serious",
+            "html": "<span class=\"x1agbcgv xcrlgei\">Grundinformation</span>",
+            "target": [
+              ".astryx-tab.xt3l3uh.x1u3b27q:nth-child(1) > .xwz0xwf > .x1agbcgv.xcrlgei:nth-child(1)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+          },
+          {
+            "impact": "serious",
+            "html": "<span class=\"x1agbcgv xcrlgei\">Meddelanden</span>",
+            "target": [
+              "a[aria-current=\"true\"] > .xwz0xwf > .x1agbcgv.xcrlgei:nth-child(1)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "messages",
+    "mode": "dark",
+    "width": 1536,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_2_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_2_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_5_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              ".xssyfek"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_5_\""
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "serious",
+            "html": "<div class=\"astryx-avatar-fallback size-32 x78zum5 x6s0dn4 xl56j7k xh8yej3 x5yr21d x17x4s8c xv1l7n4 x9ynric x1e4wzip xtvhhri xdmh292\" data-size=\"32\" style=\"--x-fontSize: 12.8px;\">F</div>",
+            "target": [
+              ".astryx-avatar-fallback"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+          },
+          {
+            "impact": "serious",
+            "html": "<span class=\"x1agbcgv xcrlgei\">Grundinformation</span>",
+            "target": [
+              ".astryx-tab.xt3l3uh.x1u3b27q:nth-child(1) > .xwz0xwf > .x1agbcgv.xcrlgei:nth-child(1)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+          },
+          {
+            "impact": "serious",
+            "html": "<span class=\"x1agbcgv xcrlgei\">Meddelanden</span>",
+            "target": [
+              "a[aria-current=\"true\"] > .xwz0xwf > .x1agbcgv.xcrlgei:nth-child(1)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "overview",
+    "mode": "dark",
+    "width": 1536,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_bb5aqbmqbnlb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_bb5aqbmqbnlb_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_1fb5aqbmqbnlb_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              ".xssyfek"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_1fb5aqbmqbnlb_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button id=\"_r_o_\" type=\"button\" role=\"combobox\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"_r_p_\" tabindex=\"0\" class=\"x78zum5 x6s0dn4 x1qu...\">",
+            "target": [
+              "#_r_o_"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_p_\""
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "serious",
+            "html": "<div class=\"astryx-avatar-fallback size-32 x78zum5 x6s0dn4 xl56j7k xh8yej3 x5yr21d x17x4s8c xv1l7n4 x9ynric x1e4wzip xtvhhri xdmh292\" data-size=\"32\" style=\"--x-fontSize: 12.8px;\">F</div>",
+            "target": [
+              ".astryx-avatar-fallback"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "overview",
+    "mode": "light",
+    "width": 1536,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_bb5aqbmqbnlb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_bb5aqbmqbnlb_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_1fb5aqbmqbnlb_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              ".xssyfek"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_1fb5aqbmqbnlb_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button id=\"_r_o_\" type=\"button\" role=\"combobox\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"_r_p_\" tabindex=\"0\" class=\"x78zum5 x6s0dn4 x1qu...\">",
+            "target": [
+              "#_r_o_"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_p_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "overview",
+    "mode": "dark",
+    "width": 390,
+    "violations": [],
+    "incomplete": [],
+    "pageErrors": []
+  },
+  {
+    "name": "overview",
+    "mode": "light",
+    "width": 390,
+    "violations": [],
+    "incomplete": [],
+    "pageErrors": []
+  },
+  {
+    "name": "register",
+    "mode": "light",
+    "width": 1536,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_2_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_2_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_5_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              ".xssyfek"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_5_\""
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "serious",
+            "html": "<span aria-hidden=\"true\"> ∙ </span>",
+            "target": [
+              "#_r_m_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
+          },
+          {
+            "impact": "serious",
+            "html": "<span aria-hidden=\"true\"> ∙ </span>",
+            "target": [
+              "#_r_10_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "register",
+    "mode": "dark",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_18_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_18_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "register",
+    "mode": "light",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_18_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_18_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "register",
+    "mode": "dark",
+    "width": 1536,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"md\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_2_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_2_\""
+          },
+          {
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_r_5_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              ".xssyfek"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_5_\""
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "impact": "serious",
+            "html": "<div class=\"astryx-avatar-fallback size-32 x78zum5 x6s0dn4 xl56j7k xh8yej3 x5yr21d x17x4s8c xv1l7n4 x9ynric x1e4wzip xtvhhri xdmh292\" data-size=\"32\" style=\"--x-fontSize: 12.8px;\">F</div>",
+            "target": [
+              ".astryx-avatar-fallback"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+          },
+          {
+            "impact": "serious",
+            "html": "<span aria-hidden=\"true\"> ∙ </span>",
+            "target": [
+              "#_r_m_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
+          },
+          {
+            "impact": "serious",
+            "html": "<span aria-hidden=\"true\"> ∙ </span>",
+            "target": [
+              "#_r_10_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  }
+]

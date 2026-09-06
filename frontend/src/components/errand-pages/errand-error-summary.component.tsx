@@ -1,7 +1,8 @@
 'use client';
 
+import { Button } from '@astryxdesign/core/Button';
+import { Divider } from '@astryxdesign/core/Divider';
 import { useFormValidation } from '@contexts/form-validation-context';
-import { Button, Divider } from '@sk-web-gui/react';
 import { focusInvalidField } from '@utils/focus-first-error';
 import { ArrowRight } from 'lucide-react';
 import { Fragment, useEffect, useRef } from 'react';
@@ -38,28 +39,28 @@ export const ErrandErrorSummary: React.FC = () => {
       data-cy="errand-error-summary"
       role="alert"
       tabIndex={-1}
-      className="bg-error-background-100 border-1 border-error-surface-primary rounded-utility flex w-full flex-col gap-24 p-24"
+      className="bg-[var(--color-background-red)] border border-danger rounded-lg flex w-full flex-col gap-6 p-6"
     >
-      <h2 className="text-h4-sm text-dark-primary">
+      <h2 className="text-lg font-semibold text-foreground">
         {t('errand-information:validation_summary.title', { count: errors.length })}
       </h2>
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-3">
         {errors.map((error, index) => (
           <Fragment key={`${error.fieldId ?? 'form'}-${error.message}`}>
             {index > 0 && <Divider />}
-            <div className="flex items-center gap-24">
-              <p className="text-dark-primary min-w-0">{error.message}</p>
+            <div className="flex items-center gap-6">
+              <p className="text-foreground min-w-0">{error.message}</p>
               {/* Fel utan fältmål går inte att navigera till – de gäller formuläret som helhet. */}
               {error.fieldId ?
                 <Button
                   data-cy="errand-error-summary-link"
-                  variant="tertiary"
+                  variant="ghost"
                   size="sm"
-                  iconButton
+                  isIconOnly
                   // Ikonen står för sig själv i designen; en knappyta ritar en ruta runt den.
-                  showBackground={false}
-                  aria-label={t('errand-information:validation_summary.go_to_error', { message: error.message })}
-                  leftIcon={<ArrowRight aria-hidden="true" />}
+
+                  label={t('errand-information:validation_summary.go_to_error', { message: error.message })}
+                  icon={<ArrowRight aria-hidden="true" />}
                   onClick={() => {
                     focusInvalidField(error.fieldId ?? '');
                   }}
