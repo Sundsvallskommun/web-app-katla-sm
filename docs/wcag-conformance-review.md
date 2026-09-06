@@ -35,6 +35,8 @@ Slutkontroll i denna branch: **290 godkända enhetstester i 51 filer**, sex reda
 
 Vid CI-omtest rättades även ett öppningsrace: viewport-hooken uppdaterar layouten före uppritning så att en öppnad notifieringspanel inte ersätts vid första mobilrenderingen. Raleways variabla font använder en giltig TrueType-deklaration och `font-display: swap`. Alla 62 browserfall passerade även med CI:s tomma basstig.
 
+Webpack är nu uttryckligt standardval i frontendens utvecklings-, bygg-, testbygg- och analyskommandon efter den lokala minnesincidenten. Beroenden och låsfil är oförändrade; paketmanifestets skript har ändrats. Den tidigare valideringen ovan avser Turbopack. Webpack verifieras separat i GitHub CI utan nya tunga lokala körningar.
+
 ## Ursprunglig kontroll och åtgärder 2026-09-04
 
 ### Miljö och avgränsning
