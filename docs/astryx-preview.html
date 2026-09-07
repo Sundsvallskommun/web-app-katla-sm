@@ -123,6 +123,10 @@
         >Vy<select id="view">
           <option value="overview">Ärendeöversikt</option>
           <option value="register">Registrera rapport</option>
+          <option value="person-search">Fokus och personsökning</option>
+          <option value="manual-person">Manuellt tillagd person</option>
+          <option value="notifications">Notifieringar</option>
+          <option value="notifications-scrolled">Notifieringar efter scroll</option>
           <option value="messages">Meddelanden</option>
           <option value="login">Inloggning</option>
         </select></label
@@ -151,6 +155,12 @@
       </figcaption>
     </figure>
     <footer>
+      <p>
+        Formulärdetaljer:
+        <a href="astryx-screenshots/native-date-focus-1536.png">Datum och tid med högerställda ikoner</a> ·
+        <a href="astryx-screenshots/native-select-focus-1536.png">Rundad fokusmarkering i select</a> ·
+        <a href="astryx-screenshots/report-actions-scrolled-1536.png">Rapportknappar vid scroll</a>
+      </p>
       <p>
         Laddning och mobilflöden:
         <a href="astryx-screenshots/overview-loading-sv-320.png">Rapportlista med skeleton · 320 px</a> ·
@@ -183,11 +193,17 @@
       width = document.getElementById("width"),
       preview = document.getElementById("preview"),
       caption = document.getElementById("caption");
+    const detailViews = new Set(["person-search", "manual-person", "notifications", "notifications-scrolled"]);
     function update() {
+      const detail = detailViews.has(view.value);
+      mode.disabled = detail;
+      if (detail) mode.value = "light";
       const label = [view, mode, width]
         .map((select) => select.options[select.selectedIndex].text)
         .join(" · ");
-      preview.src = `astryx-screenshots/${view.value}-${mode.value}-${width.value}.png`;
+      preview.src = detail
+        ? `astryx-screenshots/${view.value}-${width.value}.png`
+        : `astryx-screenshots/${view.value}-${mode.value}-${width.value}.png`;
       preview.alt = label;
       preview.classList.toggle("mobile", width.value === "390");
       caption.textContent = label;

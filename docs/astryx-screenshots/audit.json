@@ -2,6 +2,55 @@
   {
     "name": "login",
     "mode": "dark",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "tags": [
+          "cat.aria",
+          "wcag2a",
+          "wcag412",
+          "EN-301-549",
+          "EN-9.4.1.2",
+          "RGAAv4",
+          "RGAA-7.1.1"
+        ],
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "any": [],
+            "all": [
+              {
+                "id": "aria-valid-attr-value",
+                "data": {
+                  "messageKey": "controlsWithinPopup",
+                  "needsReview": "aria-controls=\"_R_2lubr5vb_\""
+                },
+                "relatedNodes": [],
+                "impact": "critical",
+                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_2lubr5vb_\""
+              }
+            ],
+            "none": [],
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_2lubr5vb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              ".ghost"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_2lubr5vb_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "login",
+    "mode": "dark",
     "width": 1536,
     "violations": [],
     "incomplete": [
@@ -99,55 +148,6 @@
   },
   {
     "name": "login",
-    "mode": "dark",
-    "width": 390,
-    "violations": [],
-    "incomplete": [
-      {
-        "id": "aria-valid-attr-value",
-        "impact": "critical",
-        "tags": [
-          "cat.aria",
-          "wcag2a",
-          "wcag412",
-          "EN-301-549",
-          "EN-9.4.1.2",
-          "RGAAv4",
-          "RGAA-7.1.1"
-        ],
-        "description": "Ensure all ARIA attributes have valid values",
-        "help": "ARIA attributes must conform to valid values",
-        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
-        "nodes": [
-          {
-            "any": [],
-            "all": [
-              {
-                "id": "aria-valid-attr-value",
-                "data": {
-                  "messageKey": "controlsWithinPopup",
-                  "needsReview": "aria-controls=\"_R_2lubr5vb_\""
-                },
-                "relatedNodes": [],
-                "impact": "critical",
-                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_2lubr5vb_\""
-              }
-            ],
-            "none": [],
-            "impact": "critical",
-            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_2lubr5vb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
-            "target": [
-              ".ghost"
-            ],
-            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_2lubr5vb_\""
-          }
-        ]
-      }
-    ],
-    "pageErrors": []
-  },
-  {
-    "name": "login",
     "mode": "light",
     "width": 1536,
     "violations": [],
@@ -339,7 +339,7 @@
   },
   {
     "name": "messages",
-    "mode": "light",
+    "mode": "dark",
     "width": 1536,
     "violations": [],
     "incomplete": [
@@ -623,7 +623,7 @@
   },
   {
     "name": "messages",
-    "mode": "dark",
+    "mode": "light",
     "width": 1536,
     "violations": [],
     "incomplete": [
@@ -766,78 +766,7 @@
   {
     "name": "overview",
     "mode": "dark",
-    "width": 1536,
-    "violations": [],
-    "incomplete": [
-      {
-        "id": "aria-valid-attr-value",
-        "impact": "critical",
-        "tags": [
-          "cat.aria",
-          "wcag2a",
-          "wcag412",
-          "EN-301-549",
-          "EN-9.4.1.2",
-          "RGAAv4",
-          "RGAA-7.1.1"
-        ],
-        "description": "Ensure all ARIA attributes have valid values",
-        "help": "ARIA attributes must conform to valid values",
-        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
-        "nodes": [
-          {
-            "any": [],
-            "all": [
-              {
-                "id": "aria-valid-attr-value",
-                "data": {
-                  "messageKey": "controlsWithinPopup",
-                  "needsReview": "aria-controls=\"_R_mpambr5vb_\""
-                },
-                "relatedNodes": [],
-                "impact": "critical",
-                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_mpambr5vb_\""
-              }
-            ],
-            "none": [],
-            "impact": "critical",
-            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_mpambr5vb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
-            "target": [
-              "button[data-cy=\"language-switch-button\"]"
-            ],
-            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_mpambr5vb_\""
-          },
-          {
-            "any": [],
-            "all": [
-              {
-                "id": "aria-valid-attr-value",
-                "data": {
-                  "messageKey": "controlsWithinPopup",
-                  "needsReview": "aria-controls=\"_R_upambr5vb_\""
-                },
-                "relatedNodes": [],
-                "impact": "critical",
-                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upambr5vb_\""
-              }
-            ],
-            "none": [],
-            "impact": "critical",
-            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_upambr5vb_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
-            "target": [
-              "button[aria-controls=\"_R_upambr5vb_\"]"
-            ],
-            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upambr5vb_\""
-          }
-        ]
-      }
-    ],
-    "pageErrors": []
-  },
-  {
-    "name": "overview",
-    "mode": "light",
-    "width": 1536,
+    "width": 390,
     "violations": [],
     "incomplete": [
       {
@@ -908,7 +837,7 @@
   {
     "name": "overview",
     "mode": "dark",
-    "width": 390,
+    "width": 1536,
     "violations": [],
     "incomplete": [
       {
@@ -980,6 +909,77 @@
     "name": "overview",
     "mode": "light",
     "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "tags": [
+          "cat.aria",
+          "wcag2a",
+          "wcag412",
+          "EN-301-549",
+          "EN-9.4.1.2",
+          "RGAAv4",
+          "RGAA-7.1.1"
+        ],
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "any": [],
+            "all": [
+              {
+                "id": "aria-valid-attr-value",
+                "data": {
+                  "messageKey": "controlsWithinPopup",
+                  "needsReview": "aria-controls=\"_R_mpambr5vb_\""
+                },
+                "relatedNodes": [],
+                "impact": "critical",
+                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_mpambr5vb_\""
+              }
+            ],
+            "none": [],
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_mpambr5vb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_mpambr5vb_\""
+          },
+          {
+            "any": [],
+            "all": [
+              {
+                "id": "aria-valid-attr-value",
+                "data": {
+                  "messageKey": "controlsWithinPopup",
+                  "needsReview": "aria-controls=\"_R_upambr5vb_\""
+                },
+                "relatedNodes": [],
+                "impact": "critical",
+                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upambr5vb_\""
+              }
+            ],
+            "none": [],
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_upambr5vb_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              "button[aria-controls=\"_R_upambr5vb_\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upambr5vb_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "overview",
+    "mode": "light",
+    "width": 1536,
     "violations": [],
     "incomplete": [
       {
@@ -1049,7 +1049,78 @@
   },
   {
     "name": "register",
-    "mode": "light",
+    "mode": "dark",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "tags": [
+          "cat.aria",
+          "wcag2a",
+          "wcag412",
+          "EN-301-549",
+          "EN-9.4.1.2",
+          "RGAAv4",
+          "RGAA-7.1.1"
+        ],
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "any": [],
+            "all": [
+              {
+                "id": "aria-valid-attr-value",
+                "data": {
+                  "messageKey": "controlsWithinPopup",
+                  "needsReview": "aria-controls=\"_R_mpaubr5vb_\""
+                },
+                "relatedNodes": [],
+                "impact": "critical",
+                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_mpaubr5vb_\""
+              }
+            ],
+            "none": [],
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_mpaubr5vb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
+            "target": [
+              "button[data-cy=\"language-switch-button\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_mpaubr5vb_\""
+          },
+          {
+            "any": [],
+            "all": [
+              {
+                "id": "aria-valid-attr-value",
+                "data": {
+                  "messageKey": "controlsWithinPopup",
+                  "needsReview": "aria-controls=\"_R_upaubr5vb_\""
+                },
+                "relatedNodes": [],
+                "impact": "critical",
+                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upaubr5vb_\""
+              }
+            ],
+            "none": [],
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_upaubr5vb_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
+            "target": [
+              "button[aria-controls=\"_R_upaubr5vb_\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upaubr5vb_\""
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "name": "register",
+    "mode": "dark",
     "width": 1536,
     "violations": [],
     "incomplete": [
@@ -1151,7 +1222,7 @@
             "impact": "serious",
             "html": "<span aria-hidden=\"true\"> ∙ </span>",
             "target": [
-              "#_r_i_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
+              "#_r_9_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
             ],
             "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
           },
@@ -1172,7 +1243,7 @@
             "impact": "serious",
             "html": "<span aria-hidden=\"true\"> ∙ </span>",
             "target": [
-              "#_r_s_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
+              "#_r_j_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
             ],
             "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
           },
@@ -1247,77 +1318,6 @@
   },
   {
     "name": "register",
-    "mode": "dark",
-    "width": 390,
-    "violations": [],
-    "incomplete": [
-      {
-        "id": "aria-valid-attr-value",
-        "impact": "critical",
-        "tags": [
-          "cat.aria",
-          "wcag2a",
-          "wcag412",
-          "EN-301-549",
-          "EN-9.4.1.2",
-          "RGAAv4",
-          "RGAA-7.1.1"
-        ],
-        "description": "Ensure all ARIA attributes have valid values",
-        "help": "ARIA attributes must conform to valid values",
-        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-valid-attr-value?application=axeAPI",
-        "nodes": [
-          {
-            "any": [],
-            "all": [
-              {
-                "id": "aria-valid-attr-value",
-                "data": {
-                  "messageKey": "controlsWithinPopup",
-                  "needsReview": "aria-controls=\"_R_mpaubr5vb_\""
-                },
-                "relatedNodes": [],
-                "impact": "critical",
-                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_mpaubr5vb_\""
-              }
-            ],
-            "none": [],
-            "impact": "critical",
-            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" data-cy=\"language-switch-butt...\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_mpaubr5vb_\" aria-label=\"Byt språk. Valt språ...\" data-astryx-edge-com...=\"\" ...>",
-            "target": [
-              "button[data-cy=\"language-switch-button\"]"
-            ],
-            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_mpaubr5vb_\""
-          },
-          {
-            "any": [],
-            "all": [
-              {
-                "id": "aria-valid-attr-value",
-                "data": {
-                  "messageKey": "controlsWithinPopup",
-                  "needsReview": "aria-controls=\"_R_upaubr5vb_\""
-                },
-                "relatedNodes": [],
-                "impact": "critical",
-                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upaubr5vb_\""
-              }
-            ],
-            "none": [],
-            "impact": "critical",
-            "html": "<button type=\"button\" class=\"astryx-button ghost ...\" data-variant=\"ghost\" data-size=\"lg\" data-elevation=\"none\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"_R_upaubr5vb_\" aria-label=\"Öppna användarmeny\" data-astryx-edge-com...=\"\" style=\"anchor-name: --astry...\">",
-            "target": [
-              "button[aria-controls=\"_R_upaubr5vb_\"]"
-            ],
-            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upaubr5vb_\""
-          }
-        ]
-      }
-    ],
-    "pageErrors": []
-  },
-  {
-    "name": "register",
     "mode": "light",
     "width": 390,
     "violations": [],
@@ -1389,7 +1389,7 @@
   },
   {
     "name": "register",
-    "mode": "dark",
+    "mode": "light",
     "width": 1536,
     "violations": [],
     "incomplete": [
@@ -1491,7 +1491,7 @@
             "impact": "serious",
             "html": "<span aria-hidden=\"true\"> ∙ </span>",
             "target": [
-              "#_r_i_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
+              "#_r_9_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
             ],
             "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
           },
@@ -1512,7 +1512,7 @@
             "impact": "serious",
             "html": "<span aria-hidden=\"true\"> ∙ </span>",
             "target": [
-              "#_r_s_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
+              "#_r_j_ > .x1sodnla.x141an7d.x1ltkj2j > span[aria-hidden=\"true\"]"
             ],
             "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
           },
