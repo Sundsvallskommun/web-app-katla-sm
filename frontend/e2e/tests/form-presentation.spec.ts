@@ -114,7 +114,15 @@ test('native fields and report actions remain usable throughout a long form', as
   const scrolled = await actions.boundingBox();
   expect(scrolled?.y).toBe(initial?.y);
   const inputBounds = await lastInput.boundingBox();
-  expect((inputBounds?.y ?? 0) + (inputBounds?.height ?? 0)).toBeLessThanOrEqual(scrolled?.y ?? 0);
+  // Chromium rounds scroll offsets to CSS pixels while field geometry can be fractional.
+  const inputBottom = Math.floor((inputBounds?.y ?? 0) + (inputBounds?.height ?? 0));
+  expect(inputBottom).toBeLessThanOrEqual(scrolled?.y ?? 0);
+  expect(
+    await lastInput.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      return document.elementFromPoint(box.x + box.width / 2, box.bottom - 2) === element;
+    })
+  ).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('report-actions-scrolled-1536.png') });
   await actions.getByRole('button', { name: 'Avbryt', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();

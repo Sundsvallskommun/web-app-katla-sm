@@ -106,15 +106,14 @@ test.describe('Language switching', () => {
       const panel = page.getByRole('menu').filter({ visible: true }).first();
       await expect(panel).toBeVisible();
 
+      // Visibility also holds during Astryx's entry animation. Measure the settled panel.
+      await panel.evaluate((element) => Promise.all(element.getAnimations().map((animation) => animation.finished)));
       const buttonBox = await button.boundingBox();
       const panelBox = await panel.boundingBox();
       const viewport = page.viewportSize();
       if (!buttonBox || !panelBox || !viewport) throw new Error('Saknar mått för knapp, panel eller viewport');
 
-      // Designsystemet ger panelen bara `right: 0`; den vertikala placeringen kommer från
-      // dess statiska position i normalflödet. Ligger kontrollen i en flex-container med
-      // items-center centreras panelen på knappen i stället och lägger sig över sidhuvudet,
-      // delvis utanför skärmen. Måtten är därför det som fångar en sådan regression.
+      // Panelen ska öppnas under knappen, inte täcka den eller lämna viewporten.
       expect(panelBox.y).toBeGreaterThanOrEqual(buttonBox.y + buttonBox.height);
       expect(panelBox.x).toBeGreaterThanOrEqual(0);
       expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);

@@ -64,7 +64,8 @@ export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ 
               void handleAcknowledge();
             }}
             rel="noopener noreferrer"
-            className="underline break-words"
+            // ListItem paints keyboard focus around the whole click target.
+            className="underline break-words outline-0"
           >
             {(notification.errandNumber ?? '') || t('notification.to_errand')}
           </NextLink>

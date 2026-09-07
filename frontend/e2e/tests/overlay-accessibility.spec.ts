@@ -145,8 +145,10 @@ for (const width of [1536, 390]) {
     await expect(last).toBeInViewport();
     await expect(close).toBeInViewport();
     expect((await close.boundingBox())?.y).toBe(initial?.y);
-    // Native links retain a visible keyboard focus fallback after the field focus correction.
-    await expect(last).not.toHaveCSS('outline-style', 'none');
+    // The row owns the enlarged link's keyboard focus ring, without a second inner rectangle.
+    await expect(last).toBeFocused();
+    await expect(last).toHaveCSS('outline-width', '0px');
+    await expect(dialog.getByTestId('notification-item').last()).toHaveCSS('outline-style', 'solid');
     expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`notifications-scrolled-${width}.png`) });
     await page.keyboard.press('Escape');
