@@ -40,7 +40,7 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'sv' } }),
 }));
 
 vi.mock('src/hooks/use-media-query', () => ({ useMediaQuery: () => false }));

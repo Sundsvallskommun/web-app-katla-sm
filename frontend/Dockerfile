@@ -10,10 +10,7 @@ FROM build-base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json yarn.lock ./
-COPY patches ./patches
 RUN yarn install --frozen-lockfile --ignore-scripts
-# Kör bara projektets granskade patchsteg, inte beroendenas installationsskript.
-RUN yarn run postinstall
 
 # Rebuild the source code only when needed
 FROM build-base AS builder
