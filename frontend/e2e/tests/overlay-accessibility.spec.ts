@@ -139,6 +139,8 @@ for (const width of [1536, 390]) {
     const initial = await close.boundingBox();
     await page.screenshot({ path: testInfo.outputPath(`notifications-${width}.png`) });
     const last = dialog.getByRole('link', { name: history[11].errandNumber, exact: true });
+    // Establish keyboard modality before programmatically moving to the last link.
+    await close.press('Tab');
     await last.focus();
     await expect(last).toBeInViewport();
     await expect(close).toBeInViewport();

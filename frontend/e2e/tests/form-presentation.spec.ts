@@ -103,7 +103,7 @@ test('native fields and report actions remain usable throughout a long form', as
   await date.focus();
   await expect(date).not.toHaveCSS('border-top-left-radius', '0px');
   await page.screenshot({ path: testInfo.outputPath('native-date-focus-1536.png') });
-  const location = page.getByLabel('Plats', { exact: true });
+  const location = page.getByLabel(/^Plats/);
   await location.selectOption('Inomhus');
   await location.focus();
   await page.screenshot({ path: testInfo.outputPath('native-select-focus-1536.png') });

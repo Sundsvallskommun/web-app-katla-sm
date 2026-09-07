@@ -74,7 +74,7 @@ test.describe('Errand basic information page', () => {
     expect(cardBox.right).toBeLessThanOrEqual(MOBILE_VIEWPORT.width);
   });
 
-  test('Reporter card keeps its two columns side by side on desktop', async ({ appUrl, page }) => {
+  test('Reporter keeps contact details aligned with the name on desktop', async ({ appUrl, page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const card = await openReporterCard(page, appUrl);
 
@@ -82,8 +82,10 @@ test.describe('Errand basic information page', () => {
     const emailBox = await measure(card.getByTestId('stakeholder-email'), 'stakeholder-email');
     const cardOverflow = await card.evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
 
-    // E-postkolumnen ska ligga till höger om avdelningskolumnen, inte under den.
-    expect(emailBox.x).toBeGreaterThanOrEqual(departmentBox.right);
+    const nameBox = await measure(card.getByTestId('stakeholder-name'), 'stakeholder-name');
+    expect(emailBox.x).toBe(nameBox.x);
+    expect(departmentBox.x).toBe(nameBox.x);
+    expect(emailBox.y).toBeGreaterThan(departmentBox.y);
     expect(cardOverflow.scrollWidth).toBeLessThanOrEqual(cardOverflow.clientWidth);
   });
 
