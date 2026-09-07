@@ -899,6 +899,28 @@
               "button[aria-controls=\"_R_upambr5vb_\"]"
             ],
             "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upambr5vb_\""
+          },
+          {
+            "any": [],
+            "all": [
+              {
+                "id": "aria-valid-attr-value",
+                "data": {
+                  "messageKey": "controlsWithinPopup",
+                  "needsReview": "aria-controls=\"_r_j_\""
+                },
+                "relatedNodes": [],
+                "impact": "critical",
+                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_j_\""
+              }
+            ],
+            "none": [],
+            "impact": "critical",
+            "html": "<button id=\"_r_i_\" type=\"button\" role=\"combobox\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"_r_j_\" tabindex=\"0\" class=\"x78zum5 x6s0dn4 x1qu...\">",
+            "target": [
+              "#_r_i_"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_j_\""
           }
         ]
       }
@@ -1041,6 +1063,28 @@
               "button[aria-controls=\"_R_upambr5vb_\"]"
             ],
             "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_R_upambr5vb_\""
+          },
+          {
+            "any": [],
+            "all": [
+              {
+                "id": "aria-valid-attr-value",
+                "data": {
+                  "messageKey": "controlsWithinPopup",
+                  "needsReview": "aria-controls=\"_r_j_\""
+                },
+                "relatedNodes": [],
+                "impact": "critical",
+                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_j_\""
+              }
+            ],
+            "none": [],
+            "impact": "critical",
+            "html": "<button id=\"_r_i_\" type=\"button\" role=\"combobox\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"_r_j_\" tabindex=\"0\" class=\"x78zum5 x6s0dn4 x1qu...\">",
+            "target": [
+              "#_r_i_"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"_r_j_\""
           }
         ]
       }
