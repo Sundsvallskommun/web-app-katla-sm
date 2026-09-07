@@ -198,39 +198,33 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
     (message): message is string => message !== null
   );
 
-  if (loadErrors.length > 0 || loadState !== 'ready' || metadataLoadState !== 'ready' || !metadata) {
-    return (
-      <FormProvider {...methods}>
-        <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
-          <Layout height="auto" contentWidth={960} padding={4}>
-            <LayoutContent isScrollable={false}>
-              <Stack gap={6}>
-                <Text role="status" className="sr-only">
-                  {loadErrors.length === 0 ? t('forms:loading') : ''}
-                </Text>
-                {loadErrors.length > 0 ?
-                  <ErrorAlertList messages={loadErrors} />
-                : <Stack role="region" aria-label={t('forms:loading')} aria-busy="true">
-                    <ErrandContentSkeleton />
-                  </Stack>
-                }
-              </Stack>
-            </LayoutContent>
-          </Layout>
-        </BaseErrandLayout>
-      </FormProvider>
-    );
-  }
+  const isReady = loadErrors.length === 0 && loadState === 'ready' && metadataLoadState === 'ready' && !!metadata;
 
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        {registerNewErrand && <ReporterInit />}
+        {isReady && registerNewErrand && <ReporterInit />}
         {/* Bara registreringen: där är allt innehåll osparat. Ett laddat utkast bär redan
             sparade värden, så "har innehåll" skulle varna för att lämna en orörd sida. */}
-        {registerNewErrand && <UnsavedReportWarning />}
+        {isReady && registerNewErrand && <UnsavedReportWarning />}
         <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
-          {showMobileWizard ?
+          {!isReady ?
+            <Layout height="auto" contentWidth={960} padding={4}>
+              <LayoutContent isScrollable={false}>
+                <Stack gap={6}>
+                  <Text role="status" className="sr-only">
+                    {loadErrors.length === 0 ? t('forms:loading') : ''}
+                  </Text>
+                  {loadErrors.length > 0 ?
+                    <ErrorAlertList messages={loadErrors} />
+                  : <Stack role="region" aria-label={t('forms:loading')} aria-busy="true">
+                      <ErrandContentSkeleton />
+                    </Stack>
+                  }
+                </Stack>
+              </LayoutContent>
+            </Layout>
+          : showMobileWizard ?
             <MobileWizard />
           : <Layout height="auto" contentWidth={960} padding={isMobile ? 4 : 6}>
               <LayoutContent isScrollable={false}>
@@ -247,7 +241,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                         />
                       )}
                       <Stack direction="horizontal" align="center" justify="between" wrap="wrap" gap={3}>
-                        <Stack gap={2}>
+                        <Stack gap={2} align="start">
                           <Heading level={1}>{getHeaderTitle()}</Heading>
                           {!registerNewErrand && <StatusLabel status={errandStatus} />}
                         </Stack>

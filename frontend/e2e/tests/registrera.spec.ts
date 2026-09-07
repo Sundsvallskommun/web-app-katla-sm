@@ -116,7 +116,7 @@ test.describe('Register new errand page', () => {
   });
 
   test('Add stakeholders using personnumber and register draft errand', async ({ page }) => {
-    await expect(page.locator('main').first()).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
 
     //Om ärendet
     await completeRequiredErrandForm(page);
@@ -167,7 +167,7 @@ test.describe('Register new errand page', () => {
   });
 
   test('Manually add stakeholders and register errand', async ({ page }) => {
-    await expect(page.locator('main').first()).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
 
     //Om ärendet
     await completeRequiredErrandForm(page);
@@ -214,7 +214,7 @@ test.describe('Register new errand page', () => {
   });
 
   test('Keeps a stakeholder removable without exposing card editing', async ({ page }) => {
-    await expect(page.locator('main').first()).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
 
     //Om ärendet
     await completeRequiredErrandForm(page);
@@ -249,7 +249,7 @@ test.describe('Register new errand page', () => {
   });
 
   test('Keeps an employee stakeholder removable without exposing card editing', async ({ page }) => {
-    await expect(page.locator('main').first()).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
 
     //Om ärendet
     await completeRequiredErrandForm(page);

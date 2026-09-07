@@ -76,7 +76,7 @@ describe('API error presenters', () => {
     overview.value.metadataError = 'api_errors.metadata';
     render(<Overview />);
     expect(screen.getByRole('alert')).toHaveTextContent('api_errors.metadata');
-    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(screen.getByRole('status', { name: 'filtering:reports_heading' })).toBeEmptyDOMElement();
     expect(screen.getByRole('region')).toHaveAttribute('aria-busy', 'false');
   });
 
@@ -85,7 +85,9 @@ describe('API error presenters', () => {
     overview.value.isLoading = true;
     overview.value.errandsError = null;
     render(<Overview />);
-    expect(screen.getByRole('status')).toHaveTextContent('common:errand-table.loading');
+    expect(screen.getByRole('status', { name: 'filtering:reports_heading' })).toHaveTextContent(
+      'common:errand-table.loading'
+    );
     expect(screen.getByRole('region')).toHaveAttribute('aria-busy', 'true');
     expect(screen.queryByText('errand-information:no_errands')).not.toBeInTheDocument();
   });

@@ -80,11 +80,14 @@ test('keeps the app header usable while an errand loads', async ({ page, appUrl 
     await expect(page.getByRole('button', { name: 'Öppna användarmeny' })).toBeEnabled();
     await expect(page.getByTestId('errand-status')).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath('errand-loading-390.png') });
+    await page.getByRole('button', { name: 'Öppna användarmeny' }).click();
+    await expect(page.getByRole('menuitem', { name: 'Logga ut' })).toBeVisible();
   } finally {
     pending.resolve(undefined);
   }
   await expect(page.getByTestId('errand-content-skeleton')).toHaveCount(0);
   await expect(page.getByTestId('errand-status')).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Logga ut' })).toBeVisible();
 });
 
 test('shows the conversation before the composer and keeps unsent text through refresh and formatting disclosure', async ({

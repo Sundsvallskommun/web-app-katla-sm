@@ -38,6 +38,7 @@ export default function Oversikt() {
               label={t('filtering:new_errand_mobile')}
               icon={<Plus aria-hidden="true" />}
               size="lg"
+              variant="primary"
             />
           </Stack>
           <ErrandStatusFilter />
@@ -51,7 +52,7 @@ export default function Oversikt() {
               )}
             </Stack>
             <ErrorAlertList messages={errors} />
-            <Text role="status" className="sr-only">
+            <Text role="status" aria-label={t('filtering:reports_heading')} className="sr-only">
               {initialLoading ? t('common:errand-table.loading') : ''}
             </Text>
             <Stack aria-busy={initialLoading} aria-label={activeStatusLabel} role="region">

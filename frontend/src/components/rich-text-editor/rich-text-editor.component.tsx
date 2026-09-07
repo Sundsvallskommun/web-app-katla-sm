@@ -8,6 +8,7 @@ import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
 import { useFocusTrap } from '@astryxdesign/core/hooks';
 import { IconButton } from '@astryxdesign/core/IconButton';
 import { Spinner } from '@astryxdesign/core/Spinner';
+import { Text } from '@astryxdesign/core/Text';
 import { Stack } from '@astryxdesign/core/Stack';
 import { TextInput } from '@astryxdesign/core/TextInput';
 import clsx from 'clsx';
@@ -237,7 +238,15 @@ export function RichTextEditor({
     <Stack className={clsx(styles.editor, className)} data-invalid={invalid} data-disabled={disabled}>
       {!disableToolbar &&
         (collapsibleToolbar ?
-          <Collapsible trigger={t('formatting')} defaultIsOpen={false}>
+          <Collapsible
+            trigger={
+              <Text as="span" type="label">
+                {t('formatting')}
+              </Text>
+            }
+            defaultIsOpen={false}
+            className="p-3"
+          >
             {toolbar}
           </Collapsible>
         : toolbar)}
