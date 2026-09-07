@@ -12,6 +12,8 @@ Granskad mot den installerade versionen **0.5.2**, dess CLI-dokumentation och pu
 
 Tre helt oanvända komponenter för sökruta/filterpanel är också borttagna: `ErrandFilter`, `ErrandFilterQuery` och `Filtering`. De saknade anslutning till översiktens hämtning och hade inga konsumenter redan före UX-ändringen. Den aktiva statusfiltreringen, sorteringen och pagineringen finns kvar hos befintliga stores och `useOverviewErrands`.
 
+Översiktens total hämtas enbart från det aktiva listsvaret. Sidomenyns separata count-anrop, count-store och oanvända statusikoner är borttagna. Därmed kan ett fel i ett oanvänt räkneanrop inte skapa ett falskt felmeddelande i filtret. Backendens count-endpoint ändras inte.
+
 ## Befintliga ägare behålls
 
 | Utility | Bedömning |

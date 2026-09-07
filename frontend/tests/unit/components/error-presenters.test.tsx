@@ -1,11 +1,10 @@
 import Overview from '@app/[locale]/oversikt/page';
-import { ErrandStatusFilter } from '@components/errand-table/errand-status-filter.component';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { render, screen } from '@testing-library/react';
 import type { useOverviewErrands } from 'src/hooks/use-overview-errands';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const state = vi.hoisted(() => ({ mobile: false, countsError: null as string | null }));
+const state = vi.hoisted(() => ({ mobile: false }));
 const overview = vi.hoisted((): { value: ReturnType<typeof useOverviewErrands> } => ({
   value: {
     rows: [],
@@ -32,12 +31,10 @@ vi.mock('src/hooks/use-status-buttons', () => ({
     statusButtons: [],
     activeStatus: 'OPEN',
     onSelectStatus: vi.fn(),
-    error: state.countsError,
   }),
 }));
 beforeEach(() => {
   state.mobile = false;
-  state.countsError = null;
   overview.value = {
     rows: [],
     isLoading: false,
@@ -93,11 +90,5 @@ describe('API error presenters', () => {
     );
     expect(screen.getByRole('region')).toHaveAttribute('aria-busy', 'true');
     expect(screen.queryByText('errand-information:no_errands')).not.toBeInTheDocument();
-  });
-
-  it('keeps count errors visible beside the shared status filter', () => {
-    state.countsError = 'api_errors.counts';
-    render(<ErrandStatusFilter />);
-    expect(screen.getByRole('alert')).toHaveTextContent('api_errors.counts');
   });
 });

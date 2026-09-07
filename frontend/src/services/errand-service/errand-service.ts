@@ -35,12 +35,6 @@ export const getErrands = async (q?: ErrandQuery): Promise<PageErrandDTO> => {
   return apiService.get<PageErrandDTO>('supportmanagement/errands', { params }).then((res) => res.data);
 };
 
-export const getErrandsCount = async (q?: ErrandQuery): Promise<{ count: number }> => {
-  return apiService
-    .get<{ count: number }>('supportmanagement/count', { params: toStatusParams(q?.statuses) })
-    .then((res) => res.data);
-};
-
 export const getMetadata = async (): Promise<MetadataResponseDTO> => {
   return apiService.get<MetadataResponseDTO>('supportmanagement/metadata').then((res) => res.data);
 };

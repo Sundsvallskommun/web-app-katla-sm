@@ -1,4 +1,3 @@
-import { mockCountDraftErrands, mockCountNewErrands, mockCountSolvedErrands } from '../fixtures/mockCount';
 import { mockErrands } from '../fixtures/mockErrands';
 import { mockMetadata } from '../fixtures/mockMetadata';
 import { mockNotifications } from '../fixtures/mockNotifications';
@@ -7,21 +6,12 @@ import { expect, test } from '../utils/test';
 
 test.describe('Overview page', () => {
   test.beforeEach(async ({ appUrl, page }) => {
+    page.on('request', (request) => {
+      expect(new URL(request.url()).pathname).not.toMatch(/supportmanagement\/count$/);
+    });
     await page.route(
       (url) => url.pathname.endsWith('/supportmanagement/errands') && url.searchParams.get('page') === '0',
       jsonRoute(mockErrands)
-    );
-    await page.route(
-      (url) => url.pathname.endsWith('/supportmanagement/count') && url.searchParams.get('status') === 'NEW',
-      jsonRoute(mockCountNewErrands)
-    );
-    await page.route(
-      (url) => url.pathname.endsWith('/supportmanagement/count') && url.searchParams.get('status') === 'DRAFT',
-      jsonRoute(mockCountDraftErrands)
-    );
-    await page.route(
-      (url) => url.pathname.endsWith('/supportmanagement/count') && url.searchParams.get('status') === 'SOLVED',
-      jsonRoute(mockCountSolvedErrands)
     );
     await page.route('**/supportmanagement/notifications', jsonRoute(mockNotifications));
     await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadata));

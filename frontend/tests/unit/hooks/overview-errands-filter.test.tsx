@@ -8,7 +8,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const errandServiceMocks = vi.hoisted(() => ({
   getErrands: vi.fn(),
-  getErrandsCount: vi.fn(),
   getMetadata: vi.fn(),
 }));
 const i18nMocks = vi.hoisted(() => ({ t: (key: string) => key }));
