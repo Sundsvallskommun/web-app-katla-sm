@@ -14,7 +14,7 @@ Utvecklingen görs i isolerade git-worktrees för att hålla rättningarna åtsk
 | Översikt | Statusfilter är synliga ovanför samlingen. Separata mobilheaders, helskärmsmeny, sidebar och viewport-context är borttagna. `useOverviewErrands` äger hämtningen för båda presentationerna och totalen kommer från samma listsvar. Sidomenyns separata räkneanrop och count-store är borttagna. |
 | Rapporter | Kompakta `ListItem`-rader på mobil, semantisk `Table` på desktop. En riktig länk per rapport. Desktop behåller sortering, sidstorlek, radhöjd och paginering; mobil behåller läs in fler. |
 | Ärende och registrering | Ärendenummer och status finns vid sidrubriken. `TabList` äger länkar mellan innehållsvyer. Registrering och utkast använder `LayoutFooter` utanför det skrollbara formuläret även på desktop. Åtgärdsraden tar egen plats och täcker inte sista fältet. Knappgrupperna äger radens kompakta padding; safe-area-regeln lägger bara till enhetens faktiska skyddszon, utan extra bottenmarginal på desktop. I CI-bilderna är raden 49px på desktop (tidigare 89px) och 53px på mobil (tidigare 85px), vid en knapprad utan extra safe area. Knapparnas storlek är oförändrad. Mobilguiden använder samma layoutmodell; nästa steg får rubrikfokus. |
-| Personer | `StakeholderRow` ersätter nästlade personkort med Astryx `ListItem`. Namn och kontaktuppgifter hålls ihop, borttagning och manuellt tillägg använder synliga sekundärknappar. Sökfältets bredd är stabil under inmatning; efter träff finns en textmärkt återställning. |
+| Personer | `StakeholderRow` använder Astryx `ListItem`, `Avatar`, `Stack`, `Text` och `Link` för en kompakt personpresentation. Initialer, namn och en nedtonad identitetsrad grupperas över kontaktlänkar med ikoner. En gemensam avgränsad listyta håller ihop personerna. Borttagning har en synlig sekundärknapp med personens namn i det tillgängliga namnet; knappen radbryts vid smala innehållsbredder. Sökfältets bredd är stabil under inmatning; efter träff finns en textmärkt återställning. |
 | Notifieringar | Astryx `Dialog` och `Layout` skiljer fast rubrik/stängknapp från skrollande `ListItem`-rader. Beskrivning, ärendelänk, avsändare och tid visas kompakt utan separat upprepad händelserad. Befintlig sortering, kvittering och felhantering behålls. |
 | Meddelanden | Konversation före redigerare, med genväg till skrivfältet. Formatering öppnas vid behov med `Collapsible`. Uppdatering och formateringsmeny behåller oskickad text. Filbilagor och sändningslås finns kvar. |
 | Laddning | Vyspecifika `Skeleton` för rapportlista, tabell, ärende, meddelanden och notifieringar. Dekorationerna döljs från hjälpmedel; omgivande region beskriver laddning. Fel ersätter inte riktiga data med ett falskt tomt tillstånd. Uppdatering/läs in fler behåller redan hämtat innehåll. |
@@ -27,6 +27,8 @@ Utvecklingen görs i isolerade git-worktrees för att hålla rättningarna åtsk
 ## Vad appen fortsatt behöver äga
 
 RJSF:s externa fält-id:n, formulärvärden och felkopplingar är ett integrationskontrakt. Där kompletta bibliotekskontroller äger egna id:n används deras kopplingar; där externa id:n krävs används Astryx `Field`-primitiver. `focus-first-error` navigerar från valideringsfel till rätt fält. Detta ska inte ersättas med en andra generell input-wrapper. Native datum- och tidsfält använder blocklayout så att webbläsaren placerar indikatorn vid fältets slut. Appens fallback för fokus ligger i reset-lagret: Astryx får själv undertrycka det inre fältets outline och markera sin rundade behållare.
+
+Personradens länkar och borttagningsknapp är separata kontroller. Astryx målar även fokus runt hela `ListItem` när något barn fokuseras; radens begränsade `!outline-0` tar bort denna dubbla ram, medan varje kontroll behåller sin egen fokusmarkering. Avataren är dekorativ eftersom namnet redan står bredvid. Befintlig policy för reducerad brukarinformation och låsta ärenden styr fortfarande vilka uppgifter och åtgärder som renderas. Kontaktlänkarna är uttryckligen aktiva även inne i ett låst fieldset; bara länkarna undantas från pekarblockeringen. Understruken primär text behåller kontrasten även i den låsta ytans nedtonade presentation.
 
 `RichTextEditor` äger en Quill-instans, HTML/ren text, formatering, Tab-beteende och cleanup. Sanitering ligger kvar vid HTML-gränsen. `MessageComposer` äger webbläsarens `File`-objekt; conversation-servicen äger befintligt multipart-format. Ett misslyckat sändningsförsök bevarar innehållet.
 
@@ -52,17 +54,17 @@ Komponentbiblioteket är låst till 0.5.2. En uppgradering kräver regenererat t
 
 ## Verifiering
 
-Kod och bilder verifierade på `90fca2e397813ee5b8d299793086a8647120fa78`, den 7 september 2026:
+Kod och bilder verifierade på `163007d6502c9faf08ab302e496aad2215def171`, den 7 september 2026:
 
 | Kontroll | Resultat |
 | --- | --- |
-| [Frontend CI](https://github.com/Sundsvallskommun/web-app-katla-sm/actions/runs/34143143177) | Lint, format, typkontroll och 323 enhetstester godkända. |
-| Chromium mot standalone-paketet | 99/99 scenarier godkända, inga omkörningar, cirka 1,7 minuter. |
-| Axe | 16 scanningar, inga rapporterade regelbrott eller JavaScript-fel. |
+| [Frontend CI](https://github.com/Sundsvallskommun/web-app-katla-sm/actions/runs/34145407811) | Lint, format, typkontroll och 329 enhetstester godkända. |
+| Chromium mot standalone-paketet | 99/99 scenarier godkända, inga omkörningar, cirka 2,0 minuter. |
+| Axe | 16 vy-/temascanningar utan rapporterade regelbrott eller JavaScript-fel. Dessutom två riktade scanningar av låsta personprofiler utan rapporterade regelbrott. |
 | Backend CI | Lint, format, typkontroll och 167 tester godkända; 4 befintliga tester överhoppade. |
-| [RHEL 8.10](https://github.com/Sundsvallskommun/web-app-katla-sm/actions/runs/34143143045) | Frontend- och backend-byggen samt standalone-bildbehandling godkända. |
+| [RHEL 8.10](https://github.com/Sundsvallskommun/web-app-katla-sm/actions/runs/34145407915) | Frontend- och backend-byggen samt standalone-bildbehandling godkända. |
 
-Bildgalleriets 32 bilder av vyer, teman, laddning, formulär och notifieringar kommer från samma kodcommit och CI-körning. `incomplete` omfattar `aria-valid-attr-value` i 16 scanningar och `color-contrast` i 6; de räknas inte som godkända kontroller. Det gäller bland annat stängda popup-kontrollers referenser och kontrast som motorn inte kunde avgöra. Se fullständiga noder i audit-filen.
+Bildgalleriets 34 bilder av vyer, teman, laddning, formulär och notifieringar kommer från samma kodcommit och CI-körning. `incomplete` omfattar `aria-valid-attr-value` i 16 scanningar och `color-contrast` i 6; de räknas inte som godkända kontroller. Det gäller bland annat stängda popup-kontrollers referenser och kontrast som motorn inte kunde avgöra. Se fullständiga noder i audit-filen.
 
 Lokal validering denna omgång omfattar enbart Astryx CLI, formatering, lint och minnesbegränsad typkontroll för app, unit och E2E. Inga lokala appservrar, byggjobb eller fulla testsuiter har startats efter minnesincidenten.
 
@@ -75,6 +77,7 @@ CI bygger med Webpack och kör Chromium mot det färdiga standalone-paketet med 
 - Rich text, bilagor, teckengräns, uppdatering och oskickat innehåll.
 - Registreringsguidens åtgärder och rubrikfokus vid 390×568px.
 - Stabil sökfältsbredd under inmatning, manuell person med sammanhållna kontaktuppgifter och synliga tilläggs-/borttagningsknappar.
+- Personprofilens kontaktlänkar, en fokusring per kontroll, borttagningsknappens radbrytning samt namngivning på svenska/engelska. Låsta profiler tillåter kontaktlänkar men döljer borttagning; reducerad brukarinformation förblir dold. Pekaråtkomst och kontrast kontrolleras även i låsta profiler.
 - Datum-/tidsindikatorer vid fältets slut, en rundad fokusmarkering och hela textfältet synligt ovanför åtgärdsraden vid riktig Tab-navigation.
 - Notifieringshistorik med fast rubrik/stängknapp och en fokusring per rad vid 390/1536px; Escape och återställt fokus.
 - Axe på fyra vyer i ljust/mörkt vid 390/1536px. `incomplete` redovisas separat i [audit.json](astryx-screenshots/audit.json).
