@@ -157,18 +157,53 @@ test('shows the conversation before the composer and keeps unsent text through r
   await expect(editor).toHaveText('Mitt oskickade svar');
 });
 
-test('keeps wizard actions reachable at a constrained phone height and focuses the next step', async ({
-  page,
-  appUrl,
-}, testInfo) => {
-  await page.setViewportSize({ width: 390, height: 568 });
-  await page.goto(appUrl('/arende/registrera'));
-  await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
-  const next = page.getByRole('button', { name: 'Nästa', exact: true });
-  await expect(next).toBeInViewport();
-  await next.click();
-  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
-  await expect(page.getByTestId('event-type-deviation')).toBeVisible();
-  await expect(next).toBeInViewport();
-  await page.screenshot({ path: testInfo.outputPath('wizard-390-568.png') });
-});
+for (const kind of ['new', 'draft'] as const) {
+  for (const width of [320, 390]) {
+    test(`keeps ${kind} report actions reachable through scrolling and resizing at ${width}px`, async ({
+      page,
+      appUrl,
+    }, testInfo) => {
+      await page.setViewportSize({ width, height: 568 });
+      if (kind === 'draft') {
+        await page.route(
+          `**/supportmanagement/errand/${mockErrand.errandNumber}`,
+          jsonRoute({ ...mockErrand, status: 'DRAFT' })
+        );
+      }
+      await page.goto(
+        appUrl(kind === 'new' ? '/arende/registrera' : `/arende/${mockErrand.errandNumber}/grundinformation`)
+      );
+      await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
+      const actions = page.getByTestId('report-actions');
+      const next = actions.getByRole('button', { name: 'Nästa', exact: true });
+      await expect(actions).toHaveCount(1);
+      await expect(actions).toBeInViewport({ ratio: 1 });
+      await expect(next).toBeInViewport({ ratio: 1 });
+      const initialBounds = await actions.boundingBox();
+      if (!initialBounds) throw new Error('The report action row must be visible before scrolling.');
+      await page.getByTestId('wizard-content').evaluate((element) => {
+        element.scrollTop = element.scrollHeight;
+      });
+      expect(await actions.boundingBox()).toEqual(initialBounds);
+      await expect(actions.getByRole('button', { name: 'Avbryt', exact: true })).toBeInViewport({ ratio: 1 });
+      await next.click();
+      await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+      await expect(page.getByTestId('event-type-deviation')).toBeVisible();
+      await expect(next).toBeInViewport({ ratio: 1 });
+      await actions.getByRole('button', { name: 'Tillbaka', exact: true }).click();
+      await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+      await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
+      await next.click();
+      await page.setViewportSize({ width: 1536, height: 960 });
+      await expect(page.getByTestId('register-errand')).toBeVisible();
+      await page.setViewportSize({ width, height: 568 });
+      await expect(page.getByTestId('event-type-deviation')).toBeVisible();
+      await expect(actions).toHaveCount(1);
+      await expect(actions).toBeInViewport({ ratio: 1 });
+      await expect(next).toBeInViewport({ ratio: 1 });
+      await page.screenshot({
+        path: testInfo.outputPath(kind === 'new' ? `wizard-${width}-568.png` : `wizard-draft-${width}-568.png`),
+      });
+    });
+  }
+}

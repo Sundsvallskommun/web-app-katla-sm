@@ -50,7 +50,7 @@ export const MobileWizard: React.FC = () => {
         </LayoutFooter>
       }
     >
-      <LayoutContent ref={contentRef} tabIndex={-1} className="scroll-py-2">
+      <LayoutContent ref={contentRef} tabIndex={-1} className="scroll-py-2" data-cy="wizard-content">
         <WizardStepContent />
       </LayoutContent>
     </Layout>

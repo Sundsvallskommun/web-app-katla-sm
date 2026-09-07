@@ -10,8 +10,9 @@ import { createUserMenuGroups } from '@layouts/userMenuGroup';
 import { useUserStore } from '@services/user-service/user-service';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appConfig } from 'src/config/appconfig';
 
-const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? '';
+import { MunicipalityLogo } from './municipality-logo.component';
 
 interface AppHeaderProps {
   as?: 'header' | 'div';
@@ -36,8 +37,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
     <>
       <Stack as={as} paddingInline={2} className="shrink-0 border-b border-default bg-surface">
         <TopNav
-          label={APP_NAME}
-          heading={<TopNavHeading heading={APP_NAME} headingHref={logoHref} />}
+          label={appConfig.applicationName}
+          heading={
+            <TopNavHeading
+              logo={<MunicipalityLogo variant="symbol" />}
+              heading={appConfig.applicationName}
+              headingHref={logoHref}
+            />
+          }
           endContent={
             <Stack direction="horizontal" align="center" gap={1}>
               <NotificationsBell

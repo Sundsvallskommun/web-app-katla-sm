@@ -97,6 +97,7 @@ test('cookie choices remain reachable on a small screen and survive reload', asy
   await page.goto(appUrl('/oversikt'));
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('heading')).toContainText('Katla');
   await page.keyboard.press('Escape');
   await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Hantera kakor' }).click();

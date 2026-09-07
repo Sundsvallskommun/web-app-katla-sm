@@ -95,7 +95,8 @@ jobs:
       run:
         working-directory: frontend
     env:
-      NEXT_PUBLIC_APP_NAME: 'Katla'
+      # The UI must show its product name even when the technical app id differs.
+      NEXT_PUBLIC_APP_NAME: 'katla-sm'
       NEXT_PUBLIC_API_URL: http://localhost:3001/api
       DOMAIN_NAME: localhost
       BASE_PATH: ''

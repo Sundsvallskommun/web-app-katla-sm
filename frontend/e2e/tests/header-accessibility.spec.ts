@@ -100,6 +100,18 @@ test.describe('Shared errand header accessibility', () => {
         await page.evaluate(() => document.fonts.ready);
 
         const header = page.getByRole('banner');
+        await expect(header.getByText('Katla', { exact: true })).toBeVisible();
+        const logo = header.getByRole('img', { name: 'Sundsvalls kommun', exact: true });
+        await expect(logo).toBeVisible();
+        // An external SVG reference can have a visible box before its artwork has loaded.
+        await expect
+          .poll(() =>
+            logo
+              .locator('use')
+              .evaluate((element) => (element instanceof SVGGraphicsElement ? element.getBBox().height : 0))
+          )
+          .toBeGreaterThan(0);
+        await expect(page).toHaveTitle(/^Katla - /);
         const headerBounds = await measure(header);
         expect(headerBounds.height).toBeLessThanOrEqual(72);
         await header.screenshot({ path: testInfo.outputPath(`header-${locale}-${width}.png`) });
@@ -167,9 +179,12 @@ test.describe('Shared errand header accessibility', () => {
         await page.setViewportSize({ width, height: 960 });
         for (const path of ['/oversikt', `/arende/${mockErrand.errandNumber}/meddelanden`]) {
           await page.goto(appUrl(path));
-          const identity = page.getByRole('banner').getByText(process.env.NEXT_PUBLIC_APP_NAME ?? '', { exact: true });
+          const identity = page.getByRole('banner').getByText('Katla', { exact: true });
           await expect(identity).toBeVisible();
           await expect.poll(() => textContrast(identity)).toBeGreaterThanOrEqual(4.5);
+          const logo = page.getByRole('banner').getByRole('img', { name: 'Sundsvalls kommun', exact: true });
+          await expect(logo).toBeVisible();
+          await expect(logo).toHaveCSS('color', await identity.evaluate((element) => getComputedStyle(element).color));
         }
       }
     });
