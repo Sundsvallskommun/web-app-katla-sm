@@ -13,6 +13,18 @@ import ApiService from '@/services/api.service';
 import { employmentParameters } from '@/utils/employment-type';
 import { addHyphenToPersonNumber } from '@/utils/stakeholder-mapping';
 
+/**
+ * Uppslagen faller tillbaka på null när något i kedjan brister, och gränssnittet kan bara visa
+ * "ingen person hittades". Utan den här raden är varje orsak — nätverksfel, okänd användare,
+ * saknad huvudanställning — omöjlig att skilja åt i efterhand. Bara felets art loggas: uppslaget
+ * görs på en person, och den personen hör inte hemma i loggen.
+ */
+const logLookupFailure = (operation: string, error: unknown): void => {
+  const message = error instanceof Error ? error.message : JSON.stringify(error);
+  const status = error instanceof HttpException ? error.status : undefined;
+  console.error(`${operation} failed at:`, message, 'status:', status);
+};
+
 @Controller()
 export class EmployeeController {
   private apiService = new ApiService();
@@ -54,8 +66,11 @@ export class EmployeeController {
         department: mainEmployment.orgName ?? undefined,
         parameters: employmentParameters(mainEmployment),
       };
+
+      console.log('Stakeholder data retrieved:', stakeholder);
       return stakeholder;
-    } catch {
+    } catch (error) {
+      logLookupFailure('getEmployeeByUserName', error);
       return null;
     }
   }
@@ -103,9 +118,7 @@ export class EmployeeController {
 
       return stakeholder;
     } catch (error) {
-      const message = error instanceof Error ? error.message : JSON.stringify(error);
-      const status = error instanceof HttpException ? error.status : undefined;
-      console.error('getEmployeeByPersonNumber failed at:', message, 'status:', status);
+      logLookupFailure('getEmployeeByPersonNumber', error);
       return null;
     }
   }

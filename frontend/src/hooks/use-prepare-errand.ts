@@ -9,11 +9,7 @@ import {
   toErrandLabel,
   toErrandLabels,
 } from '@utils/label-structure';
-import {
-  EVENT_TYPE_PARAMETER_KEY,
-  getReportTypeResourceName,
-  REPORT_TYPE_ROOT_RESOURCE_NAME,
-} from '@utils/report-type';
+import { getReportTypeResourceName, getSelectedEventType, REPORT_TYPE_ROOT_RESOURCE_NAME } from '@utils/report-type';
 import { useMemo } from 'react';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
@@ -126,7 +122,7 @@ export function usePrepareErrand() {
 
   const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
     const { errandFormData, reportingForColleague: _reportingForColleague, ...errandWithoutFormData } = values;
-    const eventType = values.parameters?.find((p) => p.key === EVENT_TYPE_PARAMETER_KEY)?.values?.[0] ?? '';
+    const eventType = getSelectedEventType(values);
     const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
 
     let stakeholders = errandWithoutFormData.stakeholders ?? [];

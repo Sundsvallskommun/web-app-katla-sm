@@ -8,11 +8,11 @@ RUN test "$(yarn --version)" = "${YARN_VERSION}"
 FROM build-base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 #RUN apk add --no-cache libc6-compat
-RUN apt-get update
-RUN apt-get install -y openssl
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --ignore-scripts
 
 # If using npm with a `package-lock.json` comment out above and use below instead
 # COPY package.json package-lock.json ./
@@ -28,8 +28,8 @@ RUN yarn build
 
 # Production image, copy all the files and run next
 FROM node:${NODE_VERSION}-slim AS runner
-RUN apt-get update
-RUN apt-get install -y openssl
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 ENV NODE_ENV=production

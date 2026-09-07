@@ -5,7 +5,12 @@ import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
-import { EVENT_TYPE_DEVIATION, EVENT_TYPE_MISCONDUCT, EVENT_TYPE_PARAMETER_KEY } from '@utils/report-type';
+import {
+  EVENT_TYPE_DEVIATION,
+  EVENT_TYPE_MISCONDUCT,
+  EVENT_TYPE_PARAMETER_KEY,
+  getSelectedEventType,
+} from '@utils/report-type';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -15,7 +20,7 @@ export const AboutErrandContent: React.FC = () => {
   const { showValidation } = useFormValidation();
 
   const parameters = watch('parameters') ?? [];
-  const eventType = parameters.find((p) => p.key === EVENT_TYPE_PARAMETER_KEY)?.values?.[0] ?? '';
+  const eventType = getSelectedEventType({ labels: watch('labels'), parameters });
   const eventConcerns = parameters.find((p) => p.key === 'eventConcerns')?.values?.[0] ?? '';
 
   const stakeholders = watch('stakeholders') ?? [];

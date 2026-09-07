@@ -29,10 +29,21 @@ Next.js hydrates the document, preventing React from installing document-level
 click listeners on newer Next.js versions. The patch keeps root creation inside
 the existing Toaster owner and delays it until the first notification. It mounts
 the manager synchronously so that first notification is delivered too. Both
-published module formats are patched by the install hook, including Docker
-builds. The overview browser tests cover click handling; the message-send test
+published module formats are patched by the project's `postinstall` command.
+CI and Docker install dependencies with `--ignore-scripts` and then explicitly
+run `yarn run postinstall`, so only this reviewed patch step executes. The overview
+browser tests cover click handling; the message-send test
 covers the first confirmation toast. Remove this patch and its install tooling
 when an upstream release initializes the toast root lazily and those tests pass.
+
+Dependency lifecycle scripts remain disabled in CI and Docker. The supported
+platforms use the native binaries supplied as optional packages; build and browser
+tests verify these work without install-time fallback downloads. If a future
+dependency needs an installation step, review that specific step and invoke it
+explicitly rather than enabling all dependency scripts. Local `yarn install`
+retains its normal lifecycle behavior. To reproduce the CI installation locally,
+use `yarn install --frozen-lockfile --ignore-scripts` in each package and then
+`yarn run postinstall` in the frontend.
 
 The remaining Quill 2.0.3 advisory, GHSA-v3m3-f69x-jf25, has no published patched
 version as of 2026-09-04. It requires a separate review of the editor's HTML

@@ -31,6 +31,25 @@ export const getEventType = (errand: ErrandDTO): string | undefined =>
 const isReportTypeLabel = (label: LabelDTO): boolean =>
   label.resourceName === REPORT_TYPE_DEVIATION || label.resourceName === REPORT_TYPE_MISCONDUCT;
 
+const EVENT_TYPE_BY_REPORT_TYPE: Record<string, string | undefined> = {
+  [REPORT_TYPE_DEVIATION]: EVENT_TYPE_DEVIATION,
+  [REPORT_TYPE_MISCONDUCT]: EVENT_TYPE_MISCONDUCT,
+};
+
+const getEventTypeFromLabels = (errand: ErrandDTO): string | undefined => {
+  const resourceName = errand.labels?.find(isReportTypeLabel)?.resourceName;
+  return resourceName ? EVENT_TYPE_BY_REPORT_TYPE[resourceName] : undefined;
+};
+
+/**
+ * Rapporttypen som radioknapparna och valideringen läser den. Parametern går först: den bär det
+ * val användaren just gjort, medan labeln skrivs om först när ärendet sparas. Labeln finns kvar som
+ * fallback, eftersom ett ärende kan komma tillbaka från API:t utan parametern men alltid bär
+ * typen som label.
+ */
+export const getSelectedEventType = (errand: ErrandDTO): string =>
+  getEventType(errand) ?? getEventTypeFromLabels(errand) ?? '';
+
 /**
  * Labeln är rapporttypen så som API:t ser den och läses därför i första hand. Ärenden som
  * registrerades innan typen började sättas som label bär den bara som parameter, och ska visas
