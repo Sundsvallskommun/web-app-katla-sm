@@ -25,6 +25,8 @@ export const StakeholderRow: React.FC<{
   const name = [stakeholder.firstName, stakeholder.lastName].filter(Boolean).join(' ').trim();
   const role = getStakeholderRoleDisplayName(stakeholder, metadata?.roles);
   const showContactDetails = shouldShowContactDetails(roles);
+  // Contact links remain usable inside ErrandContentLock's disabled fieldset.
+  // Only the links opt into pointer events and an enabled accessibility state.
   const email = stakeholder.emails?.[0];
   const phone = stakeholder.phoneNumbers?.[0];
   const identity = stakeholder.title?.length ? stakeholder.title : stakeholder.personNumber;
@@ -90,7 +92,9 @@ export const StakeholderRow: React.FC<{
                         href={`mailto:${encodeURIComponent(email)}`}
                         type="supporting"
                         hasUnderline
-                        className="min-w-0 min-h-6 break-all"
+                        color="primary"
+                        aria-disabled={false}
+                        className="min-w-0 min-h-6 break-all pointer-events-auto"
                         data-cy="stakeholder-email"
                       >
                         {email}
@@ -109,7 +113,9 @@ export const StakeholderRow: React.FC<{
                         href={`tel:${phoneNumberFormatter(phone)}`}
                         type="supporting"
                         hasUnderline
-                        className="min-w-0 min-h-6 break-all"
+                        color="primary"
+                        aria-disabled={false}
+                        className="min-w-0 min-h-6 break-all pointer-events-auto"
                         data-cy="stakeholder-phonenumber"
                       >
                         {phone}

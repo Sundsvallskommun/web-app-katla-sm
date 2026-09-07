@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import type { Locator, Page } from '@playwright/test';
 
 import { mockErrand } from '../fixtures/mockErrand';
@@ -74,6 +75,9 @@ test.describe('Errand basic information page', () => {
     // hamna utanför en förälder som klipper horisontell overflow.
     expect(emailBox.right).toBeLessThanOrEqual(MOBILE_VIEWPORT.width);
     expect(cardBox.right).toBeLessThanOrEqual(MOBILE_VIEWPORT.width);
+    await card.getByRole('link', { name: longReporter.emails[0] }).click({ trial: true });
+    const audit = await new AxeBuilder({ page }).include('[data-cy="stakeholder-card"]').analyze();
+    expect(audit.violations).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath('person-profile-431.png') });
   });
 
@@ -93,8 +97,11 @@ test.describe('Errand basic information page', () => {
       'href',
       `mailto:${encodeURIComponent(longReporter.emails[0])}`
     );
+    await card.getByRole('link', { name: longReporter.emails[0] }).click({ trial: true });
     const phone = card.getByRole('link', { name: MOCK_COUNTRY_CODE_PHONE_NUMBER, exact: true });
     await expect(phone).toHaveAttribute('href', `tel:${MOCK_COUNTRY_CODE_PHONE_NUMBER}`);
+    await expect(phone).toHaveAttribute('aria-disabled', 'false');
+    await phone.click({ trial: true });
     await card.getByRole('link', { name: longReporter.emails[0] }).focus();
     await page.keyboard.press('Tab');
     await expect(phone).toBeFocused();
@@ -102,6 +109,8 @@ test.describe('Errand basic information page', () => {
     await expect(card).toHaveCSS('outline-width', '0px');
     expect(emailBox.y).toBeGreaterThan(departmentBox.y);
     expect(cardOverflow.scrollWidth).toBeLessThanOrEqual(cardOverflow.clientWidth);
+    const audit = await new AxeBuilder({ page }).include('[data-cy="stakeholder-card"]').analyze();
+    expect(audit.violations).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath('person-profile-1536.png') });
   });
 
