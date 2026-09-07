@@ -1,5 +1,6 @@
 import { validateErrandFormData } from '@components/json/utils/schema-utils';
 import { ErrandFormDTO } from '@interfaces/errand-form';
+import { getSelectedEventType } from '@utils/report-type';
 import type { TFunction } from 'i18next';
 
 import { WizardStep } from './wizard-steps';
@@ -18,7 +19,7 @@ export async function validateStep(
   switch (step.id) {
     case 'about': {
       const errors: string[] = [];
-      const eventType = formValues.parameters?.find((p) => p.key === 'eventType')?.values?.[0];
+      const eventType = getSelectedEventType(formValues);
       const eventConcerns = formValues.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
 
       if (!eventType) {

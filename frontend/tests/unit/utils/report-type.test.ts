@@ -1,6 +1,6 @@
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { getTypeDisplayName } from '@utils/errand-helpers';
-import { getErrandReportType } from '@utils/report-type';
+import { getErrandReportType, getSelectedEventType } from '@utils/report-type';
 import type { TFunction } from 'i18next';
 import { describe, expect, it } from 'vitest';
 
@@ -49,5 +49,31 @@ describe('report type', () => {
 
   it('visar avvikelse när ärendet inte bär någon typ alls', () => {
     expect(getTypeDisplayName({}, translate)).toBe('errand-information:about.event_type_deviation');
+  });
+});
+
+/**
+ * Radioknapparna läser parametern, som är den enda som ändras medan formuläret fylls i. Ett
+ * inskickat ärende kan komma tillbaka utan parametern, och då står typen kvar i labeln.
+ */
+describe('vald rapporttyp', () => {
+  it.each([
+    ['DEVIATION', 'AVVIKELSE'],
+    ['ABUSE', 'MISSFORHALLANDE'],
+  ])('läser %s från labeln när parametern saknas', (resourceName, expectedEventType) => {
+    expect(getSelectedEventType(errandWithLabel(resourceName))).toBe(expectedEventType);
+  });
+
+  it('låter parametern gå före labeln, så att ett byte i formuläret inte snäpper tillbaka', () => {
+    const errand: ErrandDTO = {
+      ...errandWithLabel('DEVIATION'),
+      parameters: [{ key: 'eventType', values: ['MISSFORHALLANDE'] }],
+    };
+
+    expect(getSelectedEventType(errand)).toBe('MISSFORHALLANDE');
+  });
+
+  it('ger tom sträng när ärendet varken bär parameter eller label', () => {
+    expect(getSelectedEventType({})).toBe('');
   });
 });

@@ -13,6 +13,7 @@ import { ErrandFormDTO } from '@interfaces/errand-form';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import { Button, Dialog, Link, useSnackbar } from '@sk-web-gui/react';
 import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
+import { getSelectedEventType } from '@utils/report-type';
 import { useRouter } from 'next/navigation';
 import { useId, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -105,7 +106,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
     setShowValidation(true);
 
     const values = getValues();
-    const eventType = values.parameters?.find((p) => p.key === 'eventType')?.values?.[0];
+    const eventType = getSelectedEventType(values);
     const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
     const validationErrors: ErrandFormValidationError[] = [];
 

@@ -10,6 +10,7 @@ import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
+import { getSelectedEventType } from '@utils/report-type';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useId, useRef, useState } from 'react';
@@ -111,7 +112,7 @@ export const WizardBottomBar: React.FC = () => {
     setShowValidation(true);
 
     const values = getValues();
-    const eventType = values.parameters?.find((p) => p.key === 'eventType')?.values?.[0];
+    const eventType = getSelectedEventType(values);
     const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
 
     if (!eventType) {
