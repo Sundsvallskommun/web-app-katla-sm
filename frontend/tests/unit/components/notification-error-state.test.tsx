@@ -1,6 +1,7 @@
 import { NotificationDTO } from '@data-contracts/backend/data-contracts';
 import { acknowledgeNotification, getNotifications } from '@services/errand-service/errand-service';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { NotificationItem } from 'src/components/notifications/notification-item';
 import { NotificationsWrapper } from 'src/components/notifications/notification-wrapper';
 import { useNotificationStore } from 'src/stores/notification-store';
@@ -23,6 +24,16 @@ vi.mock('src/hooks/use-media-query', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
+}));
+
+// jsdom saknar showModal/close. Browserfallen testar den riktiga modal-livscykeln;
+// dessa tester gäller notifieringarnas namn, data och felpresentation.
+vi.mock('@components/modal-layer/modal-layer.component', () => ({
+  ModalLayer: ({ show, label, children }: { show: boolean; label: string; children: ReactNode }) => (
+    <dialog open={show} aria-label={label} aria-modal="true">
+      {children}
+    </dialog>
+  ),
 }));
 
 vi.mock('@sk-web-gui/react', async (importOriginal) => {
@@ -50,15 +61,14 @@ afterEach(() => {
 });
 
 describe('notification API error state', () => {
-  it('anchors the desktop panel and its overlay to the viewport right edge', () => {
+  it('names the modal panel and its close button', async () => {
     getNotificationsMock.mockResolvedValue([]);
 
     render(<NotificationsWrapper show setShow={vi.fn()} />);
 
-    const panel = screen.getByRole('region', { name: 'layout:notifications.panel' });
-    expect(panel).toHaveClass('fixed', 'inset-y-0', 'right-0');
-    expect(panel).not.toHaveClass('absolute', 'left-[5.6rem]', 'left-[32rem]');
-    expect(panel.previousElementSibling).toHaveClass('fixed', 'inset-0');
+    const panel = await screen.findByRole('dialog', { name: 'layout:notifications.panel' });
+    expect(panel).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole('button', { name: 'layout:notifications.close' })).toBeEnabled();
   });
 
   it('keeps stored notifications visible and does not render a false empty state', async () => {

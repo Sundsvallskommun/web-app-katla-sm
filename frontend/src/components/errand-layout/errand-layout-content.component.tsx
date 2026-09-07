@@ -100,7 +100,6 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   // rapporten är inskickad, så det finns inget kvar att spara eller skicka.
   const submittedView = route.kind === 'submitted';
   const requestedErrandNumber = route.kind === 'existing' ? route.errandNumber : null;
-  const initialFocus = useRef<HTMLBodyElement>(null);
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const wizardReset = useWizardStore((s) => s.reset);
   const wizardGoToStep = useWizardStore((s) => s.goToStep);
@@ -120,12 +119,6 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
     tabs.findIndex((tab) => currentPath.startsWith(tab.path)),
     0
   );
-
-  const setInitalFocus = () => {
-    setTimeout(() => {
-      initialFocus.current?.focus();
-    });
-  };
 
   const methods = useForm<ErrandFormDTO>({
     resolver: yupResolver(FormSchema) as unknown as Resolver<ErrandFormDTO>,
@@ -231,16 +224,14 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        <NextLink
+        <a
           href="#content"
-          passHref
-          onClick={() => {
-            setInitalFocus();
-          }}
-          className="sr-only focus:not-sr-only bg-primary-light border-2 border-black p-4 text-black inline-block focus:absolute focus:top-0 focus:left-0 focus:right-0 focus:m-auto focus:w-80 text-center"
+          // Över sidhuvudet (15), under modala bakgrunder (19+). Vanlig ankarnavigering
+          // flyttar fokus till sidans gemensamma, programmässigt fokuserbara main.
+          className="sr-only rounded-button-md bg-background-content text-dark-primary focus:not-sr-only focus:fixed focus:top-16 focus:left-16 focus:z-[18] focus:w-max focus:max-w-[calc(100vw-3.2rem)] focus:p-12 focus:ring focus:ring-offset-2"
         >
           {t('layout:header.goto_content')}
-        </NextLink>
+        </a>
         {registerNewErrand && <ReporterInit />}
         {/* Bara registreringen: där är allt innehåll osparat. Ett laddat utkast bär redan
             sparade värden, så "har innehåll" skulle varna för att lämna en orörd sida. */}

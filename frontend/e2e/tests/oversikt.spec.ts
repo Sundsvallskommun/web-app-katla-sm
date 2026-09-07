@@ -79,7 +79,7 @@ test.describe('Overview page', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.getByRole('button', { name: 'Öppna notifieringar' }).click();
 
-    const panel = page.getByRole('region', { name: 'Notifieringar' });
+    const panel = page.getByRole('dialog', { name: 'Notifieringar' });
     await expect(panel).toBeVisible();
     const geometry = await panel.evaluate((element) => {
       const bounds = element.getBoundingClientRect();

@@ -6,9 +6,10 @@ import { NotificationsBell } from '@components/notifications/notification-bell';
 import { AppUserMenu } from '@components/user-menu/app-user-menu.component';
 import { createUserMenuGroups } from '@layouts/userMenuGroup';
 import { ColorSchemeMode, PopupMenu, Tabs } from '@sk-web-gui/react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { createInstance } from 'i18next';
 import NextLink from 'next/link';
+import { renderToString } from 'react-dom/server';
 import { I18nextProvider } from 'react-i18next';
 import { useNotificationStore } from 'src/stores/notification-store';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -109,6 +110,26 @@ describe('control semantics', () => {
     expect(button).toHaveAttribute('aria-expanded', 'true');
     expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
 
+    fireEvent.click(button);
+    expect(toggleShow).toHaveBeenCalledOnce();
+  });
+
+  it('only enables notifications once the server-rendered button is hydrated', () => {
+    const toggleShow = vi.fn();
+    const component = (
+      <I18nextProvider i18n={i18n}>
+        <NotificationsBell expanded={false} toggleShow={toggleShow} />
+      </I18nextProvider>
+    );
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(component);
+    document.body.append(container);
+
+    expect(within(container).getByRole('button', { name: 'Öppna notifieringar' })).toBeDisabled();
+
+    render(component, { container, hydrate: true });
+    const button = within(container).getByRole('button', { name: 'Öppna notifieringar' });
+    expect(button).toBeEnabled();
     fireEvent.click(button);
     expect(toggleShow).toHaveBeenCalledOnce();
   });

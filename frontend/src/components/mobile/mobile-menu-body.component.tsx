@@ -3,11 +3,13 @@
 import { LogoutButton } from '@components/buttons/logout-button.component';
 import { colorSchemeOptions } from '@components/misc/color-scheme-options';
 import { languageOptions } from '@components/misc/language-options';
+import { ModalLayer } from '@components/modal-layer/modal-layer.component';
 import { OverviewStatusNav } from '@components/sidebars/overview-status-nav.component';
 import { useUserStore } from '@services/user-service/user-service';
 import { Avatar, Button, Divider, RadioButton } from '@sk-web-gui/react';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
 import { X } from 'lucide-react';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguageSwitch } from 'src/hooks/use-language-switch';
 import { useShallow } from 'zustand/react/shallow';
@@ -23,17 +25,28 @@ export const MobileMenuBody: React.FC<MobileMenuBodyProps> = ({ onClose }) => {
   const user = useUserStore(useShallow((s) => s.user));
   const { colorScheme, setColorScheme } = useLocalStorage();
   const { currentLanguage, switchTo } = useLanguageSwitch();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <section
+    <ModalLayer
       id="mobile-overview-menu"
-      aria-label={t('filtering:menu_title')}
-      className="fixed inset-0 z-50 bg-background-content pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+      show
+      onClose={onClose}
+      label={t('filtering:menu_title')}
+      initialFocus={closeButtonRef}
+      className="inset-0 h-[100dvh] w-full gap-0 rounded-none pb-[env(safe-area-inset-bottom)]"
     >
       <MainPageMobileHeader
         actions={
-          <Button inverted iconButton variant="tertiary" aria-label={t('layout:controls.close_menu')} onClick={onClose}>
-            <X />
+          <Button
+            ref={closeButtonRef}
+            inverted
+            iconButton
+            variant="tertiary"
+            aria-label={t('layout:controls.close_menu')}
+            onClick={onClose}
+          >
+            <X aria-hidden="true" />
           </Button>
         }
       >
@@ -114,6 +127,6 @@ export const MobileMenuBody: React.FC<MobileMenuBodyProps> = ({ onClose }) => {
           <LogoutButton smallSideBar={false} />
         </div>
       </MainPageMobileHeader>
-    </section>
+    </ModalLayer>
   );
 };

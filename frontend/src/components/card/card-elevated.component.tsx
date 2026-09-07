@@ -1,3 +1,5 @@
+'use client';
+
 import { cx } from '@sk-web-gui/react';
 
 export const CardElevated: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => {

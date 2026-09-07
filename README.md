@@ -63,6 +63,12 @@ redigera `.env.development.local` för behov. URLer, nycklar och cert behöver f
 
 Vid uppgradering: kontrollera driftmiljöns `SECRET_KEY` före deployment. Värden kortare än 32 tecken måste ersättas för att servern ska starta; byte av sessionshemlighet loggar ut befintliga sessioner. Om någon miljö har återanvänt den tidigare exempelhemligheten behöver den ersättas där. Enbart ändringen av exempelfilen roterar inga driftvärden.
 
+## Byggverktyg
+
+Frontendens `yarn dev`, `yarn build`, `yarn build:test` och analyskommandon använder uttryckligen Webpack. `yarn build:webpack` är ett alias till `yarn build` och kör därmed samma förberedelser. Playwright och CI använder dessa gemensamma skript.
+
+Detta är en tillfällig åtgärd efter en lokal incident med ett skenande antal Node-processer. Turbopacks hjälpprocesser är det främsta spåret, men exakt orsak är inte fastställd. Undvik direkta `next dev`/`next build` utan `--webpack`, eftersom Next 16 annars väljer Turbopack. Den uttryckliga projektroten i `next.config.js` behålls. Beroendeversioner, applikationsflöden och API-kontrakt påverkas inte av valet av byggverktyg.
+
 ## Tester
 
 ### Frontend (`cd frontend`)
@@ -81,14 +87,14 @@ E2e-tester körs med [Playwright](https://playwright.dev). Första gången behö
 yarn playwright install chromium
 ```
 
-Testerna körs mot en produktionsbyggd app (Playwright startar servern själv), alternativt mot en redan startad dev-server:
+Lokalt startar Playwright en dev-server via `yarn dev`, alternativt återanvänder en redan startad lokal dev-server. I GitHub CI körs testerna mot det färdiga produktionsbyggets standalone-server; arbetsflödet kopierar dess `public` och `.next/static` före start. Därmed görs ingen ny kompilering under browserkörningen.
 
 ```
-yarn build && yarn e2e     # bygg och kör headless
+yarn e2e                  # kör headless lokalt
 yarn e2e:ui                # interaktivt UI-läge
 ```
 
-Obs: e2e-testerna förutsätter att `NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE=true` och `NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO=false` är satta i `.env` vid byggtillfället (se `.github/workflows/ci.yml`).
+Obs: e2e-testerna förutsätter att `NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE=true` och `NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO=false` är satta i `.env` lokalt och vid byggtillfället i CI (se `.github/workflows/ci.yml`).
 
 ### Backend (`cd backend`)
 

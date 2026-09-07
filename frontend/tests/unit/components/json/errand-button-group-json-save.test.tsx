@@ -17,6 +17,11 @@ vi.mock('@components/cancel-errand-dialog.component', () => ({
   CancelErrandDialog: () => null,
 }));
 
+// Det här testet gäller sparakontraktet; native modalitet verifieras i browserfallen.
+vi.mock('@components/modal-layer/modal-layer.component', () => ({
+  ModalLayer: () => null,
+}));
+
 vi.mock('@services/errand-service/errand-service', () => ({
   createErrand: createErrandMock,
   updateErrand: updateErrandMock,

@@ -16,4 +16,15 @@ test.describe('Login page', () => {
     await expect(loginButton).toContainText('Logga in');
     await loginButton.click();
   });
+
+  test('loads the actual heading font under the configured application path', async ({ page }) => {
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    const fonts = await page.evaluate(async () => {
+      const loaded = await document.fonts.load('700 24px Raleway');
+      return loaded.map((font) => ({ family: font.family, status: font.status }));
+    });
+
+    expect(fonts.length).toBeGreaterThan(0);
+    expect(fonts.every((font) => font.family === 'Raleway' && font.status === 'loaded')).toBe(true);
+  });
 });

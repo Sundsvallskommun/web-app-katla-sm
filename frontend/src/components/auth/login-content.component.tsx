@@ -80,11 +80,14 @@ export const LoginContent: React.FC = () => {
     <>
       {isLoggedOut ?
         <div className="flex flex-col items-center gap-[4rem] w-full">
-          <h1 className="text-center text-[4rem] font-bold leading-[5.6rem] m-0">{t('login:logged_out_title')}</h1>
+          <h1 className="w-full break-words text-center text-[4rem] font-bold leading-[5.6rem] m-0">
+            {t('login:logged_out_title')}
+          </h1>
           <Button
             variant="primary"
             color="vattjom"
             size="lg"
+            className="max-w-full h-auto min-h-[5.6rem] whitespace-normal py-12"
             onClick={() => {
               router.push('/login');
             }}
@@ -93,14 +96,17 @@ export const LoginContent: React.FC = () => {
           </Button>
         </div>
       : <>
-          <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">{t('login:choose_login_method')}</h1>
+          <h1 className="w-full break-words text-center text-h2-sm lg:text-h2-lg mb-0">
+            {t('login:choose_login_method')}
+          </h1>
           <Divider className="w-full" />
-          <div className="flex flex-row desktop:flex-col gap-56 w-full desktop:w-fit px-80 pb-[10.4rem] pt-80 items-center">
-            <span>{t('login:login_problem')}</span>
+          <div className="flex flex-col gap-24 sm:gap-56 w-full sm:w-fit px-16 sm:px-80 pb-40 sm:pb-[10.4rem] pt-32 sm:pt-80 items-center text-center">
+            <span className="w-full break-words">{t('login:login_problem')}</span>
             <Button
               data-cy="login-button"
               variant="primary"
               size="lg"
+              className="max-w-full h-auto min-h-[5.6rem] whitespace-normal py-12"
               onClick={() => {
                 onLogin();
               }}

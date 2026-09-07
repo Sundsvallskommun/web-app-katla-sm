@@ -133,8 +133,15 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Prepare standalone server assets
+        run: |
+          cp -R public .next/standalone/
+          cp -R .next/static .next/standalone/.next/
+
       - name: Run Playwright tests
         run: yarn e2e
+        env:
+          DEBUG: pw:webserver
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7

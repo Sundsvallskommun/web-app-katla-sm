@@ -9,6 +9,7 @@
   "load_error": "The messages could not be loaded.",
   "required": "Write a message before sending.",
   "character_limit": "Max {{limit}} characters.",
+  "character_count": "{{count}} of {{limit}} characters used.",
   "too_long": "The message may be at most {{limit}} characters.",
   "max_file_size": "Maximum file size: {{size}} MB.",
   "loading": "Loading messages",

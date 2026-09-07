@@ -1,9 +1,11 @@
 import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
+import { ModalLayer } from '@components/modal-layer/modal-layer.component';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, FormControl, FormErrorMessage, Input, Modal, Select } from '@sk-web-gui/react';
 import { createStakeholderSchema, phoneNumberFormatter, shouldShowContactDetails } from '@utils/stakeholder';
-import { useEffect, useMemo } from 'react';
+import { X } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef } from 'react';
 import { Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
@@ -19,6 +21,8 @@ export const StakeholderFormModal: React.FC<{
   editableFields?: (keyof StakeholderDTO)[];
 }> = ({ index, onClose, show, roles, edit, initialValues, editableFields }) => {
   const { t } = useTranslation();
+  const dialogId = useId();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const showField = (field: keyof StakeholderDTO) => !editableFields || editableFields.includes(field);
   const { metadata } = useMetadataStore();
   const context = useFormContext<ErrandDTO>();
@@ -53,6 +57,10 @@ export const StakeholderFormModal: React.FC<{
     reset(initialValues);
   }, [onClose]);
 
+  // Behåll avmontering när dialogen är stängd: flera partavsnitt äger varsin
+  // instans, men bara det öppna formuläret ska finnas i DOM.
+  if (!show) return null;
+
   const onSave = (data: StakeholderDTO) => {
     const merged = editableFields ? { ...initialValues, ...data } : data;
     const stakeholder: StakeholderDTO = { ...merged, phoneNumbers: [phoneNumberFormatter(merged?.phoneNumbers?.[0])] };
@@ -70,18 +78,35 @@ export const StakeholderFormModal: React.FC<{
     onClose();
   };
 
+  const title =
+    edit ? t('errand-information:stakeholder.modal.edit_title') : t('errand-information:stakeholder.modal.add_title');
+
   return (
-    <Modal
+    <ModalLayer
+      id={dialogId}
+      variant="dialog"
       data-cy="manual-person-modal"
       show={show}
       onClose={onClose}
-      label={
-        edit ?
-          t('errand-information:stakeholder.modal.edit_title')
-        : t('errand-information:stakeholder.modal.add_title')
-      }
-      className="max-sm:!m-8 max-sm:!max-h-[calc(100vh-4rem)] max-sm:!w-[calc(100%-2rem)] max-sm:!max-w-full max-sm:!overflow-y-auto !overflow-x-hidden"
+      initialFocus={closeButtonRef}
+      label={title}
+      className="overflow-x-hidden"
     >
+      <div className="sk-modal-dialog-header">
+        <h2 className="sk-modal-dialog-header-title">{title}</h2>
+        <Button
+          ref={closeButtonRef}
+          className="sk-modal-dialog-close"
+          variant="tertiary"
+          iconButton
+          showBackground={false}
+          size="sm"
+          aria-label={`${t('layout:controls.close')} ${title}`}
+          onClick={onClose}
+        >
+          <X aria-hidden="true" />
+        </Button>
+      </div>
       <Modal.Content>
         {(showField('firstName') || showField('lastName')) && (
           <div className="flex gap-8">
@@ -212,6 +237,6 @@ export const StakeholderFormModal: React.FC<{
           : t('errand-information:stakeholder.modal.save_add')}
         </Button>
       </Modal.Footer>
-    </Modal>
+    </ModalLayer>
   );
 };

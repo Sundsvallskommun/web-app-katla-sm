@@ -62,7 +62,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
                 href="/arende/registrera"
                 data-cy="register-new-errand-button"
                 color="primary"
-                variant="tertiary"
+                variant="secondary"
                 inverted
               >
                 {t('filtering:new_errand')}

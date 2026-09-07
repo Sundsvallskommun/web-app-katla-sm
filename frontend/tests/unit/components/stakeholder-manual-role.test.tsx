@@ -2,11 +2,23 @@ import { StakeholderFormModal } from '@components/misc/stakeholder-modal.compone
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
+}));
+
+// jsdom saknar showModal/close. Dessa fall skyddar formuläret och rolltilldelningen;
+// browserfallen verifierar modalitet, fokus och stängning med den riktiga ModalLayer.
+vi.mock('@components/modal-layer/modal-layer.component', () => ({
+  ModalLayer: ({ show, label, children }: { show: boolean; label: string; children: ReactNode }) =>
+    show ?
+      <dialog open aria-label={label}>
+        {children}
+      </dialog>
+    : null,
 }));
 
 const EDITABLE_WITHOUT_ROLE = ['personNumber', 'firstName', 'lastName', 'emails', 'phoneNumbers'] as const;

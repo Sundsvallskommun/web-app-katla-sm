@@ -2,10 +2,11 @@
 
 import { ErrorAlert } from '@components/misc/error-alert.component';
 import { MainPageMobileHeader } from '@components/mobile/main-page-mobile-header.component';
+import { ModalLayer } from '@components/modal-layer/modal-layer.component';
 import { getNotifications } from '@services/errand-service/errand-service';
-import { Button, Divider, Header, Spinner } from '@sk-web-gui/react';
+import { Button, cx, Divider, Header, Spinner } from '@sk-web-gui/react';
 import { Mail, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
 import { useMediaQuery } from 'src/hooks/use-media-query';
@@ -22,6 +23,7 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -95,64 +97,50 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
     </div>
   );
 
-  if (!show) return null;
-
-  if (isMobile) {
-    return (
-      <section
-        id="notifications-panel"
-        aria-label={t('layout:notifications.panel')}
-        className="fixed inset-0 z-50 bg-background-content pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
-      >
-        <MainPageMobileHeader
-          actions={
-            <Button
-              inverted
-              aria-label={t('layout:notifications.close')}
-              iconButton
-              variant="tertiary"
-              onClick={() => {
-                setShow(false);
-              }}
-              data-cy="close-message-wrapper"
-            >
-              <X data-cy="close-message-wrapper-icon" />
-            </Button>
-          }
-        >
-          {notificationContent}
-        </MainPageMobileHeader>
-      </section>
-    );
-  }
+  const closeButton = (
+    <Button
+      ref={closeButtonRef}
+      inverted={isMobile}
+      aria-label={t('layout:notifications.close')}
+      iconButton
+      variant="tertiary"
+      onClick={() => {
+        setShow(false);
+      }}
+      data-cy="close-message-wrapper"
+    >
+      <X aria-hidden="true" data-cy="close-message-wrapper-icon" />
+    </Button>
+  );
 
   return (
-    <>
-      <div aria-hidden="true" className="sk-modal-wrapper fixed inset-0 z-[19]" />
-      <section
-        id="notifications-panel"
-        aria-label={t('layout:notifications.panel')}
-        className="border-1 border-y-0 border-r-0 fixed inset-y-0 right-0 bg-background-content transition-all ease-in-out duration-150 overflow-auto z-[20] shadow-100 w-full md:min-w-[50rem] md:w-[50vw] lg:w-[38vw]"
-      >
-        <Header className="h-[64px] flex justify-between" wrapperClasses="py-4 px-40">
-          <div className="text-h4-sm flex items-center gap-12">
-            <Mail aria-hidden="true" /> {t('layout:notifications.panel')}
-          </div>
-          <Button
-            tabIndex={0}
-            aria-label={t('layout:notifications.close')}
-            iconButton
-            variant="tertiary"
-            onClick={() => {
-              setShow(false);
-            }}
-            data-cy="close-message-wrapper"
-          >
-            <X data-cy="close-message-wrapper-icon" />
-          </Button>
-        </Header>
-        {notificationContent}
-      </section>
-    </>
+    <ModalLayer
+      id="notifications-panel"
+      show={show}
+      onClose={() => {
+        setShow(false);
+      }}
+      label={t('layout:notifications.panel')}
+      initialFocus={closeButtonRef}
+      className={cx(
+        'inset-y-0 right-0 h-[100dvh] w-full gap-0 rounded-none shadow-100',
+        isMobile ?
+          'left-0 pb-[env(safe-area-inset-bottom)]'
+        : 'left-auto border-1 border-y-0 border-r-0 md:min-w-[50rem] md:w-[50vw] lg:w-[38vw]'
+      )}
+    >
+      {isMobile ?
+        <MainPageMobileHeader actions={closeButton}>{notificationContent}</MainPageMobileHeader>
+      : <>
+          <Header className="h-[64px] shrink-0 flex justify-between" wrapperClasses="py-4 px-40">
+            <div className="text-h4-sm flex items-center gap-12">
+              <Mail aria-hidden="true" /> {t('layout:notifications.panel')}
+            </div>
+            {closeButton}
+          </Header>
+          {notificationContent}
+        </>
+      }
+    </ModalLayer>
   );
 };
