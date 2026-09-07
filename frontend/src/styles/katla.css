@@ -1,3 +1,12 @@
+/* Native links and controls need a fallback. Composite Astryx fields own their
+   focus treatment, so their inner controls must be able to override this rule. */
+@layer reset {
+  :where(:focus-visible) {
+    outline: var(--focus-outline-width) solid var(--focus-outline-color);
+    outline-offset: var(--focus-outline-offset);
+  }
+}
+
 @layer katla {
   body {
     min-width: 0;
@@ -12,11 +21,6 @@
   /* Device geometry is outside the spacing scale. Keep fixed actions clear of the home indicator. */
   .pb-safe {
     padding-bottom: max(var(--spacing-4), env(safe-area-inset-bottom));
-  }
-
-  :focus-visible {
-    outline: var(--focus-outline-width) solid var(--focus-outline-color);
-    outline-offset: var(--focus-outline-offset);
   }
 
   @media (prefers-reduced-motion: reduce) {

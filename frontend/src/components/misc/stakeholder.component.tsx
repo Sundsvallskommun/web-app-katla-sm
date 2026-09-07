@@ -1,10 +1,10 @@
 import { Button } from '@astryxdesign/core/Button';
 import { Card } from '@astryxdesign/core/Card';
 import { FieldStatus } from '@astryxdesign/core/FieldStatus';
+import { List } from '@astryxdesign/core/List';
 import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList';
 import { Selector } from '@astryxdesign/core/Selector';
 import { TextInput } from '@astryxdesign/core/TextInput';
-import { StakeholderCard } from '@components/card/stakeholder-card.component';
 import { useIsContentLocked } from '@contexts/errand-content-lock-context';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
 import { StakeholderFormModal } from './stakeholder-modal.component';
+import { StakeholderRow } from './stakeholder-row.component';
 
 export const StakeholderList: React.FC<{
   roles: string[];
@@ -33,27 +34,21 @@ export const StakeholderList: React.FC<{
   autoDetectSearch?: boolean;
   maxCount?: number;
   hideRoleSelect?: boolean;
-  /**
-   * Korten ritas som rapportörens: utan rollrad och i avsnittets fulla bredd. Används där
-   * avsnittet bara rymmer en roll, så att rollraden bara skulle upprepa rubriken ovanför.
-   */
-  sectionCards?: boolean;
+  /** Dölj roll som redan framgår av avsnittets rubrik. */
+  hideRole?: boolean;
   /**
    * Listans id i valideringen. Med det visar listan sitt eget fel och märker ut sig, så att
    * felsammanfattningen kan länka hit — samma sätt som fälten i schemaformuläret.
    */
   fieldId?: string;
-  /** Innehåll att visa inuti varje parts kort, till exempel val som hör till just den parten. */
-  renderCardExtra?: (index: number) => React.ReactNode;
 }> = ({
   roles,
   employeeSearch = false,
   autoDetectSearch = false,
   maxCount,
   hideRoleSelect = false,
-  sectionCards = false,
+  hideRole = false,
   fieldId,
-  renderCardExtra,
 }) => {
   const [searchMode, setSearchMode] = useState<string>('PERSON');
   const [query, setQuery] = useState<string>('');
@@ -83,7 +78,7 @@ export const StakeholderList: React.FC<{
     resolver: yupResolver(stakeholderSchema) as unknown as Resolver<StakeholderDTO>,
   });
 
-  const { handleSubmit, control, watch, reset, trigger, setValue, formState } = method;
+  const { handleSubmit, control, watch, reset, trigger, setValue, clearErrors, formState } = method;
   const { firstName, lastName, personNumber, address, city, title, department } = watch();
 
   //Used for resetting form when adding multiple stakeholders
@@ -210,6 +205,8 @@ export const StakeholderList: React.FC<{
                   value={query}
                   onChange={(value) => {
                     setQuery(value);
+                    setEmptyResult(false);
+                    clearErrors('personNumber');
                   }}
                   onEnter={() => {
                     if (!searchResult) void onSearchHandler(query);
@@ -221,25 +218,15 @@ export const StakeholderList: React.FC<{
                 />
               </div>
               <div className="flex gap-2 self-start pt-6">
-                {!searchResult && (
-                  <Button
-                    label={t('filtering:search')}
-                    icon={<Search size={16} aria-hidden="true" />}
-                    variant="secondary"
-                    onClick={() => {
-                      void onSearchHandler(query);
-                    }}
-                  />
-                )}
-                {(query.length > 0 || searchResult || emptyResult) && (
-                  <Button
-                    label={t('errand-information:stakeholder.clear_search')}
-                    icon={<X size={16} aria-hidden="true" />}
-                    isIconOnly
-                    variant="ghost"
-                    onClick={clearStakeholderForm}
-                  />
-                )}
+                <Button
+                  label={searchResult ? t('errand-information:stakeholder.clear_search') : t('filtering:search')}
+                  icon={searchResult ? <X size={16} aria-hidden="true" /> : <Search size={16} aria-hidden="true" />}
+                  variant="secondary"
+                  onClick={() => {
+                    if (searchResult) clearStakeholderForm();
+                    else void onSearchHandler(query);
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -353,30 +340,31 @@ export const StakeholderList: React.FC<{
         )}
       </FormProvider>
 
-      {stakeholders?.map((stakeholder, index) => {
-        if (!roles.includes(stakeholder.role ?? '')) return null;
-        return (
-          <StakeholderCard
-            key={index}
-            stakeholder={stakeholder}
-            hideRole={sectionCards}
-            wide={sectionCards}
-            roles={roles}
-            onRemove={() => {
-              remove(index);
-            }}
-          >
-            {renderCardExtra?.(index)}
-          </StakeholderCard>
-        );
-      })}
+      {matchingCount > 0 && (
+        <List hasDividers>
+          {stakeholders?.map((stakeholder, index) => {
+            if (!roles.includes(stakeholder.role ?? '')) return null;
+            return (
+              <StakeholderRow
+                key={index}
+                stakeholder={stakeholder}
+                hideRole={hideRole}
+                roles={roles}
+                onRemove={() => {
+                  remove(index);
+                }}
+              />
+            );
+          })}
+        </List>
+      )}
 
       {showAddButton && (
         <div>
           <Button
             data-cy="add-manual-person-button"
             label={t('errand-information:stakeholder.add_manually')}
-            variant="ghost"
+            variant="secondary"
             icon={<Pen size={16} aria-hidden="true" />}
             onClick={() => {
               setManualEntryOpen(true);

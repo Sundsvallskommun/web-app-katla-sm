@@ -52,12 +52,12 @@ export const addStakeholder = async (page: Page, scope: Locator, role: string) =
   await searchButton.click();
   await emptyPersonResponse;
   await expectFieldError(scope.getByTestId('person-number-input'), /Ingen person hittades/);
-  await scope.getByRole('button', { name: 'Rensa sökning' }).click();
+  await personNumberInput.clear();
   await expectFieldValid(scope.getByTestId('person-number-input'));
   await personNumberInput.fill(MOCK_INVALID_DATE_PERSON_NUMBER);
   await searchButton.click();
   await expectFieldError(scope.getByTestId('person-number-input'), /Personnummer måste|Ogiltigt datum i personnummer/);
-  await scope.getByRole('button', { name: 'Rensa sökning' }).click();
+  await personNumberInput.clear();
   await expectFieldValid(scope.getByTestId('person-number-input'));
   await personNumberInput.fill(MOCK_PERSON_NUMBER);
   const personResponse = page.waitForResponse(`**/citizen/person/${MOCK_PERSON_NUMBER}`);
@@ -98,7 +98,7 @@ export const addEmployeeStakeholder = async (page: Page, scope: Locator, role: s
   await searchButton.click();
   await expectFieldError(scope.getByTestId('person-number-input'), /Ingen person hittades/);
   await emptyPersonResponse;
-  await scope.getByRole('button', { name: 'Rensa sökning' }).click();
+  await personNumberInput.clear();
   await expectFieldValid(scope.getByTestId('person-number-input'));
   await personNumberInput.fill('ABC12DEF');
   const personResponse = page.waitForResponse('**/employee/personal/ABC12DEF');

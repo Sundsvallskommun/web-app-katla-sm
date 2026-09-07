@@ -1,10 +1,11 @@
 import { CheckboxInput } from '@astryxdesign/core/CheckboxInput';
+import { List } from '@astryxdesign/core/List';
 import { Spinner } from '@astryxdesign/core/Spinner';
-import { StakeholderCard } from '@components/card/stakeholder-card.component';
 import { ErrandSection } from '@components/errand-sections/errand-section.component';
 import { COLLEAGUE_FIELD_ID } from '@components/errand-sections/section-field-ids';
 import { SectionHeader } from '@components/misc/section-header.component';
 import { StakeholderList } from '@components/misc/stakeholder.component';
+import { StakeholderRow } from '@components/misc/stakeholder-row.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { getReporterStakeholder } from '@utils/stakeholder';
 import { useEffect } from 'react';
@@ -51,14 +52,9 @@ export const ReporterContent: React.FC = () => {
     <div className="flex flex-col gap-8">
       {getReporterStakeholder(stakeholders) ?
         <>
-          <StakeholderCard
-            stakeholder={getReporterStakeholder(stakeholders) ?? {}}
-            // Avsnittet heter Rapportör och rymmer bara rapportören, så rollraden på kortet
-            // upprepar rubriken. Kortet får i stället ligga i avsnittets fulla bredd.
-            hideRole
-            wide
-            roles={['REPORTER']}
-          />
+          <List>
+            <StakeholderRow stakeholder={getReporterStakeholder(stakeholders) ?? {}} hideRole roles={['REPORTER']} />
+          </List>
           <CheckboxInput
             value={otherReporter}
             onChange={handleOtherReporterChange}
@@ -77,7 +73,7 @@ export const ReporterContent: React.FC = () => {
                 maxCount={1}
                 fieldId={COLLEAGUE_FIELD_ID}
                 hideRoleSelect
-                sectionCards
+                hideRole
               />
             </div>
           )}
