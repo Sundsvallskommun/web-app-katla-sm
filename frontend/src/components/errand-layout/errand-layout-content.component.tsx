@@ -2,11 +2,14 @@
 
 import { pathWithoutLocale } from '@app/locale-path';
 import { Heading } from '@astryxdesign/core/Heading';
-import { Spinner } from '@astryxdesign/core/Spinner';
+import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
 import { Stack } from '@astryxdesign/core/Stack';
 import { Tab, TabList } from '@astryxdesign/core/TabList';
+import { Text } from '@astryxdesign/core/Text';
 import { jsonParametersToErrandFormData } from '@components/json/utils/schema-utils';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
+import { StatusLabel } from '@components/misc/status-label.component';
+import { LinkButton } from '@components/navigation/link-button.component';
 import { getVisibleTabs } from '@components/tabs/tabs';
 import { MobileWizard } from '@components/wizard/mobile-wizard.component';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
@@ -14,9 +17,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import BaseErrandLayout from '@layouts/base-errand-layout/base-errand-layout.component';
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
-import Main from '@layouts/main/main.component';
 import { getErrandUsingErrandNumber } from '@services/errand-service/errand-service';
 import { ErrandFormHandover, takeErrandFormHandover } from '@utils/errand-form-handover';
+import { ArrowLeft } from 'lucide-react';
 import { default as NextLink } from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -30,6 +33,8 @@ import { useUnsavedReportWarning } from 'src/hooks/use-unsaved-report-warning';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { useWizardStore } from 'src/stores/wizard-store';
 import * as yup from 'yup';
+
+import { ErrandContentSkeleton } from './errand-content-skeleton.component';
 
 const ReporterInit: React.FC = () => {
   useAutoInitReporter();
@@ -196,11 +201,23 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   if (loadErrors.length > 0 || loadState !== 'ready' || metadataLoadState !== 'ready' || !metadata) {
     return (
       <FormProvider {...methods}>
-        <div className="bg-canvas min-h-dvh flex items-center justify-center p-6">
-          {loadErrors.length > 0 ?
-            <ErrorAlertList messages={loadErrors} />
-          : <Spinner label={t('forms:loading')} />}
-        </div>
+        <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
+          <Layout height="auto" contentWidth={960} padding={4}>
+            <LayoutContent isScrollable={false}>
+              <Stack gap={6}>
+                <Text role="status" className="sr-only">
+                  {loadErrors.length === 0 ? t('forms:loading') : ''}
+                </Text>
+                {loadErrors.length > 0 ?
+                  <ErrorAlertList messages={loadErrors} />
+                : <Stack role="region" aria-label={t('forms:loading')} aria-busy="true">
+                    <ErrandContentSkeleton />
+                  </Stack>
+                }
+              </Stack>
+            </LayoutContent>
+          </Layout>
+        </BaseErrandLayout>
       </FormProvider>
     );
   }
@@ -208,14 +225,6 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        <a
-          href="#content"
-          // Länken ligger över sidhuvudet. Ankarnavigering flyttar fokus till
-          // sidans gemensamma, programmässigt fokuserbara main.
-          className="sr-only rounded bg-surface text-foreground focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[18] focus:w-max focus:max-w-[calc(100vw-2rem)] focus:p-3 focus:ring focus:ring-offset-2"
-        >
-          {t('layout:header.goto_content')}
-        </a>
         {registerNewErrand && <ReporterInit />}
         {/* Bara registreringen: där är allt innehåll osparat. Ett laddat utkast bär redan
             sparade värden, så "har innehåll" skulle varna för att lämna en orörd sida. */}
@@ -223,33 +232,36 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
         <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
           {showMobileWizard ?
             <MobileWizard />
-          : <div className="flex-1 min-h-0 overflow-y-auto">
-              {!submittedView && (
-                <div className="sticky top-0 z-10 border-b border-default bg-surface">
-                  <Stack
-                    direction="horizontal"
-                    align="center"
-                    justify="between"
-                    wrap="wrap"
-                    gap={4}
-                    padding={6}
-                    maxWidth={1200}
-                    style={{ marginInline: 'auto' }}
-                  >
-                    <Heading level={1}>{getHeaderTitle()}</Heading>
-                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
-                  </Stack>
-                </div>
-              )}
-              <Main>
-                <Stack gap={6} padding={6} maxWidth={1200} style={{ marginInline: 'auto' }}>
+          : <Layout height="auto" contentWidth={960} padding={isMobile ? 4 : 6}>
+              <LayoutContent isScrollable={false}>
+                <Stack gap={6}>
+                  {!submittedView && (
+                    <Stack gap={4}>
+                      {!registerNewErrand && (
+                        <LinkButton
+                          href="/oversikt"
+                          variant="ghost"
+                          className="self-start"
+                          icon={<ArrowLeft aria-hidden="true" />}
+                          label={t('filtering:my_reports')}
+                        />
+                      )}
+                      <Stack direction="horizontal" align="center" justify="between" wrap="wrap" gap={3}>
+                        <Stack gap={2}>
+                          <Heading level={1}>{getHeaderTitle()}</Heading>
+                          {!registerNewErrand && <StatusLabel status={errandStatus} />}
+                        </Stack>
+                        <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                      </Stack>
+                    </Stack>
+                  )}
                   {!registerNewErrand && !submittedView && (
                     <TabList
                       value={tabs[activeTabIndex]?.path ?? ''}
-                      // The route is the sole owner of selection; native link navigation changes it.
                       onChange={() => undefined}
                       aria-label={getHeaderTitle()}
                       hasDivider
+                      size="lg"
                     >
                       {tabs.map((tab) => (
                         <Tab key={tab.path} value={tab.path} label={t(tab.labelKey)} href={tab.path} as={NextLink} />
@@ -258,8 +270,8 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                   )}
                   {children}
                 </Stack>
-              </Main>
-            </div>
+              </LayoutContent>
+            </Layout>
           }
         </BaseErrandLayout>
       </FormValidationProvider>

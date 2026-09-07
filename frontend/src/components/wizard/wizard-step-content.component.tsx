@@ -29,7 +29,7 @@ export const WizardStepContent: React.FC = () => {
           <>
             <ReporterContent />
             {appConfig.features.otherPartiesDisclosure && (
-              <div className="mt-6">
+              <Stack gap={3} paddingBlockStart={6}>
                 <SectionHeader
                   as="h2"
                   headingClassName="text-lg"
@@ -38,7 +38,7 @@ export const WizardStepContent: React.FC = () => {
                   description={t('errand-information:other_parties.description')}
                 />
                 <OtherPartiesContent />
-              </div>
+              </Stack>
             )}
           </>
         );
@@ -54,14 +54,16 @@ export const WizardStepContent: React.FC = () => {
   };
 
   return (
-    <div className="px-4 py-6">
+    <Stack gap={4}>
       {step?.id !== 'summary' && (
-        <Stack gap={2} className="mb-4">
-          <Heading level={1}>{t(step?.titleKey)}</Heading>
+        <Stack gap={2}>
+          <Heading level={1} tabIndex={-1}>
+            {t(step?.titleKey)}
+          </Heading>
           {step?.descriptionKey && <Text color="secondary">{t(step.descriptionKey)}</Text>}
         </Stack>
       )}
       {renderStepContent()}
-    </div>
+    </Stack>
   );
 };

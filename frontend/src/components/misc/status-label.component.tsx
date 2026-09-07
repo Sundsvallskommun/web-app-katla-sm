@@ -1,10 +1,10 @@
-import { Badge, type BadgeVariant } from '@astryxdesign/core/Badge';
+import { Token, type TokenProps } from '@astryxdesign/core/Token';
 import { Check, Clock10, Pen, RefreshCw, Scale, Search, SquarePen, UserCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useStatusDisplayName } from 'src/hooks/use-status-display-name';
 
 interface StatusAppearance {
-  variant: BadgeVariant;
+  color: TokenProps['color'];
   icon?: ReactNode;
 }
 
@@ -16,22 +16,22 @@ const ICON_SIZE = 16;
  * som inte står här visas neutralt — den får sitt namn ur metadatan ändå.
  */
 const STATUS_APPEARANCE: Record<string, StatusAppearance> = {
-  NEW: { variant: 'blue' },
-  ASSIGNED: { variant: 'pink', icon: <UserCheck size={ICON_SIZE} aria-hidden="true" /> },
-  REVIEW: { variant: 'green', icon: <Search size={ICON_SIZE} aria-hidden="true" /> },
-  INQUIRY: { variant: 'purple', icon: <Pen size={ICON_SIZE} aria-hidden="true" /> },
-  DECISION: { variant: 'orange', icon: <Scale size={ICON_SIZE} aria-hidden="true" /> },
-  FOLLOW_UP: { variant: 'green', icon: <RefreshCw size={ICON_SIZE} aria-hidden="true" /> },
-  AWAITING_RESPONSE: { variant: 'warning', icon: <Clock10 size={ICON_SIZE} aria-hidden="true" /> },
-  SOLVED: { variant: 'neutral', icon: <Check size={ICON_SIZE} aria-hidden="true" /> },
-  DRAFT: { variant: 'neutral', icon: <SquarePen size={ICON_SIZE} aria-hidden="true" /> },
+  NEW: { color: 'blue' },
+  ASSIGNED: { color: 'pink', icon: <UserCheck size={ICON_SIZE} aria-hidden="true" /> },
+  REVIEW: { color: 'green', icon: <Search size={ICON_SIZE} aria-hidden="true" /> },
+  INQUIRY: { color: 'purple', icon: <Pen size={ICON_SIZE} aria-hidden="true" /> },
+  DECISION: { color: 'orange', icon: <Scale size={ICON_SIZE} aria-hidden="true" /> },
+  FOLLOW_UP: { color: 'green', icon: <RefreshCw size={ICON_SIZE} aria-hidden="true" /> },
+  AWAITING_RESPONSE: { color: 'orange', icon: <Clock10 size={ICON_SIZE} aria-hidden="true" /> },
+  SOLVED: { color: 'default', icon: <Check size={ICON_SIZE} aria-hidden="true" /> },
+  DRAFT: { color: 'default', icon: <SquarePen size={ICON_SIZE} aria-hidden="true" /> },
 };
 
-const DEFAULT_APPEARANCE: StatusAppearance = { variant: 'neutral' };
+const DEFAULT_APPEARANCE: StatusAppearance = { color: 'default' };
 
 export const StatusLabel: React.FC<{ status?: string }> = ({ status }) => {
   const statusDisplayName = useStatusDisplayName();
-  const { variant, icon } = STATUS_APPEARANCE[status ?? ''] ?? DEFAULT_APPEARANCE;
+  const { color, icon } = STATUS_APPEARANCE[status ?? ''] ?? DEFAULT_APPEARANCE;
 
-  return <Badge variant={variant} icon={icon} label={statusDisplayName(status)} data-cy="errand-status" />;
+  return <Token color={color} icon={icon} label={statusDisplayName(status)} data-cy="errand-status" />;
 };

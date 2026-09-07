@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { Layout, LayoutContent, LayoutFooter, LayoutHeader } from '@astryxdesign/core/Layout';
+import { useEffect, useRef } from 'react';
 import { useActiveWizardSteps } from 'src/hooks/use-active-wizard-steps';
 import { useWizardStore } from 'src/stores/wizard-store';
 
@@ -11,6 +12,18 @@ export const MobileWizard: React.FC = () => {
   const currentStep = useWizardStore((s) => s.currentStep);
   const goToStep = useWizardStore((s) => s.goToStep);
   const lastStep = steps.length - 1;
+  const contentRef = useRef<HTMLDivElement>(null);
+  const previousStep = useRef(currentStep);
+
+  useEffect(() => {
+    if (previousStep.current === currentStep) return;
+    previousStep.current = currentStep;
+    const content = contentRef.current;
+    if (content) {
+      content.scrollTop = 0;
+      (content.querySelector('h1') ?? content).focus();
+    }
+  }, [currentStep]);
 
   // Antalet steg krymper när eventConcerns ändras från ENSKILD_BRUKARE, och
   // currentStep ligger kvar i sessionStorage. Utan klampningen pekar det
@@ -22,12 +35,24 @@ export const MobileWizard: React.FC = () => {
   }, [currentStep, goToStep, lastStep]);
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      <WizardHeader />
-      <main id="content" tabIndex={-1} className="flex-1 overflow-y-auto min-h-0">
+    <Layout
+      contentWidth={640}
+      padding={4}
+      defaultHasDividers
+      header={
+        <LayoutHeader>
+          <WizardHeader />
+        </LayoutHeader>
+      }
+      footer={
+        <LayoutFooter className="pb-safe">
+          <WizardBottomBar />
+        </LayoutFooter>
+      }
+    >
+      <LayoutContent ref={contentRef} tabIndex={-1}>
         <WizardStepContent />
-      </main>
-      <WizardBottomBar />
-    </div>
+      </LayoutContent>
+    </Layout>
   );
 };

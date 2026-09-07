@@ -9,6 +9,11 @@
     background: var(--color-background-body);
   }
 
+  /* Device geometry is outside the spacing scale. Keep fixed actions clear of the home indicator. */
+  .pb-safe {
+    padding-bottom: max(var(--spacing-4), env(safe-area-inset-bottom));
+  }
+
   :focus-visible {
     outline: var(--focus-outline-width) solid var(--focus-outline-color);
     outline-offset: var(--focus-outline-offset);

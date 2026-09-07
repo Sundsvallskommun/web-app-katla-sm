@@ -15,7 +15,7 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({ variant = 'bar' }) =
   const steps = useActiveWizardSteps();
   const label = t('errand-information:wizard.step_indicator', { current: currentStep + 1, total: steps.length });
   return (
-    <Stack padding={4} className="border-b border-default bg-surface">
+    <Stack gap={2}>
       {variant === 'bar' ?
         <ProgressBar label={label} value={currentStep + 1} max={steps.length} />
       : <Stepper label={label} activeStep={currentStep}>

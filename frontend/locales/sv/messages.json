@@ -30,5 +30,6 @@
   "remove_attachment": "Ta bort {{name}}",
   "file_size": "{{size}} kB",
   "refresh": "Uppdatera meddelanden",
-  "load_more": "Visa äldre meddelanden"
+  "load_more": "Visa äldre meddelanden",
+  "compose_action": "Skriv ett meddelande"
 }

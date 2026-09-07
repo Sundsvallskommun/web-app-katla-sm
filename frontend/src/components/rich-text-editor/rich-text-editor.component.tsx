@@ -3,10 +3,12 @@
 import 'quill/dist/quill.core.css';
 
 import { Button } from '@astryxdesign/core/Button';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
 import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
 import { useFocusTrap } from '@astryxdesign/core/hooks';
 import { IconButton } from '@astryxdesign/core/IconButton';
 import { Spinner } from '@astryxdesign/core/Spinner';
+import { Stack } from '@astryxdesign/core/Stack';
 import { TextInput } from '@astryxdesign/core/TextInput';
 import clsx from 'clsx';
 import { Bold, Heading1, Heading2, Italic, Link, List, ListOrdered, Underline } from 'lucide-react';
@@ -33,6 +35,7 @@ interface RichTextEditorProps {
   name?: string;
   className?: string;
   disableToolbar?: boolean;
+  collapsibleToolbar?: boolean;
   value?: Partial<RichTextValue>;
   onChange?: (value: RichTextValue) => void;
   onSelectionChange?: (range: Range | null, oldRange: Range | null) => void;
@@ -58,6 +61,7 @@ export function RichTextEditor({
   readOnly = false,
   className,
   disableToolbar = false,
+  collapsibleToolbar = false,
   value,
   onChange,
   onSelectionChange,
@@ -190,37 +194,54 @@ export function RichTextEditor({
     setLinkOpen(false);
   };
 
+  const toolbar = (
+    <Stack
+      direction="horizontal"
+      wrap="wrap"
+      gap={1}
+      padding={2}
+      className="ql-toolbar border-b border-default"
+      role="group"
+      aria-label={t('formatting')}
+    >
+      {FORMAT_CONTROLS.map(({ label, format, value: selectedValue, icon: Icon }) => (
+        <IconButton
+          key={label}
+          label={t(label)}
+          icon={<Icon size={18} />}
+          variant={formats[format] === selectedValue ? 'secondary' : 'ghost'}
+          size="lg"
+          aria-pressed={formats[format] === selectedValue}
+          isDisabled={!quill || isReadonly}
+          onClick={() => {
+            applyFormat(format, selectedValue);
+          }}
+        />
+      ))}
+      <IconButton
+        label={t('link')}
+        icon={<Link size={18} />}
+        variant={formats.link ? 'secondary' : 'ghost'}
+        size="lg"
+        aria-pressed={!!formats.link}
+        isDisabled={!quill || isReadonly || !hasSelectedText}
+        onClick={() => {
+          setLinkUrl(typeof formats.link === 'string' ? formats.link : '');
+          setLinkOpen(true);
+        }}
+      />
+    </Stack>
+  );
+
   return (
-    <div className={clsx(styles.editor, className)} data-invalid={invalid} data-disabled={disabled}>
-      {!disableToolbar && (
-        <div className={clsx('ql-toolbar', styles.toolbar)} role="group" aria-label={t('formatting')}>
-          {FORMAT_CONTROLS.map(({ label, format, value: selectedValue, icon: Icon }) => (
-            <IconButton
-              key={label}
-              label={t(label)}
-              icon={<Icon size={18} />}
-              variant="ghost"
-              aria-pressed={formats[format] === selectedValue}
-              isDisabled={!quill || isReadonly}
-              onClick={() => {
-                applyFormat(format, selectedValue);
-              }}
-            />
-          ))}
-          <IconButton
-            label={t('link')}
-            icon={<Link size={18} />}
-            variant="ghost"
-            aria-pressed={!!formats.link}
-            isDisabled={!quill || isReadonly || !hasSelectedText}
-            onClick={() => {
-              setLinkUrl(typeof formats.link === 'string' ? formats.link : '');
-              setLinkOpen(true);
-            }}
-          />
-        </div>
-      )}
-      <div ref={hostRef} className={styles.surface} />
+    <Stack className={clsx(styles.editor, className)} data-invalid={invalid} data-disabled={disabled}>
+      {!disableToolbar &&
+        (collapsibleToolbar ?
+          <Collapsible trigger={t('formatting')} defaultIsOpen={false}>
+            {toolbar}
+          </Collapsible>
+        : toolbar)}
+      <Stack ref={hostRef} className={styles.surface} />
       {!quill && !loadFailed && <Spinner label={t('loading')} />}
       {loadFailed && (
         <p role="alert" className="p-4 text-danger">
@@ -229,7 +250,7 @@ export function RichTextEditor({
       )}
       <Dialog ref={linkDialogRef} isOpen={linkOpen} onOpenChange={setLinkOpen} purpose="form" width={440}>
         <DialogHeader title={t('edit_link')} onOpenChange={setLinkOpen} />
-        <div className="flex flex-col gap-4 p-4">
+        <Stack gap={4} padding={4}>
           <TextInput
             label={t('link_url')}
             value={linkUrl}
@@ -240,7 +261,7 @@ export function RichTextEditor({
             placeholder="https://"
             width="100%"
           />
-          <div className="flex flex-wrap justify-end gap-2">
+          <Stack direction="horizontal" wrap="wrap" justify="end" gap={2}>
             {!!formats.link && (
               <Button
                 label={t('remove_link')}
@@ -264,9 +285,9 @@ export function RichTextEditor({
               }}
               isDisabled={!linkUrl.trim()}
             />
-          </div>
-        </div>
+          </Stack>
+        </Stack>
       </Dialog>
-    </div>
+    </Stack>
   );
 }

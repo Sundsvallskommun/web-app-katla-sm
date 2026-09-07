@@ -2,6 +2,8 @@
 import { Button } from '@astryxdesign/core/Button';
 import { FileInput } from '@astryxdesign/core/FileInput';
 import { IconButton } from '@astryxdesign/core/IconButton';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@astryxdesign/core/Text';
 import { useToast } from '@astryxdesign/core/Toast';
 import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { RichTextEditor } from '@components/rich-text-editor/rich-text-editor.component';
@@ -93,14 +95,15 @@ export const MessageComposer: React.FC<{
   };
 
   return (
-    <form
-      className="flex flex-col gap-6"
+    <Stack
+      as="form"
+      gap={4}
       data-cy="message-composer"
       onSubmit={(event) => {
         void handleSubmit(onSubmit)(event);
       }}
     >
-      <div className="flex w-full flex-col gap-2">
+      <Stack gap={2}>
         <FormFieldLabel id="message-body-label" htmlFor="message-body" required>
           {t('messages:compose_label')}
         </FormFieldLabel>
@@ -122,7 +125,7 @@ export const MessageComposer: React.FC<{
               required
               readOnly={isSubmitting}
               invalid={!!messageError}
-              className="[&_.ql-container]:h-[12.5rem]"
+              collapsibleToolbar
               value={editorValue}
               onChange={(value) => {
                 setValue('messageMarkup', value.markup);
@@ -131,26 +134,26 @@ export const MessageComposer: React.FC<{
             />
           )}
         />
-        <div className="text-sm flex flex-wrap justify-between gap-x-4 gap-y-1">
-          <span id="message-body-limit" className="text-muted">
+        <Stack direction="horizontal" wrap="wrap" justify="between" gap={2}>
+          <Text id="message-body-limit" color="secondary" type="supporting">
             {t('messages:character_limit', { limit: MESSAGE_CHARACTER_LIMIT })}
-          </span>
-          <span aria-hidden="true" className={isOverLimit ? 'text-danger' : 'text-muted'}>
+          </Text>
+          <Text aria-hidden="true" type="supporting" className={isOverLimit ? 'text-danger' : 'text-muted'}>
             {messageLength}/{MESSAGE_CHARACTER_LIMIT}
-          </span>
-          <span id="message-body-count" className="sr-only">
+          </Text>
+          <Text id="message-body-count" className="sr-only">
             {t('messages:character_count', { count: messageLength, limit: MESSAGE_CHARACTER_LIMIT })}
-          </span>
-        </div>
+          </Text>
+        </Stack>
         {messageError && (
           <p id="message-body-error" className="text-sm text-danger">
             {messageError}
           </p>
         )}
-      </div>
+      </Stack>
 
       {/* Annonsera fel när de ändras, inte räknaren vid varje tangenttryckning. */}
-      <div
+      <Stack
         role="status"
         aria-label={t('messages:validation_status')}
         aria-live="polite"
@@ -158,9 +161,9 @@ export const MessageComposer: React.FC<{
         className="sr-only"
       >
         {messageError}
-      </div>
+      </Stack>
 
-      <div className="flex flex-col gap-3">
+      <Stack gap={3}>
         <Controller
           control={control}
           name="files"
@@ -192,10 +195,10 @@ export const MessageComposer: React.FC<{
             {files.map((file, index) => (
               <li key={`${file.name}-${index}`} className="flex items-center gap-3 p-3">
                 <Paperclip size={18} aria-hidden="true" className="shrink-0 text-muted" />
-                <span className="min-w-0 flex-1 break-words">{file.name}</span>
-                <span className="shrink-0 text-sm text-muted">
+                <Text className="min-w-0 flex-1 break-words">{file.name}</Text>
+                <Text type="supporting" color="secondary" className="shrink-0">
                   {t('messages:file_size', { size: Math.ceil(file.size / 1024) })}
-                </span>
+                </Text>
                 <IconButton
                   label={t('messages:remove_attachment', { name: file.name })}
                   icon={<X size={18} />}
@@ -212,7 +215,7 @@ export const MessageComposer: React.FC<{
             ))}
           </ul>
         )}
-      </div>
+      </Stack>
 
       {sendError && (
         <p role="alert" className="text-sm text-danger">
@@ -220,16 +223,17 @@ export const MessageComposer: React.FC<{
         </p>
       )}
 
-      <div>
+      <Stack direction="horizontal" justify="end">
         <Button
           data-cy="send-message-button"
           type="submit"
           label={t('messages:send')}
           variant="primary"
+          size="lg"
           isLoading={isSubmitting}
           isDisabled={isSubmitting || isOverLimit}
         />
-      </div>
-    </form>
+      </Stack>
+    </Stack>
   );
 };

@@ -36,9 +36,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
 
-      - name: Apply reviewed frontend patches
-        run: yarn run postinstall
-
       # src/proxy.ts importerar genererade middleware-envs.js, som behövs för typmedveten lint
       - name: Generate middleware envs
         run: yarn generate:middleware-envs
@@ -124,9 +121,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
 
-      - name: Apply reviewed frontend patches
-        run: yarn run postinstall
-
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps chromium
 
@@ -150,3 +144,14 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report
           retention-days: 14
+
+      - name: Upload Astryx visual evidence
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: astryx-ui-evidence
+          path: |
+            frontend/test-results/**/*.png
+            frontend/test-results/**/audit.json
+            frontend/test-results/**/header-dimensions.json
+          retention-days: 7

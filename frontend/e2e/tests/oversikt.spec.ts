@@ -30,16 +30,19 @@ test.describe('Overview page', () => {
 
   // Antalen står inte längre bredvid listorna i sidopanelen utan i rubriken över tabellen,
   // där de gäller den lista man faktiskt tittar på.
-  test('Lists the report views in the sidebar and names the selected one above the table', async ({ page }) => {
+  test('Shows status filters directly and names the selected collection', async ({ page }) => {
     await expect(page.getByRole('main')).toBeVisible();
 
-    const submittedButton = page.getByTestId('overview-aside').getByRole('button', { name: 'Inskickade' });
+    const submittedButton = page.getByTestId('errand-status-filter').getByRole('radio', { name: 'Inskickade' });
     await expect(submittedButton).toBeEnabled();
-    await expect(submittedButton).toHaveAttribute('aria-current', 'page');
-    await expect(page.getByTestId('overview-aside').getByRole('button', { name: 'Avslutade' })).toBeEnabled();
+    await expect(submittedButton).toBeChecked();
+    await expect(page.getByTestId('errand-status-filter').getByRole('radio', { name: 'Avslutade' })).toBeEnabled();
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inskickade');
-    await expect(page.getByTestId('errand-count')).toHaveText(`Visar ${mockErrands.totalElements ?? 0} ärenden`);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Mina rapporter');
+    await expect(page.getByRole('heading', { level: 2 })).toHaveText('Inskickade');
+    await expect(page.getByTestId('errand-count')).toHaveText(
+      `Visar ${mockErrands.content?.length ?? 0} av ${mockErrands.totalElements ?? 0}`
+    );
   });
 
   test('Show correct errand table header and correct ammount of errands', async ({ page }) => {
@@ -68,7 +71,7 @@ test.describe('Overview page', () => {
   test('Keeps navigation and the table reachable just above the mobile breakpoint', async ({ page }) => {
     for (const width of [800, 1024]) {
       await page.setViewportSize({ width, height: 900 });
-      await expect(page.getByTestId('overview-aside')).toBeVisible();
+      await expect(page.getByTestId('errand-status-filter')).toBeVisible();
       const table = page.getByTestId('errand-table');
       await expect(table).toBeVisible();
       const openLink = table.getByTestId('open-errand-button').first();

@@ -30,5 +30,6 @@
   "remove_attachment": "Remove {{name}}",
   "file_size": "{{size}} kB",
   "refresh": "Refresh messages",
-  "load_more": "Show older messages"
+  "load_more": "Show older messages",
+  "compose_action": "Write a message"
 }

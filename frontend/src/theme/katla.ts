@@ -5,7 +5,7 @@ import { neutralTheme } from '@astryxdesign/theme-neutral';
 export const katlaTheme = defineTheme({
   name: 'katla',
   extends: neutralTheme,
-  color: { accent: ['#087e80', '#64d8cd'], neutralStyle: 'cool' },
+  color: { accent: ['#087e80', '#64d8cd'], neutralStyle: 'neutral' },
   typography: {
     body: { family: 'system-ui', fallbacks: 'Arial, sans-serif' },
     heading: { family: 'system-ui', fallbacks: 'Arial, sans-serif' },

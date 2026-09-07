@@ -14,8 +14,7 @@ interface NotificationsBellProps {
 
 export const NotificationsBell = ({ expanded, toggleShow }: NotificationsBellProps) => {
   const [isReady, setIsReady] = useState(false);
-  // Server HTML can appear before hydration replaces the desktop header on mobile.
-  // Do not accept a click until this button has its event handler and final layout.
+  // Keep server-rendered controls disabled until their event handlers are attached.
   useEffect(() => {
     setIsReady(true);
   }, []);
@@ -36,6 +35,7 @@ export const NotificationsBell = ({ expanded, toggleShow }: NotificationsBellPro
         aria-haspopup="dialog"
         onClick={toggleShow}
         variant="ghost"
+        size="lg"
         isIconOnly
         icon={<Bell aria-hidden="true" />}
       />

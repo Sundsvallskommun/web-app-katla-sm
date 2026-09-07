@@ -1,9 +1,10 @@
 'use client';
 
 import { Avatar } from '@astryxdesign/core/Avatar';
-import { Badge } from '@astryxdesign/core/Badge';
 import { Button } from '@astryxdesign/core/Button';
-import { Card } from '@astryxdesign/core/Card';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@astryxdesign/core/Text';
+import { Token } from '@astryxdesign/core/Token';
 import { ConversationMessageAttachmentDTO, ConversationMessageDTO } from '@data-contracts/backend/data-contracts';
 import { getConversationAttachment } from '@services/conversation-service/conversation-service';
 import { sanitizeMessage } from '@utils/sanitize-message';
@@ -76,48 +77,46 @@ export const MessageItem: React.FC<{
   const senderName = [message.firstName, message.lastName].filter(Boolean).join(' ');
 
   return (
-    <article data-cy="message">
-      <Card padding={6}>
-        <div className="flex min-w-0 flex-col gap-4">
-          <header className="flex flex-wrap items-center gap-3">
-            <Avatar size="sm" name={senderName} tooltip={false} aria-hidden="true" />
-            <div className="flex min-w-0 flex-col">
-              <span className="font-semibold break-words">{senderName || t('messages:unknown_sender')}</span>
-              {message.sent && (
-                <time className="text-sm text-muted" dateTime={message.sent}>
-                  {dayjs(message.sent).format('YYYY-MM-DD, HH:mm')}
-                </time>
-              )}
-            </div>
-            <Badge
-              variant={isOutbound ? 'info' : 'neutral'}
-              className="ml-auto whitespace-nowrap"
-              label={isOutbound ? t('messages:direction_sent') : t('messages:direction_received')}
-            />
-          </header>
-
-          {/* Texten är HTML från en skrivruta och saneras innan den renderas. */}
-          <div
-            data-cy="message-body"
-            className="break-words [&_p]:mb-2 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6"
-            dangerouslySetInnerHTML={{ __html: sanitizeMessage(message.message) }}
-          />
-
-          {message.attachments.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {message.attachments.map((attachment) => (
-                <AttachmentButton
-                  key={attachment.attachmentId}
-                  attachment={attachment}
-                  errandId={errandId}
-                  message={message}
-                  onError={onError}
-                />
-              ))}
-            </div>
+    <Stack as="article" data-cy="message" gap={4} paddingBlock={4}>
+      <Stack as="header" direction="horizontal" wrap="wrap" align="center" gap={3}>
+        <Avatar size="sm" name={senderName} tooltip={false} aria-hidden="true" />
+        <Stack gap={1} className="min-w-0">
+          <Text weight="semibold" className="break-words">
+            {senderName || t('messages:unknown_sender')}
+          </Text>
+          {message.sent && (
+            <Text color="secondary" type="supporting">
+              <time dateTime={message.sent}>{dayjs(message.sent).format('YYYY-MM-DD, HH:mm')}</time>
+            </Text>
           )}
-        </div>
-      </Card>
-    </article>
+        </Stack>
+        <Token
+          color={isOutbound ? 'blue' : 'default'}
+          className="ml-auto whitespace-nowrap"
+          label={isOutbound ? t('messages:direction_sent') : t('messages:direction_received')}
+        />
+      </Stack>
+
+      {/* Texten är HTML från en skrivruta och saneras innan den renderas. */}
+      <section
+        data-cy="message-body"
+        className="break-words [&_p]:mb-2 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6"
+        dangerouslySetInnerHTML={{ __html: sanitizeMessage(message.message) }}
+      />
+
+      {message.attachments.length > 0 && (
+        <Stack direction="horizontal" wrap="wrap" gap={2}>
+          {message.attachments.map((attachment) => (
+            <AttachmentButton
+              key={attachment.attachmentId}
+              attachment={attachment}
+              errandId={errandId}
+              message={message}
+              onError={onError}
+            />
+          ))}
+        </Stack>
+      )}
+    </Stack>
   );
 };

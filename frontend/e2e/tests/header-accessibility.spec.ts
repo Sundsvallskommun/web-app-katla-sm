@@ -100,9 +100,8 @@ test.describe('Shared errand header accessibility', () => {
         await page.evaluate(() => document.fonts.ready);
 
         const header = page.getByRole('banner');
-        const context = header.getByText(mockErrand.errandNumber ?? '', { exact: true });
         const headerBounds = await measure(header);
-        expect(headerBounds.height).toBeLessThanOrEqual(width < 800 ? 128 : 72);
+        expect(headerBounds.height).toBeLessThanOrEqual(72);
         await header.screenshot({ path: testInfo.outputPath(`header-${locale}-${width}.png`) });
         await writeFile(
           testInfo.outputPath('header-dimensions.json'),
@@ -110,40 +109,19 @@ test.describe('Shared errand header accessibility', () => {
         );
         const controls = header.getByRole('button').filter({ visible: true });
         expect(await controls.count()).toBeGreaterThanOrEqual(3);
-
-        const links = header.getByRole('link').filter({ visible: true });
-        const caseStatus = header.getByTestId('errand-status');
-        await expect(caseStatus).toBeVisible();
-        for (const element of [context, caseStatus, ...(await controls.all()), ...(await links.all())]) {
+        for (const element of [...(await controls.all()), ...(await header.getByRole('link').all())]) {
           const bounds = await measure(element);
-          expect(bounds.x).toBeGreaterThanOrEqual(headerBounds.x);
-          expect(bounds.right).toBeLessThanOrEqual(headerBounds.right);
+          expect(bounds.x).toBeGreaterThanOrEqual(0);
+          expect(bounds.right).toBeLessThanOrEqual(width);
           expect(bounds.y).toBeGreaterThanOrEqual(headerBounds.y);
           expect(bounds.bottom).toBeLessThanOrEqual(headerBounds.bottom);
-          expect(bounds.right).toBeLessThanOrEqual(width);
           await expect.poll(() => isUnobscured(element)).toBe(true);
         }
-        if (width === 1536) {
-          const report = header.getByTestId('register-new-errand-button');
-          await expect(report).toBeVisible();
-          const reportBounds = await measure(report);
-          const contextBounds = await measure(context);
-          expect(reportBounds.y).toBeLessThan(contextBounds.bottom);
-          expect(reportBounds.bottom).toBeGreaterThan(contextBounds.y);
-        }
-
-        // Registration uses the same header with its longer subtitle and without a case menu.
+        await expect(page.getByRole('heading', { level: 1 })).toContainText(mockErrand.errandNumber ?? '');
+        await expect(page.getByRole('main').getByTestId('errand-status')).toBeVisible();
         await page.goto(appUrl(`${prefix}/arende/registrera`));
         await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
-        await page.evaluate(() => document.fonts.ready);
-        const subtitle = header.getByText(locale === 'sv' ? 'Avvikelserapportering' : 'Incident reporting', {
-          exact: true,
-        });
-        const bounds = await measure(subtitle);
-        const registrationHeaderBounds = await measure(header);
-        expect(bounds.x).toBeGreaterThanOrEqual(0);
-        expect(bounds.right).toBeLessThanOrEqual(width);
-        expect(bounds.bottom).toBeLessThanOrEqual(registrationHeaderBounds.bottom);
+        expect((await measure(header)).height).toBeLessThanOrEqual(72);
         const languageButton = header.getByTestId('language-switch-button').filter({ visible: true });
         await expect.poll(() => isUnobscured(languageButton)).toBe(true);
       });
@@ -154,7 +132,7 @@ test.describe('Shared errand header accessibility', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(appUrl(`/arende/${mockErrand.errandNumber}/meddelanden`));
     await expect(page.getByTestId('message-composer')).toBeVisible();
-    const trigger = page.getByRole('button', { name: 'Öppna meny', exact: true });
+    const trigger = page.getByRole('button', { name: 'Öppna användarmeny', exact: true });
     await trigger.focus();
     await trigger.press('Enter');
     const report = page.getByRole('menuitem', { name: 'Rapportera', exact: true });
@@ -184,6 +162,7 @@ test.describe('Shared errand header accessibility', () => {
       await page.emulateMedia({ colorScheme });
       await page.goto(appUrl(`/arende/${mockErrand.errandNumber}/meddelanden`));
       await expect(page.getByTestId('message-composer')).toBeVisible();
+      await page.getByRole('button', { name: 'Öppna användarmeny', exact: true }).click();
       const link = page.getByTestId('register-new-errand-button');
       await expect(link).toBeEnabled();
       await page.mouse.move(0, 900);
@@ -217,7 +196,7 @@ test.describe('Shared errand header accessibility', () => {
         expect(bounds.x).toBeGreaterThanOrEqual(0);
         expect(bounds.right).toBeLessThanOrEqual(width);
         await skipLink.press('Enter');
-        await expect(page.locator('main#content')).toBeFocused();
+        await expect(page.getByRole('main')).toBeFocused();
       }
     });
   }

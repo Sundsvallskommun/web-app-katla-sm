@@ -97,45 +97,20 @@ test.describe('Modal overlay accessibility', () => {
     });
   }
 
-  test('Keeps mobile menu focus inside and restores it after either closing action', async ({ appUrl, page }) => {
+  test('keeps account actions keyboard reachable on mobile and restores focus on Escape', async ({ appUrl, page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(appUrl('/oversikt'));
-    const trigger = page.getByRole('button', { name: 'Öppna meny', exact: true, includeHidden: true });
-    await expect(page.locator('#mobile-overview-menu')).not.toBeVisible();
-    await trigger.click();
-    const dialog = page.getByRole('dialog', { name: 'Meny', exact: true });
-    const close = dialog.getByRole('button', { name: 'Stäng meny' });
-    const first = dialog.getByRole('link').first();
-    const last = dialog.getByRole('button', { name: 'Logga ut' });
-
-    await expect(dialog).toHaveAttribute('aria-modal', 'true');
-    await expect(close).toBeFocused();
-    await expect.poll(() => dialog.evaluate((element) => element.matches(':modal'))).toBe(true);
-    await trigger.evaluate((element) => {
-      element.focus();
-    });
-    await expect(close).toBeFocused();
-    await close.press('Tab');
-    await expect(dialog.getByRole('button', { name: 'Inskickade' })).toBeFocused();
-    await last.focus();
-    await crossModalTabBoundary(page, 'Tab');
-    await expect(first).toBeFocused();
-    await crossModalTabBoundary(page, 'Shift+Tab');
-    await expect(last).toBeFocused();
-
-    const bounds = await dialog.boundingBox();
-    expect(bounds).toEqual({ x: 0, y: 0, width: 390, height: 844 });
-
-    await page.keyboard.press('Escape');
-    await expect(dialog).not.toBeVisible();
-    await expect(trigger).toBeFocused();
-    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    await expect.poll(() => page.locator('dialog:modal').count()).toBe(0);
-
+    const trigger = page.getByRole('button', { name: 'Öppna användarmeny', exact: true });
+    await trigger.focus();
     await trigger.press('Enter');
-    await expect(close).toBeFocused();
-    await close.press('Enter');
-    await expect(dialog).not.toBeVisible();
+    const menu = page.getByRole('menu').filter({ visible: true }).first();
+    await expect(menu).toBeVisible();
+    const logout = menu.getByRole('menuitem', { name: 'Logga ut' });
+    await logout.focus();
+    await expect(logout).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(menu).not.toBeVisible();
     await expect(trigger).toBeFocused();
+    await expect(page.getByRole('radiogroup', { name: 'Ärendefilter' })).toBeVisible();
   });
 });

@@ -1,31 +1,5 @@
 /* Only viewport and overflow behavior belongs to the application shell.
    Colors, typography, controls, and component spacing come from Astryx. */
-.header {
-  position: relative;
-  z-index: 15;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-background-surface);
-}
-
-.mobilePage {
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-  min-height: 0;
-}
-
-.mobilePageContent {
-  min-height: 0;
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.mobileHeader {
-  padding-top: env(safe-area-inset-top);
-}
-
 .municipalityLogo {
   display: block;
   width: 111px;

@@ -17,10 +17,6 @@ type ErrandTableData = Pick<
 const useOverviewErrandsMock = vi.fn<() => ErrandTableData>();
 const i18n = createInstance();
 
-vi.mock('src/hooks/use-overview-errands', () => ({
-  useOverviewErrands: () => useOverviewErrandsMock(),
-}));
-
 // Raden navigerar med routern för den som pekar; testet bryr sig bara om att den finns.
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -64,7 +60,7 @@ describe('ErrandTable', () => {
 
     const { container } = render(
       <I18nextProvider i18n={i18n}>
-        <ErrandTable />
+        <ErrandTable {...useOverviewErrandsMock()} />
       </I18nextProvider>
     );
 
@@ -74,7 +70,7 @@ describe('ErrandTable', () => {
     expect(link.closest('tbody')).toBe(container.querySelector('table > tbody'));
   });
 
-  it('announces the initial loading state', () => {
+  it('keeps loading rows decorative inside the busy table', () => {
     useOverviewErrandsMock.mockReturnValue({
       rows: [],
       isLoading: true,
@@ -86,11 +82,13 @@ describe('ErrandTable', () => {
 
     render(
       <I18nextProvider i18n={i18n}>
-        <ErrandTable />
+        <ErrandTable {...useOverviewErrandsMock()} />
       </I18nextProvider>
     );
 
-    expect(screen.getByRole('status')).toHaveAccessibleName('Laddar ärenden');
+    expect(screen.getByRole('table')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('row')).toHaveLength(1);
   });
 
   it('changes sorting through named controls and announces the active sort direction', async () => {
@@ -105,7 +103,7 @@ describe('ErrandTable', () => {
     const user = userEvent.setup();
     render(
       <I18nextProvider i18n={i18n}>
-        <ErrandTable />
+        <ErrandTable {...useOverviewErrandsMock()} />
       </I18nextProvider>
     );
     const sortButton = screen.getByRole('button', { name: commonSv['errand-table'].header.errandNumber });

@@ -3,6 +3,8 @@
 import { Avatar } from '@astryxdesign/core/Avatar';
 import type { ButtonSize } from '@astryxdesign/core/Button';
 import { DropdownMenu, DropdownMenuDivider } from '@astryxdesign/core/DropdownMenu';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@astryxdesign/core/Text';
 import type { UserMenuGroup } from '@layouts/userMenuGroup';
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +34,7 @@ export const AppUserMenu = forwardRef<HTMLDivElement, AppUserMenuProps>((props, 
   } = props;
 
   return (
-    <div ref={ref} className={className} {...rest}>
+    <Stack ref={ref} className={className} {...rest}>
       <DropdownMenu
         alignment="end"
         menuWidth={280}
@@ -47,24 +49,30 @@ export const AppUserMenu = forwardRef<HTMLDivElement, AppUserMenuProps>((props, 
       >
         {[menuTitle, menuSubTitle].some(Boolean) && (
           <>
-            <div className="px-3 py-2">
-              <div className="font-bold">{menuTitle}</div>
-              {menuSubTitle && <small>{menuSubTitle}</small>}
-            </div>
+            <Stack paddingInline={3} paddingBlock={2} gap={1}>
+              <Text weight="semibold" className="break-words">
+                {menuTitle}
+              </Text>
+              {menuSubTitle && (
+                <Text color="secondary" className="break-words">
+                  {menuSubTitle}
+                </Text>
+              )}
+            </Stack>
             <DropdownMenuDivider />
           </>
         )}
         {menuGroups.map((group) => (
-          <div aria-label={group.label} role="group" key={group.label}>
+          <Stack aria-label={group.label} role="group" key={group.label}>
             {group.elements.map((item) => (
-              <div role="presentation" key={item.label}>
+              <Stack role="presentation" key={item.label}>
                 {item.element()}
-              </div>
+              </Stack>
             ))}
-          </div>
+          </Stack>
         ))}
       </DropdownMenu>
-    </div>
+    </Stack>
   );
 });
 

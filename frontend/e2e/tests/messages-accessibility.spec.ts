@@ -49,6 +49,7 @@ test.describe('Message composer accessibility', () => {
         expect(bounds.x).toBeGreaterThanOrEqual(0);
         expect(bounds.right).toBeLessThanOrEqual(viewport.width);
       }
+      await composer.getByRole('button', { name: 'Textformatering', exact: true }).click();
       const toolbar = composer.locator('.ql-toolbar');
       await expect(toolbar).toBeVisible();
       const toolbarButtons = toolbar.getByRole('button');
@@ -103,6 +104,7 @@ test.describe('Message composer accessibility', () => {
   test('formats selected text and manages the link dialog entirely with accessible controls', async ({ page }) => {
     const composer = page.getByTestId('message-composer');
     const editor = composer.getByRole('textbox', { name: /Skriv ett meddelande/ });
+    await composer.getByRole('button', { name: 'Textformatering', exact: true }).click();
     const toolbar = composer.getByRole('group', { name: 'Textformatering' });
     await editor.fill('Text att formatera');
     await editor.press('ControlOrMeta+A');

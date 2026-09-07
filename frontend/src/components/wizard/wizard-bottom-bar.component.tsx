@@ -1,5 +1,6 @@
 import i18nConfig from '@app/i18nConfig';
 import { Button } from '@astryxdesign/core/Button';
+import { Stack } from '@astryxdesign/core/Stack';
 import { useToast } from '@astryxdesign/core/Toast';
 import { CancelErrandDialog } from '@components/cancel-errand-dialog.component';
 import {
@@ -140,11 +141,11 @@ export const WizardBottomBar: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-center px-4 py-3 bg-surface border-t border-default gap-3">
+      <Stack direction="horizontal" align="center" gap={3} wrap="wrap">
         {!isFirstStep && (
           <Button
             label={t('errand-information:wizard.back')}
-            size="sm"
+            size="lg"
             variant="ghost"
             icon={<ChevronLeft size={18} />}
             onClick={() => {
@@ -156,8 +157,8 @@ export const WizardBottomBar: React.FC = () => {
         )}
         <Button
           label={t('errand-information:wizard.cancel')}
-          size="sm"
-          variant="secondary"
+          size="lg"
+          variant="ghost"
           onClick={() => {
             setIsCancelOpen(true);
           }}
@@ -166,8 +167,8 @@ export const WizardBottomBar: React.FC = () => {
         {draftEnabled && (
           <Button
             label={t('errand-information:wizard.save')}
-            size="sm"
-            variant="primary"
+            size="lg"
+            variant="secondary"
             onClick={() => {
               void onSaveDraft();
             }}
@@ -177,7 +178,7 @@ export const WizardBottomBar: React.FC = () => {
         {isLastStep ?
           <Button
             label={t('errand-information:wizard.submit')}
-            size="sm"
+            size="lg"
             variant="primary"
 
             onClick={() => {
@@ -187,7 +188,7 @@ export const WizardBottomBar: React.FC = () => {
           />
         : <Button
             label={t('errand-information:wizard.next')}
-            size="sm"
+            size="lg"
             variant="primary"
 
             endContent={<ChevronRight size={18} />}
@@ -197,7 +198,7 @@ export const WizardBottomBar: React.FC = () => {
             className="flex-1"
           />
         }
-      </div>
+      </Stack>
 
       <CancelErrandDialog
         show={isCancelOpen}

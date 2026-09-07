@@ -1,9 +1,9 @@
 import { DropdownMenu, DropdownMenuItem } from '@astryxdesign/core/DropdownMenu';
 import { Tab, TabList } from '@astryxdesign/core/TabList';
+import { ErrandListItem } from '@components/errand-table/errand-list-item.component';
 import { ColorSchemeItems } from '@components/misc/color-scheme-items.component';
 import { LanguageItems } from '@components/misc/language-items.component';
 import { LanguageSwitchButton } from '@components/misc/language-switch-button.component';
-import { MobileErrandCard } from '@components/mobile/mobile-errand-card.component';
 import { NotificationsBell } from '@components/notifications/notification-bell';
 import { AppUserMenu } from '@components/user-menu/app-user-menu.component';
 import { createUserMenuGroups } from '@layouts/userMenuGroup';
@@ -140,7 +140,7 @@ describe('control semantics', () => {
 
   it('renders mobile errand navigation as one named link', () => {
     renderLocalized(
-      <MobileErrandCard
+      <ErrandListItem
         errand={{
           errandNumber: 'AIA-25120019',
           status: 'NEW',

@@ -2,18 +2,23 @@
 
 import { Button } from '@astryxdesign/core/Button';
 import { Divider } from '@astryxdesign/core/Divider';
-import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList';
-import { Spinner } from '@astryxdesign/core/Spinner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { IconButton } from '@astryxdesign/core/IconButton';
+import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@astryxdesign/core/Text';
 import { MessageComposer } from '@components/messages/message-composer.component';
 import { MessageItem } from '@components/messages/message-item.component';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
-import { SectionHeader } from '@components/misc/section-header.component';
+import { LinkButton } from '@components/navigation/link-button.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { RefreshCw } from 'lucide-react';
+import { PenLine, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useConversationMessages } from 'src/hooks/use-conversation-messages';
+
+import { MessageListSkeleton } from './message-list-skeleton.component';
 
 const MESSAGE_FILTERS = ['ALL', 'INBOUND', 'OUTBOUND'] as const;
 type MessageFilter = (typeof MESSAGE_FILTERS)[number];
@@ -40,74 +45,79 @@ export const ErrandMessages: React.FC = () => {
   const errors = [error, attachmentError].filter((message): message is string => message !== null);
 
   return (
-    <div className="flex flex-col gap-8">
-      <SectionHeader title={t('messages:title')} description={t('messages:description')} />
-
-      <ErrorAlertList messages={errors} />
-
-      {errandId && errandNumber && <MessageComposer errandId={errandId} errandNumber={errandNumber} onSent={reload} />}
-
-      <Divider />
-
-      <div>
-        <Button
-          variant="secondary"
-          icon={<RefreshCw aria-hidden="true" />}
-          label={t('messages:refresh')}
-          onClick={reload}
-          isDisabled={isLoading || isRefreshing || isLoadingMore}
-          isLoading={isRefreshing}
-        />
-      </div>
-      <div data-cy="message-filter">
-        <RadioList
+    <Stack gap={6}>
+      <Stack gap={3}>
+        <Heading level={2}>{t('messages:title')}</Heading>
+        <Text color="secondary">{t('messages:description')}</Text>
+        <Stack direction="horizontal" align="center" justify="between" gap={3} wrap="wrap">
+          <LinkButton
+            href="#message-body"
+            variant="secondary"
+            size="lg"
+            icon={<PenLine aria-hidden="true" />}
+            label={t('messages:compose_action')}
+          />
+          <IconButton
+            variant="ghost"
+            size="lg"
+            icon={<RefreshCw aria-hidden="true" />}
+            label={t('messages:refresh')}
+            onClick={reload}
+            isDisabled={isLoading || isRefreshing || isLoadingMore}
+            isLoading={isRefreshing}
+          />
+        </Stack>
+        <SegmentedControl
+          data-cy="message-filter"
           label={t('messages:filter_label')}
-          className="[&_[role=radiogroup]]:flex-wrap"
-          isLabelHidden
-          orientation="horizontal"
           value={filter}
+          size="lg"
+          layout="fill"
           onChange={(value) => {
             const selected = MESSAGE_FILTERS.find((option) => option === value);
             if (selected) setFilter(selected);
           }}
         >
           {MESSAGE_FILTERS.map((option) => (
-            <RadioListItem key={option} value={option} label={t(FILTER_LABEL_KEYS[option])} />
+            <SegmentedControlItem key={option} value={option} label={t(FILTER_LABEL_KEYS[option])} />
           ))}
-        </RadioList>
-      </div>
-
-      {isLoading ?
-        <div role="status" aria-live="polite" className="flex justify-center py-10">
-          <Spinner aria-hidden="true" />
-          <span className="sr-only">{t('messages:loading')}</span>
-        </div>
-      : showEmptyState ?
-        <p data-cy="no-messages" className="text-muted py-6">
-          {t('messages:empty')}
-        </p>
-      : <div className="flex flex-col gap-4" data-cy="message-list">
-          {visibleMessages.map((message) => (
-            <MessageItem
-              key={`${message.conversationId}:${message.messageId ?? message.sent}`}
-              message={message}
-              errandId={errandId ?? ''}
-              onError={setAttachmentError}
-            />
-          ))}
-        </div>
-      }
+        </SegmentedControl>
+      </Stack>
+      <ErrorAlertList messages={errors} />
+      <Text role="status" className="sr-only">
+        {isLoading ? t('messages:loading') : ''}
+      </Text>
+      <Stack role="region" aria-label={t('messages:title')} aria-busy={isLoading}>
+        {isLoading ?
+          <MessageListSkeleton />
+        : showEmptyState ?
+          <Text data-cy="no-messages" color="secondary">
+            {t('messages:empty')}
+          </Text>
+        : <Stack data-cy="message-list" className="divide-y divide-default">
+            {visibleMessages.map((message) => (
+              <MessageItem
+                key={`${message.conversationId}:${message.messageId ?? message.sent}`}
+                message={message}
+                errandId={errandId ?? ''}
+                onError={setAttachmentError}
+              />
+            ))}
+          </Stack>
+        }
+      </Stack>
       {hasMore && (
-        <div>
-          <Button
-            variant="secondary"
-            label={t('messages:load_more')}
-            onClick={loadMore}
-            isLoading={isLoadingMore}
-            isDisabled={isLoading || isRefreshing || isLoadingMore}
-          />
-        </div>
+        <Button
+          variant="secondary"
+          size="lg"
+          label={t('messages:load_more')}
+          onClick={loadMore}
+          isLoading={isLoadingMore}
+          isDisabled={isLoading || isRefreshing || isLoadingMore}
+        />
       )}
-    </div>
+      <Divider />
+      {errandId && errandNumber && <MessageComposer errandId={errandId} errandNumber={errandNumber} onSent={reload} />}
+    </Stack>
   );
 };

@@ -58,7 +58,7 @@ for (const mode of ['light', 'dark'] as const) {
 
         if (scenario.name === 'login') await expect(page.getByTestId('login-button')).toBeVisible();
         if (scenario.name === 'overview')
-          await expect(page.getByTestId(width > 800 ? 'errand-table' : 'mobile-errand-card').first()).toBeVisible();
+          await expect(page.getByTestId(width > 800 ? 'errand-table' : 'errand-list-item').first()).toBeVisible();
         if (scenario.name === 'register') {
           await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
           if (width > 800) {
@@ -112,6 +112,6 @@ test('cookie choices remain reachable on a small screen and survive reload', asy
   const consent = (await context.cookies()).find((cookie) => cookie.name === 'SKCookieConsent');
   expect(decodeURIComponent(consent?.value ?? '')).toBe('necessary,func');
   await page.reload();
-  await expect(page.getByTestId('mobile-errand-card').first()).toBeVisible();
+  await expect(page.getByTestId('errand-list-item').first()).toBeVisible();
   await expect(dialog).not.toBeVisible();
 });

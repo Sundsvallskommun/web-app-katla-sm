@@ -17,5 +17,6 @@
   "reports_heading": "Reports",
   "showing_of": "Showing {{shown}} of {{total}}",
   "showing_count_one": "Showing {{count}} case",
-  "showing_count_other": "Showing {{count}} cases"
+  "showing_count_other": "Showing {{count}} cases",
+  "my_reports": "My reports"
 }
