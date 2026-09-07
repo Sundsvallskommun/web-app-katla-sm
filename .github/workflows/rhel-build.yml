@@ -89,11 +89,6 @@ jobs:
         working-directory: ${{ matrix.package }}
         run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
 
-      - name: Apply reviewed frontend patches
-        if: matrix.package == 'frontend'
-        working-directory: frontend
-        run: yarn run postinstall
-
       - name: Build
         working-directory: ${{ matrix.package }}
         run: yarn build
