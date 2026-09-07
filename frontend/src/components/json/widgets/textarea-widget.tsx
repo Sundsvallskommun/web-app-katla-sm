@@ -40,7 +40,7 @@ export function TextareaWidget(props: WidgetProps) {
       aria-invalid={invalid}
       onBlur={onBlur}
       onFocus={(event) => {
-        onFocus(event);
+        onFocus();
         // Native textarea focus may reveal only the caret. Keep the whole control
         // inside the form's scroll padding, clear of its persistent action footer.
         event.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' });
