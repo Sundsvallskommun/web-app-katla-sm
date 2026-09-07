@@ -70,6 +70,7 @@
     "person": "Person",
     "employee": "Anställd",
     "no_person_found": "Ingen person hittades",
+    "missing_name": "Namn saknas",
     "missing_person_number": "Personnummer saknas",
     "missing_address": "Adress saknas",
     "missing_email": "E-postadress saknas",
@@ -83,6 +84,7 @@
     "add_manually": "Lägg till manuellt",
     "edit_details": "Redigera uppgifter",
     "remove": "Ta bort",
+    "remove_person": "Ta bort {{name}}",
     "reporting_for_colleague": "Jag rapporterar åt en kollega",
     "modal": {
       "edit_title": "Redigera person",

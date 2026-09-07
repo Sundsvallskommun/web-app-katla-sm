@@ -341,7 +341,7 @@ export const StakeholderList: React.FC<{
       </FormProvider>
 
       {matchingCount > 0 && (
-        <List hasDividers>
+        <List hasDividers className="rounded-lg border border-default bg-subtle">
           {stakeholders?.map((stakeholder, index) => {
             if (!roles.includes(stakeholder.role ?? '')) return null;
             return (

@@ -52,7 +52,7 @@ export const ReporterContent: React.FC = () => {
     <div className="flex flex-col gap-8">
       {getReporterStakeholder(stakeholders) ?
         <>
-          <List>
+          <List className="rounded-lg border border-default bg-subtle">
             <StakeholderRow stakeholder={getReporterStakeholder(stakeholders) ?? {}} hideRole roles={['REPORTER']} />
           </List>
           <CheckboxInput

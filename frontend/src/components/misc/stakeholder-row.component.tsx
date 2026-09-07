@@ -1,12 +1,14 @@
+import { Avatar } from '@astryxdesign/core/Avatar';
 import { Button } from '@astryxdesign/core/Button';
 import { Stack } from '@astryxdesign/core/Layout';
+import { Link } from '@astryxdesign/core/Link';
 import { ListItem } from '@astryxdesign/core/List';
 import { Text } from '@astryxdesign/core/Text';
 import { Token } from '@astryxdesign/core/Token';
 import { useIsContentLocked } from '@contexts/errand-content-lock-context';
 import { StakeholderDTO } from '@data-contracts/backend/data-contracts';
-import { getStakeholderRoleDisplayName, shouldShowContactDetails } from '@utils/stakeholder';
-import { X } from 'lucide-react';
+import { getStakeholderRoleDisplayName, phoneNumberFormatter, shouldShowContactDetails } from '@utils/stakeholder';
+import { Mail, Phone, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
@@ -20,68 +22,118 @@ export const StakeholderRow: React.FC<{
   const { t } = useTranslation();
   const { metadata } = useMetadataStore();
   const isLocked = useIsContentLocked();
-  const email = stakeholder.emails?.[0] ?? t('errand-information:stakeholder.missing_email');
-  const phone = stakeholder.phoneNumbers?.[0] ?? t('errand-information:stakeholder.missing_phone');
+  const name = [stakeholder.firstName, stakeholder.lastName].filter(Boolean).join(' ').trim();
+  const role = getStakeholderRoleDisplayName(stakeholder, metadata?.roles);
+  const showContactDetails = shouldShowContactDetails(roles);
+  const email = stakeholder.emails?.[0];
+  const phone = stakeholder.phoneNumbers?.[0];
+  const identity = stakeholder.title?.length ? stakeholder.title : stakeholder.personNumber;
+  const organization =
+    stakeholder.department?.length ?
+      stakeholder.department
+    : [stakeholder.address, stakeholder.city].filter(Boolean).join(' ');
 
   return (
     <ListItem
       data-cy="stakeholder-card"
+      // Links and removal are independent actions. Each control owns its focus ring;
+      // the non-clickable row must not add Astryx Item's whole-row focus outline.
+      className="!outline-0"
       label={
-        <Stack direction="vertical" gap={1} align="start">
-          {!hideRole && (
-            <Token data-cy="stakeholder-role" label={getStakeholderRoleDisplayName(stakeholder, metadata?.roles)} />
-          )}
-          <Text as="p" data-cy="stakeholder-name" weight="semibold" className="break-words">
-            {stakeholder.firstName} {stakeholder.lastName}
-          </Text>
-        </Stack>
-      }
-      description={
-        shouldShowContactDetails(roles) && (
-          <Stack direction="vertical" gap={1} className="break-words">
-            {stakeholder.title && (
-              <Text as="p" type="supporting" data-cy="stakeholder-title">
-                {stakeholder.title}
-              </Text>
-            )}
-            {stakeholder.personNumber && !stakeholder.title && (
-              <Text as="p" type="supporting" data-cy="stakeholder-personNumber">
-                {stakeholder.personNumber}
-              </Text>
-            )}
-            {stakeholder.department ?
-              <Text as="p" type="supporting" data-cy="stakeholder-department">
-                {stakeholder.department}
-              </Text>
-            : (Boolean(stakeholder.address) || Boolean(stakeholder.city)) && (
-                <Text as="p" type="supporting" data-cy="stakeholder-address">
-                  {stakeholder.address} {stakeholder.city}
-                </Text>
-              )
-            }
-            {email && (
-              <Text as="p" type="supporting" data-cy="stakeholder-email">
-                {email}
-              </Text>
-            )}
-            {phone && (
-              <Text as="p" type="supporting" data-cy="stakeholder-phonenumber">
-                {phone}
-              </Text>
+        <Stack direction="horizontal" align="start" wrap="wrap" gap={3}>
+          <Stack gap={3} className="min-w-0 flex-1 basis-64">
+            <Stack direction="horizontal" align="center" gap={3}>
+              <Avatar name={name} size="md" tooltip={false} aria-hidden="true" data-cy="stakeholder-avatar" />
+              <Stack gap={1} className="min-w-0 break-words">
+                <Stack direction="horizontal" align="center" wrap="wrap" gap={2}>
+                  <Text as="p" data-cy="stakeholder-name" weight="semibold" className="min-w-0">
+                    {name || t('errand-information:stakeholder.missing_name')}
+                  </Text>
+                  {!hideRole && role && <Token data-cy="stakeholder-role" label={role} />}
+                </Stack>
+                {showContactDetails && (Boolean(identity) || Boolean(organization)) && (
+                  <Text as="p" type="supporting" color="secondary">
+                    {identity && (
+                      <Text
+                        type="inherit"
+                        color="inherit"
+                        data-cy={stakeholder.title ? 'stakeholder-title' : 'stakeholder-personNumber'}
+                      >
+                        {identity}
+                      </Text>
+                    )}
+                    {identity && organization && (
+                      <Text type="inherit" color="inherit" aria-hidden="true">
+                        {' · '}
+                      </Text>
+                    )}
+                    {organization && (
+                      <Text
+                        type="inherit"
+                        color="inherit"
+                        data-cy={stakeholder.department ? 'stakeholder-department' : 'stakeholder-address'}
+                      >
+                        {organization}
+                      </Text>
+                    )}
+                  </Text>
+                )}
+              </Stack>
+            </Stack>
+            {showContactDetails && (email !== '' || phone !== '') && (
+              <Stack gap={2} className="break-words">
+                {email !== '' && (
+                  <Stack direction="horizontal" align="center" gap={2}>
+                    <Mail size={16} aria-hidden="true" className="shrink-0 text-muted" />
+                    {email ?
+                      <Link
+                        href={`mailto:${encodeURIComponent(email)}`}
+                        type="supporting"
+                        hasUnderline
+                        className="min-w-0 min-h-6 break-all"
+                        data-cy="stakeholder-email"
+                      >
+                        {email}
+                      </Link>
+                    : <Text type="supporting" color="secondary" data-cy="stakeholder-email">
+                        {t('errand-information:stakeholder.missing_email')}
+                      </Text>
+                    }
+                  </Stack>
+                )}
+                {phone !== '' && (
+                  <Stack direction="horizontal" align="center" gap={2}>
+                    <Phone size={16} aria-hidden="true" className="shrink-0 text-muted" />
+                    {phone ?
+                      <Link
+                        href={`tel:${phoneNumberFormatter(phone)}`}
+                        type="supporting"
+                        hasUnderline
+                        className="min-w-0 min-h-6 break-all"
+                        data-cy="stakeholder-phonenumber"
+                      >
+                        {phone}
+                      </Link>
+                    : <Text type="supporting" color="secondary" data-cy="stakeholder-phonenumber">
+                        {t('errand-information:stakeholder.missing_phone')}
+                      </Text>
+                    }
+                  </Stack>
+                )}
+              </Stack>
             )}
           </Stack>
-        )
-      }
-      endContent={
-        onRemove && !isLocked ?
-          <Button
-            data-cy="remove-card-button"
-            icon={<X size={16} aria-hidden="true" />}
-            variant="secondary"
-            onClick={onRemove}
-            label={t('errand-information:stakeholder.remove')}
-          />
-        : undefined
+          {onRemove && !isLocked && (
+            <Button
+              data-cy="remove-card-button"
+              icon={<Trash2 size={16} aria-hidden="true" />}
+              variant="secondary"
+              onClick={onRemove}
+              label={t('errand-information:stakeholder.remove')}
+              aria-label={name ? t('errand-information:stakeholder.remove_person', { name }) : undefined}
+            />
+          )}
+        </Stack>
       }
     />
   );

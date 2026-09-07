@@ -61,9 +61,23 @@ for (const width of [1536, 390]) {
     const email = await person.getByTestId('stakeholder-email').boundingBox();
     expect(name).not.toBeNull();
     expect(email).not.toBeNull();
-    expect(email?.x).toBe(name?.x);
     expect((email?.y ?? 0) - (name?.y ?? 0)).toBeLessThan(70);
-    const remove = person.getByRole('button', { name: 'Ta bort' });
+    const remove = person.getByRole('button', { name: 'Ta bort Alexandra Andersson', exact: true });
+    await expect(person.getByTestId('stakeholder-avatar')).toHaveText('AA');
+    const emailLink = person.getByRole('link', { name: 'alexandra.andersson@example.se' });
+    await expect(emailLink).toHaveAttribute('href', 'mailto:alexandra.andersson%40example.se');
+    const removalBounds = await remove.boundingBox();
+    expect(removalBounds).not.toBeNull();
+    if (width === 390) {
+      expect(removalBounds?.y).toBeGreaterThanOrEqual((email?.y ?? 0) + (email?.height ?? 0));
+    } else {
+      expect(removalBounds?.y).toBeLessThan(email?.y ?? 0);
+    }
+    await emailLink.focus();
+    await emailLink.press('Tab');
+    await expect(remove).toBeFocused();
+    await expect(remove).toHaveCSS('outline-style', 'solid');
+    await expect(person).toHaveCSS('outline-width', '0px');
     await expect(remove).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await person.scrollIntoViewIfNeeded();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
