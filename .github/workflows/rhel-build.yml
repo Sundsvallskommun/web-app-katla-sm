@@ -61,14 +61,14 @@ jobs:
           set -euo pipefail
           NODE_VERSION="$(tr -d '[:space:]v' < .nvmrc)"
           echo "Installerar Node.js v${NODE_VERSION}"
-          curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+          curl --proto '=https' --proto-redir '=https' -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
             -o /tmp/node.tar.xz
           mkdir -p /usr/local/lib/nodejs
           tar -xJf /tmp/node.tar.xz -C /usr/local/lib/nodejs
           echo "/usr/local/lib/nodejs/node-v${NODE_VERSION}-linux-x64/bin" >> "$GITHUB_PATH"
 
       - name: Install Yarn
-        run: npm install --global "yarn@${YARN_VERSION}"
+        run: npm install --global --ignore-scripts "yarn@${YARN_VERSION}"
 
       - name: Environment info
         run: |
@@ -87,7 +87,12 @@ jobs:
 
       - name: Install dependencies
         working-directory: ${{ matrix.package }}
-        run: yarn install --frozen-lockfile --network-timeout 1000000
+        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
+
+      - name: Apply reviewed frontend patches
+        if: matrix.package == 'frontend'
+        working-directory: frontend
+        run: yarn run postinstall
 
       - name: Build
         working-directory: ${{ matrix.package }}

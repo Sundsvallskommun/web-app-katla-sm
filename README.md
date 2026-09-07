@@ -55,10 +55,13 @@ cp .env.example.local .env.development.local
 
 redigera `.env.development.local` för behov. URLer, nycklar och cert behöver fyllas i korrekt.
 
+- `SECRET_KEY` lämnas avsiktligt tom i mallen. Kör `openssl rand -hex 32` lokalt och kopiera det genererade värdet till `SECRET_KEY` i din `.env.development.local`. Återanvänd inte någon annans sessionshemlighet. Servern avvisar tomma värden, värden kortare än 32 tecken, blanksteg och vanliga platshållare.
 - `CLIENT_KEY` och `CLIENT_SECRET` måste fyllas i för att APIerna ska fungera, du måste ha en applikation från WSO2-portalen som abonnerar på de microtjänster du anropar
 - `SAML_ENTRY_SSO` behöver pekas till en SAML IDP
 - `SAML_IDP_PUBLIC_CERT` ska stämma överens med IDPens cert
-- `SAML_PRIVATE_KEY` och `SAML_PUBLIC_KEY` behöver bara fyllas i korrekt om man kör mot en riktig IDP
+- `SAML_PRIVATE_KEY` och `SAML_PUBLIC_KEY` innehåller avsiktligt ett exempelnyckelpar för lokal utveckling, med ett självsignerat localhost-certifikat. Det behålls som lokal testdata och är ingen drifthemlighet. Använd egna nycklar och certifikat för en riktig IDP-anslutning. `cert/` och `.env.development.local` är git-ignorerade och uteslutna från Docker-byggets filer.
+
+Vid uppgradering: kontrollera driftmiljöns `SECRET_KEY` före deployment. Värden kortare än 32 tecken måste ersättas för att servern ska starta; byte av sessionshemlighet loggar ut befintliga sessioner. Om någon miljö har återanvänt den tidigare exempelhemligheten behöver den ersättas där. Enbart ändringen av exempelfilen roterar inga driftvärden.
 
 ## Tester
 
