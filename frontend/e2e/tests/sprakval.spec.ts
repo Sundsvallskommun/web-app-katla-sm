@@ -106,17 +106,17 @@ test.describe('Language switching', () => {
       const panel = page.getByRole('menu').filter({ visible: true }).first();
       await expect(panel).toBeVisible();
 
-      // Visibility also holds during Astryx's entry animation. Measure the settled panel.
-      await panel.evaluate((element) => Promise.all(element.getAnimations().map((animation) => animation.finished)));
-      const buttonBox = await button.boundingBox();
-      const panelBox = await panel.boundingBox();
-      const viewport = page.viewportSize();
-      if (!buttonBox || !panelBox || !viewport) throw new Error('Saknar mått för knapp, panel eller viewport');
+      // The popover animates a parent of the menu. Await its final visible placement.
+      await expect(async () => {
+        const buttonBox = await button.boundingBox();
+        const panelBox = await panel.boundingBox();
+        const viewport = page.viewportSize();
+        if (!buttonBox || !panelBox || !viewport) throw new Error('Saknar mått för knapp, panel eller viewport');
 
-      // Panelen ska öppnas under knappen, inte täcka den eller lämna viewporten.
-      expect(panelBox.y).toBeGreaterThanOrEqual(buttonBox.y + buttonBox.height);
-      expect(panelBox.x).toBeGreaterThanOrEqual(0);
-      expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
+        expect(panelBox.y).toBeGreaterThanOrEqual(buttonBox.y + buttonBox.height);
+        expect(panelBox.x).toBeGreaterThanOrEqual(0);
+        expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
+      }).toPass();
     });
   });
 });
