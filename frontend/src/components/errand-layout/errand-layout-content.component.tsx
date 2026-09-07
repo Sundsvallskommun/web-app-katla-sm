@@ -251,11 +251,20 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                           label={t('filtering:my_reports')}
                         />
                       )}
-                      <Stack direction="horizontal" align="center" justify="between" wrap="wrap" gap={3}>
-                        <Stack gap={2} align="start">
-                          <Heading level={1}>{getHeaderTitle()}</Heading>
-                          {!registerNewErrand && <StatusLabel status={errandStatus} />}
-                        </Stack>
+                      <Stack
+                        data-cy="errand-identity"
+                        direction={isMobile ? 'horizontal' : 'vertical'}
+                        align={isMobile ? 'center' : 'start'}
+                        justify={isMobile ? 'between' : 'start'}
+                        wrap="wrap"
+                        gap={2}
+                      >
+                        {isMobile ?
+                          <Text as="h1" type="large" weight="semibold" className="min-w-0 break-words">
+                            {getHeaderTitle()}
+                          </Text>
+                        : <Heading level={1}>{getHeaderTitle()}</Heading>}
+                        {!registerNewErrand && <StatusLabel status={errandStatus} />}
                       </Stack>
                     </Stack>
                   )}
