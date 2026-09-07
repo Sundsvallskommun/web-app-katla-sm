@@ -1,8 +1,12 @@
+import { Stack } from '@astryxdesign/core/Layout';
+import { ListItem } from '@astryxdesign/core/List';
+import { Text } from '@astryxdesign/core/Text';
 import { useToast } from '@astryxdesign/core/Toast';
 import { NotificationDTO } from '@data-contracts/backend/data-contracts';
 import { acknowledgeNotification, getNotifications } from '@services/errand-service/errand-service';
 import { prettyTime } from '@services/helper-service';
 import NextLink from 'next/link';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from 'src/stores/notification-store';
 
@@ -10,6 +14,7 @@ import { NotificationRenderIcon } from './notification-render-icon';
 
 export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ notification }) => {
   const toastMessage = useToast();
+  const linkRef = useRef<HTMLAnchorElement>(null);
   const { t } = useTranslation();
   const { setNotifications } = useNotificationStore();
 
@@ -34,21 +39,25 @@ export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ 
     }
   };
 
-  // Subtypen är språkneutral och används som nyckel. Saknar den översättning visas ingen
-  // händelserad alls, precis som tidigare för okända subtyper.
   const subTypeLabel = t(`notification.subtype.${notification.subtype ?? ''}`, { defaultValue: '' });
+  const description = (notification.description ?? '') || subTypeLabel;
   const sender = (notification.createdByFullName ?? '') || notification.createdBy;
   const senderName = !sender || sender.toUpperCase() === 'UNKNOWN' ? t('notification.unknown_sender') : sender;
 
   return (
-    <div className="grid grid-cols-[2rem_minmax(0,1fr)_auto] gap-3 border-b border-default py-4 text-sm">
-      <div className="flex items-center my-1">
-        <NotificationRenderIcon notification={notification} />
-      </div>
-      <div className="flex-grow">
-        <div>
-          <strong>{(notification.description ?? '') + ' › '}</strong>
+    <ListItem
+      data-cy="notification-item"
+      interactiveRef={linkRef}
+      startContent={<NotificationRenderIcon notification={notification} />}
+      label={
+        <Stack direction="vertical" gap={1} align="start">
+          {description && (
+            <Text as="p" weight={notification.acknowledged ? 'normal' : 'semibold'} className="break-words">
+              {description}
+            </Text>
+          )}
           <NextLink
+            ref={linkRef}
             href={`/arende/${notification.errandNumber}/grundinformation`}
             target="_blank"
             onClick={() => {
@@ -59,18 +68,18 @@ export const NotificationItem: React.FC<{ notification: NotificationDTO }> = ({ 
           >
             {(notification.errandNumber ?? '') || t('notification.to_errand')}
           </NextLink>
-        </div>
-        <div>{t('notification.from', { name: senderName })}</div>
-        {subTypeLabel ?
-          <div>{t('notification.event', { label: subTypeLabel })}</div>
-        : null}
-      </div>
-      <span className="col-start-2 text-xs text-muted">{prettyTime(notification.created ?? '', t)}</span>
-      {!notification.acknowledged && (
-        <div className="col-start-3 row-start-1" aria-hidden="true">
-          <span className="block h-2 w-2 rounded-full bg-accent" />
-        </div>
-      )}
-    </div>
+        </Stack>
+      }
+      description={
+        <Stack direction="horizontal" wrap="wrap" gap={2}>
+          <Text as="p" type="supporting" color="secondary">
+            {t('notification.from', { name: senderName })}
+          </Text>
+          <Text type="supporting" color="secondary">
+            <time dateTime={notification.created}>{prettyTime(notification.created ?? '', t)}</time>
+          </Text>
+        </Stack>
+      }
+    />
   );
 };
