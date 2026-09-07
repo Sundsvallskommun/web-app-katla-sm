@@ -232,7 +232,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
               padding={isMobile ? 4 : 6}
               footer={
                 showReportActions && (
-                  <LayoutFooter hasDivider className="pb-safe" data-cy="report-actions">
+                  <LayoutFooter hasDivider padding={0} className="pb-safe" data-cy="report-actions">
                     <ErrandButtonGroup isNewErrand={registerNewErrand} />
                   </LayoutFooter>
                 )

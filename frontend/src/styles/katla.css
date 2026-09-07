@@ -18,9 +18,9 @@
     background: var(--color-background-body);
   }
 
-  /* Device geometry is outside the spacing scale. Keep fixed actions clear of the home indicator. */
+  /* Action rows own their spacing; add only the device's home-indicator inset here. */
   .pb-safe {
-    padding-bottom: max(var(--spacing-4), env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   @media (prefers-reduced-motion: reduce) {

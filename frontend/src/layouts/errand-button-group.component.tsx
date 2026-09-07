@@ -155,7 +155,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
 
   return (
     <>
-      <Stack direction="horizontal" wrap="wrap" align="center" justify="end" gap={3}>
+      <Stack direction="horizontal" wrap="wrap" align="center" justify="end" gap={3} paddingInline={6} paddingBlock={2}>
         {isNewErrand && (
           <Button
             label={t('errand-information:cancel')}

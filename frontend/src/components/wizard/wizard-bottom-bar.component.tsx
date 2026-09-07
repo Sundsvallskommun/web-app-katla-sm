@@ -141,7 +141,7 @@ export const WizardBottomBar: React.FC = () => {
 
   return (
     <>
-      <Stack direction="horizontal" align="center" gap={3} wrap="wrap">
+      <Stack direction="horizontal" align="center" gap={3} wrap="wrap" paddingInline={4} paddingBlock={2}>
         {!isFirstStep && (
           <Button
             label={t('errand-information:wizard.back')}
