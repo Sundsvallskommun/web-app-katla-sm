@@ -7,6 +7,7 @@ The first migration replaced controls but kept separate mobile headers, a fullsc
 | Decision | Reason and tradeoff | Canonical owner |
 | --- | --- | --- |
 | One app header at every width | Identity, notifications, language and account controls stay in the same place. User details move into the account menu; case identity and status move beside the case heading. | `AppHeader`, composed inside Astryx `AppShell` |
+| Product name and municipality identity | `appConfig.applicationName` owns the visible name “Katla” in navigation, page titles and the consent dialog. The technical `NEXT_PUBLIC_APP_NAME` continues to namespace existing local storage. `TopNavHeading` places the dragon beside the name. `MunicipalityLogo` references the original SVG path with [SVG `use`](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/use#loading_resources_from_external_files_via_use), so the symbol and login wordmark share one asset. Its viewBox follows the artwork coordinates; token-based height and inherited text color fit light/dark headers without extra CSS. | `appConfig`, `AppHeader`, `MunicipalityLogo`, `public/svg/SK_logo.svg` |
 | Compact mobile case identity | A smaller, semibold Astryx `Text` renders the native `h1`, with the status token to its right. Mobile shows the full case number and keeps the localized “Case:” prefix in the accessible heading name. One wrapping `Stack` replaces the nested heading stacks; long content can wrap rather than truncate. Desktop keeps its existing heading size and visible prefix. No new typography CSS or breakpoint state is introduced. | `ErrandRouteContent`, existing `useMediaQuery` and `StatusLabel` |
 | Visible status filters, no overview sidebar | The destinations are filtered views of one collection. A segmented control exposes them on phones and removes two navigation implementations. Desktop users retain sorting, density and pagination. | `ErrandStatusFilter` uses the existing status/filter stores |
 | One overview fetch owner | Resizing changes presentation and paging mode without mounting a second shell or independent query owner. Switching between accumulated mobile results and desktop pages resets the query generation. | Overview page and `useOverviewErrands`; count comes from the same page response |
@@ -25,6 +26,8 @@ Content widths are structural budgets: 1200 for the collection, 960 for case con
 ## Preserved behavior
 
 Report types, form schemas and validation, read-only status, language handover, attachments, send locking, error preservation, conversation pagination and read receipts remain with their existing owners. The September 7 form changes from `main` are included through a separate merge commit. WCAG has already merged independently in PR #100; this work remains in draft PR #101.
+
+On mobile, new reports and resumed drafts use the wizard's persistent footer: Next advances after validation, Back returns to the preceding step, and the final step offers submission. Submitted reports use the Basic information and Messages tabs instead. Their read-only view deliberately has no report-submission footer.
 
 ## Verification
 
