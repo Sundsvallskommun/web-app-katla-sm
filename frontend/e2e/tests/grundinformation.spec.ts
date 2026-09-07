@@ -1,5 +1,5 @@
-import AxeBuilder from '@axe-core/playwright';
 import type { Locator, Page } from '@playwright/test';
+import axe from 'axe-core';
 
 import { mockErrand } from '../fixtures/mockErrand';
 import { mockMetadata } from '../fixtures/mockMetadata';
@@ -76,7 +76,12 @@ test.describe('Errand basic information page', () => {
     expect(emailBox.right).toBeLessThanOrEqual(MOBILE_VIEWPORT.width);
     expect(cardBox.right).toBeLessThanOrEqual(MOBILE_VIEWPORT.width);
     await card.getByRole('link', { name: longReporter.emails[0] }).click({ trial: true });
-    const audit = await new AxeBuilder({ page }).include('[data-cy="stakeholder-card"]').analyze();
+    await page.addScriptTag({ content: axe.source });
+    const audit = await page.evaluate(() =>
+      window.axe.run('[data-cy="stakeholder-card"]', {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      })
+    );
     expect(audit.violations).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath('person-profile-431.png') });
   });
@@ -109,7 +114,12 @@ test.describe('Errand basic information page', () => {
     await expect(card).toHaveCSS('outline-width', '0px');
     expect(emailBox.y).toBeGreaterThan(departmentBox.y);
     expect(cardOverflow.scrollWidth).toBeLessThanOrEqual(cardOverflow.clientWidth);
-    const audit = await new AxeBuilder({ page }).include('[data-cy="stakeholder-card"]').analyze();
+    await page.addScriptTag({ content: axe.source });
+    const audit = await page.evaluate(() =>
+      window.axe.run('[data-cy="stakeholder-card"]', {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      })
+    );
     expect(audit.violations).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath('person-profile-1536.png') });
   });
