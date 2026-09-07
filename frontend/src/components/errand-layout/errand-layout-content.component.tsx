@@ -238,7 +238,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                 )
               }
             >
-              <LayoutContent isScrollable={showReportActions}>
+              <LayoutContent isScrollable={showReportActions} className="scroll-py-2">
                 <Stack gap={6}>
                   {!submittedView && (
                     <Stack gap={4}>

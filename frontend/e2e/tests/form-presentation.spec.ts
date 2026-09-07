@@ -109,13 +109,20 @@ test('native fields and report actions remain usable throughout a long form', as
   await page.screenshot({ path: testInfo.outputPath('native-select-focus-1536.png') });
   const lastInput = page.getByRole('textbox', { name: 'Beskriv händelsen' });
   await lastInput.fill('Sista fältet går att nå utan att täckas av åtgärdsraden.');
-  await lastInput.scrollIntoViewIfNeeded();
+  // A real Tab movement must keep the complete focus outline clear of the footer.
+  await location.focus();
+  await location.press('Tab');
+  await expect(lastInput).toBeFocused();
   await expect(submit).toBeInViewport();
   const scrolled = await actions.boundingBox();
   expect(scrolled?.y).toBe(initial?.y);
   const inputBounds = await lastInput.boundingBox();
   // Chromium rounds scroll offsets to CSS pixels while field geometry can be fractional.
-  const inputBottom = Math.floor((inputBounds?.y ?? 0) + (inputBounds?.height ?? 0));
+  const focusOutset = await lastInput.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+  });
+  const inputBottom = Math.floor((inputBounds?.y ?? 0) + (inputBounds?.height ?? 0) + focusOutset);
   expect(inputBottom).toBeLessThanOrEqual(scrolled?.y ?? 0);
   expect(
     await lastInput.evaluate((element) => {
