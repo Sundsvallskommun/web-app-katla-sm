@@ -260,8 +260,14 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                         gap={2}
                       >
                         {isMobile ?
-                          <Text as="h1" type="large" weight="semibold" className="min-w-0 break-words">
-                            {getHeaderTitle()}
+                          <Text
+                            as="h1"
+                            type="large"
+                            weight="semibold"
+                            aria-label={getHeaderTitle()}
+                            className="min-w-0 break-words"
+                          >
+                            {errandNumber ?? getHeaderTitle()}
                           </Text>
                         : <Heading level={1}>{getHeaderTitle()}</Heading>}
                         {!registerNewErrand && <StatusLabel status={errandStatus} />}

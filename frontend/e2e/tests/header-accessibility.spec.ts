@@ -120,8 +120,14 @@ test.describe('Shared errand header accessibility', () => {
         await expect(page.getByRole('heading', { level: 1 })).toContainText(mockErrand.errandNumber ?? '');
         await expect(page.getByRole('main').getByTestId('errand-status')).toBeVisible();
         const identity = page.getByTestId('errand-identity');
+        await identity.screenshot({ path: testInfo.outputPath(`case-identity-${locale}-${width}.png`) });
         if (width === 320) {
-          const titleBounds = await measure(identity.getByRole('heading', { level: 1 }));
+          const title = identity.getByRole('heading', { level: 1 });
+          await expect(title).toHaveText(mockErrand.errandNumber ?? '');
+          await expect(title).toHaveAccessibleName(
+            `${locale === 'sv' ? 'Ärende:' : 'Case:'} ${mockErrand.errandNumber}`
+          );
+          const titleBounds = await measure(title);
           const statusBounds = await measure(identity.getByTestId('errand-status'));
           expect(statusBounds.x).toBeGreaterThanOrEqual(titleBounds.right);
           expect(
@@ -129,7 +135,6 @@ test.describe('Shared errand header accessibility', () => {
           ).toBeLessThan(2);
           expect((await measure(identity)).height).toBeLessThanOrEqual(32);
         }
-        await identity.screenshot({ path: testInfo.outputPath(`case-identity-${locale}-${width}.png`) });
         await page.goto(appUrl(`${prefix}/arende/registrera`));
         await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
         expect((await measure(header)).height).toBeLessThanOrEqual(72);
