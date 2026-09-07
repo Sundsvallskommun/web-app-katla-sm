@@ -146,7 +146,7 @@ export const WizardBottomBar: React.FC = () => {
           <Button
             label={t('errand-information:wizard.back')}
             size="lg"
-            variant="ghost"
+            variant="secondary"
             icon={<ChevronLeft size={18} />}
             onClick={() => {
               setShowValidation(false);
@@ -158,7 +158,7 @@ export const WizardBottomBar: React.FC = () => {
         <Button
           label={t('errand-information:wizard.cancel')}
           size="lg"
-          variant="ghost"
+          variant="secondary"
           onClick={() => {
             setIsCancelOpen(true);
           }}

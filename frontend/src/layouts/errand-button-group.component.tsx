@@ -1,5 +1,6 @@
 import i18nConfig from '@app/i18nConfig';
 import { Button } from '@astryxdesign/core/Button';
+import { Stack } from '@astryxdesign/core/Layout';
 import { useToast } from '@astryxdesign/core/Toast';
 import { CancelErrandDialog } from '@components/cancel-errand-dialog.component';
 import { COLLEAGUE_FIELD_ID, FACILITY_FIELD_ID, USER_FIELD_ID } from '@components/errand-sections/section-field-ids';
@@ -153,12 +154,12 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center gap-4 md:gap-6">
+    <>
+      <Stack direction="horizontal" wrap="wrap" align="center" justify="end" gap={3}>
         {isNewErrand && (
           <Button
             label={t('errand-information:cancel')}
-            variant="ghost"
+            variant="secondary"
             onClick={() => {
               setIsCancelOpen(true);
             }}
@@ -168,7 +169,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
           <Button
             label={t('errand-information:save_draft')}
             data-cy="save-draft-errand"
-            variant="primary"
+            variant="secondary"
             onClick={() => {
               void onSaveDraft();
             }}
@@ -183,7 +184,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
             void onValidateBeforeRegister();
           }}
         />
-      </div>
+      </Stack>
       <CancelErrandDialog
         show={isCancelOpen}
         onClose={() => {
@@ -202,6 +203,6 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
           void onRegister();
         }}
       />
-    </div>
+    </>
   );
 };

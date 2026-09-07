@@ -45,7 +45,7 @@ export const MobileWizard: React.FC = () => {
         </LayoutHeader>
       }
       footer={
-        <LayoutFooter className="pb-safe">
+        <LayoutFooter className="pb-safe" data-cy="report-actions">
           <WizardBottomBar />
         </LayoutFooter>
       }

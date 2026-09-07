@@ -4,7 +4,7 @@ import { pathWithoutLocale } from '@app/locale-path';
 import { Button } from '@astryxdesign/core/Button';
 import { Heading } from '@astryxdesign/core/Heading';
 import { useMediaQuery } from '@astryxdesign/core/hooks';
-import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
+import { Layout, LayoutContent, LayoutFooter } from '@astryxdesign/core/Layout';
 import { Stack } from '@astryxdesign/core/Stack';
 import { Tab, TabList } from '@astryxdesign/core/TabList';
 import { Text } from '@astryxdesign/core/Text';
@@ -178,6 +178,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   // Utan det här villkoret bytte ett återupptaget utkast till flikvyn på mobil.
   // Utkastets standardstatus är DRAFT, så kvittot måste undantas explicit — annars
   // öppnas wizarden ovanpå beskedet på mobil.
+  const showReportActions = !submittedView && (registerNewErrand || isDraft);
   const showMobileWizard = isMobile && !submittedView && (registerNewErrand || isDraft);
 
   const getHeaderTitle = () => {
@@ -225,8 +226,19 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
             </Layout>
           : showMobileWizard ?
             <MobileWizard />
-          : <Layout height="auto" contentWidth={960} padding={isMobile ? 4 : 6}>
-              <LayoutContent isScrollable={false}>
+          : <Layout
+              height={showReportActions ? 'fill' : 'auto'}
+              contentWidth={960}
+              padding={isMobile ? 4 : 6}
+              footer={
+                showReportActions && (
+                  <LayoutFooter hasDivider className="pb-safe" data-cy="report-actions">
+                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                  </LayoutFooter>
+                )
+              }
+            >
+              <LayoutContent isScrollable={showReportActions}>
                 <Stack gap={6}>
                   {!submittedView && (
                     <Stack gap={4}>
@@ -244,7 +256,6 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                           <Heading level={1}>{getHeaderTitle()}</Heading>
                           {!registerNewErrand && <StatusLabel status={errandStatus} />}
                         </Stack>
-                        <ErrandButtonGroup isNewErrand={registerNewErrand} />
                       </Stack>
                     </Stack>
                   )}
