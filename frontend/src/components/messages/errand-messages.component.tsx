@@ -10,7 +10,6 @@ import { Text } from '@astryxdesign/core/Text';
 import { MessageComposer } from '@components/messages/message-composer.component';
 import { MessageItem } from '@components/messages/message-item.component';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
-import { LinkButton } from '@components/navigation/link-button.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { PenLine, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
@@ -50,7 +49,7 @@ export const ErrandMessages: React.FC = () => {
         <Heading level={2}>{t('messages:title')}</Heading>
         <Text color="secondary">{t('messages:description')}</Text>
         <Stack direction="horizontal" align="center" justify="between" gap={3} wrap="wrap">
-          <LinkButton
+          <Button
             href="#message-body"
             variant="secondary"
             size="lg"

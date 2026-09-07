@@ -18,10 +18,6 @@ vi.mock('@services/errand-service/errand-service', () => ({
   getNotifications: mocks.getNotifications,
 }));
 
-vi.mock('src/hooks/use-media-query', () => ({
-  useMediaQuery: () => false,
-}));
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: mocks.translate }),
 }));

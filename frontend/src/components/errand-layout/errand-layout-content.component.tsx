@@ -1,7 +1,9 @@
 'use client';
 
 import { pathWithoutLocale } from '@app/locale-path';
+import { Button } from '@astryxdesign/core/Button';
 import { Heading } from '@astryxdesign/core/Heading';
+import { useMediaQuery } from '@astryxdesign/core/hooks';
 import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
 import { Stack } from '@astryxdesign/core/Stack';
 import { Tab, TabList } from '@astryxdesign/core/TabList';
@@ -9,7 +11,6 @@ import { Text } from '@astryxdesign/core/Text';
 import { jsonParametersToErrandFormData } from '@components/json/utils/schema-utils';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { StatusLabel } from '@components/misc/status-label.component';
-import { LinkButton } from '@components/navigation/link-button.component';
 import { getVisibleTabs } from '@components/tabs/tabs';
 import { MobileWizard } from '@components/wizard/mobile-wizard.component';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
@@ -20,7 +21,6 @@ import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
 import { getErrandUsingErrandNumber } from '@services/errand-service/errand-service';
 import { ErrandFormHandover, takeErrandFormHandover } from '@utils/errand-form-handover';
 import { ArrowLeft } from 'lucide-react';
-import { default as NextLink } from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { FormProvider, Resolver, useForm } from 'react-hook-form';
@@ -28,7 +28,6 @@ import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
 import { useAutoInitReporter } from 'src/hooks/use-auto-init-reporter';
 import { useLoadMetadata } from 'src/hooks/use-load-metadata';
-import { useMediaQuery } from 'src/hooks/use-media-query';
 import { useUnsavedReportWarning } from 'src/hooks/use-unsaved-report-warning';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { useWizardStore } from 'src/stores/wizard-store';
@@ -232,7 +231,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                   {!submittedView && (
                     <Stack gap={4}>
                       {!registerNewErrand && (
-                        <LinkButton
+                        <Button
                           href="/oversikt"
                           variant="ghost"
                           className="self-start"
@@ -258,7 +257,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                       size="lg"
                     >
                       {tabs.map((tab) => (
-                        <Tab key={tab.path} value={tab.path} label={t(tab.labelKey)} href={tab.path} as={NextLink} />
+                        <Tab key={tab.path} value={tab.path} label={t(tab.labelKey)} href={tab.path} />
                       ))}
                     </TabList>
                   )}

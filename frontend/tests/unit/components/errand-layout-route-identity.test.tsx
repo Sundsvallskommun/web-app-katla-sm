@@ -43,7 +43,6 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'sv' } }),
 }));
 
-vi.mock('src/hooks/use-media-query', () => ({ useMediaQuery: () => false }));
 // Layouten renderar inte förrän den aktuella metadatahämtningen är klar. Själva
 // hämtningen hör inte till det här testet, så dess status styrs explicit här.
 vi.mock('src/hooks/use-load-metadata', () => ({

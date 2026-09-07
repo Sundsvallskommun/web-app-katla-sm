@@ -1,5 +1,6 @@
 'use client';
 
+import { Link } from '@astryxdesign/core/Link';
 import { ListItem } from '@astryxdesign/core/List';
 import { Stack } from '@astryxdesign/core/Stack';
 import { Text } from '@astryxdesign/core/Text';
@@ -8,7 +9,6 @@ import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { getTypeDisplayName } from '@utils/errand-helpers';
 import dayjs from 'dayjs';
 import { ChevronRight } from 'lucide-react';
-import NextLink from 'next/link';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -23,14 +23,15 @@ export const ErrandListItem: React.FC<{ errand: ErrandDTO }> = ({ errand }) => {
       interactiveRef={linkRef}
       description={
         <Stack gap={2}>
-          <NextLink
+          <Link
             ref={linkRef}
             href={`/arende/${errand.errandNumber}/grundinformation`}
             aria-label={t('layout:controls.open_errand', { errandNumber: errand.errandNumber })}
-            className="text-primary underline decoration-current underline-offset-2"
+            color="primary"
+            hasUnderline
           >
             {errand.errandNumber}
-          </NextLink>
+          </Link>
           <Stack direction="horizontal" align="center" gap={3} wrap="wrap">
             <StatusLabel status={errand.status} />
             <Text color="secondary" type="supporting">

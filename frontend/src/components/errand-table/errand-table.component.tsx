@@ -1,15 +1,16 @@
 'use client';
 
+import { useClickableContainer } from '@astryxdesign/core/hooks';
+import { Link } from '@astryxdesign/core/Link';
 import { Skeleton } from '@astryxdesign/core/Skeleton';
 import { Table, TableBody, TableCell, TableRow } from '@astryxdesign/core/Table';
 import { VStack } from '@astryxdesign/core/VStack';
 import { StatusLabel } from '@components/misc/status-label.component';
-import { LinkButton } from '@components/navigation/link-button.component';
 import type { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { getTypeDisplayName } from '@utils/errand-helpers';
 import dayjs from 'dayjs';
 import { ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSortStore } from 'src/stores/sort-store';
 
@@ -24,7 +25,6 @@ interface ErrandTableProps {
 
 export const ErrandTable: React.FC<ErrandTableProps> = ({ rows, isLoading, totalPages }) => {
   const { t } = useTranslation();
-  const router = useRouter();
   const { rowHeight } = useSortStore();
   return (
     <VStack gap={4}>
@@ -50,43 +50,44 @@ export const ErrandTable: React.FC<ErrandTableProps> = ({ rows, isLoading, total
                 ))}
               </TableRow>
             ))}
-          {rows.map((errand) => {
-            const errandUrl = `/arende/${errand.errandNumber}/grundinformation`;
-            return (
-              <TableRow
-                key={errand.errandNumber}
-                className="cursor-pointer"
-                onClick={() => {
-                  router.push(errandUrl);
-                }}
-              >
-                <TableCell>
-                  <strong>{getTypeDisplayName(errand, t)}</strong>
-                </TableCell>
-                <TableCell>
-                  <StatusLabel status={errand.status} />
-                </TableCell>
-                <TableCell>{errand.errandNumber}</TableCell>
-                <TableCell>{dayjs(errand.created).format('YYYY-MM-DD, HH:mm')}</TableCell>
-                <TableCell>
-                  <LinkButton
-                    href={errandUrl}
-                    data-cy="open-errand-button"
-                    label={t('common:errand-table.open_errand', { errandNumber: errand.errandNumber })}
-                    isIconOnly
-                    variant="ghost"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                    }}
-                    icon={<ArrowRight aria-hidden="true" />}
-                  />
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {rows.map((errand) => (
+            <ErrandTableRow key={errand.errandNumber} errand={errand} />
+          ))}
         </TableBody>
       </Table>
       {rows.length > 0 && <ErrandTableFooter totalPages={totalPages} />}
     </VStack>
   );
 };
+
+/** One primary link owns both keyboard navigation and delegated row clicks. */
+function ErrandTableRow({ errand }: { errand: ErrandDTO }) {
+  const { t } = useTranslation();
+  const containerRef = useRef<HTMLTableRowElement>(null);
+  const interactiveRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null);
+  const rowInteraction = useClickableContainer({ containerRef, interactiveRef });
+  return (
+    <TableRow ref={containerRef} {...rowInteraction} className="cursor-pointer">
+      <TableCell>
+        <strong>{getTypeDisplayName(errand, t)}</strong>
+      </TableCell>
+      <TableCell>
+        <StatusLabel status={errand.status} />
+      </TableCell>
+      <TableCell>
+        <Link
+          ref={interactiveRef}
+          href={`/arende/${errand.errandNumber}/grundinformation`}
+          data-cy="open-errand-button"
+          hasUnderline
+        >
+          {errand.errandNumber}
+        </Link>
+      </TableCell>
+      <TableCell>{dayjs(errand.created).format('YYYY-MM-DD, HH:mm')}</TableCell>
+      <TableCell>
+        <ArrowRight aria-hidden="true" />
+      </TableCell>
+    </TableRow>
+  );
+}

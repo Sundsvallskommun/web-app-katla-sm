@@ -2,7 +2,7 @@
 
 import { Button } from '@astryxdesign/core/Button';
 import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
-import { useFocusTrap } from '@astryxdesign/core/hooks';
+import { useFocusTrap, useMediaQuery } from '@astryxdesign/core/hooks';
 import { Spinner } from '@astryxdesign/core/Spinner';
 import { ErrorAlert } from '@components/misc/error-alert.component';
 import { getNotifications } from '@services/errand-service/errand-service';
@@ -10,7 +10,6 @@ import { Mail, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
-import { useMediaQuery } from 'src/hooks/use-media-query';
 import { useNotificationStore } from 'src/stores/notification-store';
 
 import { NotificationItem } from './notification-item';

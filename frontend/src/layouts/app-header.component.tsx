@@ -8,7 +8,6 @@ import { NotificationsWrapper } from '@components/notifications/notification-wra
 import { AppUserMenu } from '@components/user-menu/app-user-menu.component';
 import { createUserMenuGroups } from '@layouts/userMenuGroup';
 import { useUserStore } from '@services/user-service/user-service';
-import NextLink from 'next/link';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -38,7 +37,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
       <Stack as={as} paddingInline={2} className="shrink-0 border-b border-default bg-surface">
         <TopNav
           label={APP_NAME}
-          heading={<TopNavHeading heading={APP_NAME} headingHref={logoHref} as={NextLink} />}
+          heading={<TopNavHeading heading={APP_NAME} headingHref={logoHref} />}
           endContent={
             <Stack direction="horizontal" align="center" gap={1}>
               <NotificationsBell

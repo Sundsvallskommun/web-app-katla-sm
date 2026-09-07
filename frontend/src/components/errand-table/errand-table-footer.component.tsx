@@ -1,6 +1,7 @@
 import { NumberInput } from '@astryxdesign/core/NumberInput';
 import { Pagination } from '@astryxdesign/core/Pagination';
 import { Selector } from '@astryxdesign/core/Selector';
+import { Stack } from '@astryxdesign/core/Stack';
 import { useTranslation } from 'react-i18next';
 import { useSortStore } from 'src/stores/sort-store';
 
@@ -9,7 +10,7 @@ export const ErrandTableFooter: React.FC<{ totalPages: number }> = ({ totalPages
   const { page, size, rowHeight, setRowHeight, setPage, setSize } = useSortStore();
 
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 p-4">
+    <Stack direction="horizontal" wrap="wrap" align="end" justify="between" gap={4} padding={4}>
       <NumberInput
         label={t('common:errand-table.rows_per_page')}
         min={1}
@@ -36,6 +37,6 @@ export const ErrandTableFooter: React.FC<{ totalPages: number }> = ({ totalPages
           { value: 'dense', label: t('common:errand-table.row_height_dense') },
         ]}
       />
-    </div>
+    </Stack>
   );
 };

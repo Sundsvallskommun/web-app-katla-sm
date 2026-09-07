@@ -85,10 +85,38 @@ test.describe('Overview page', () => {
     const firstRow = page.getByTestId('errand-table').locator('tbody').getByRole('row').first();
     await expect(firstRow).toBeVisible();
 
-    // Klicket läggs på ärendenumret, alltså utanför pilknappen, för att visa att hela raden bär det.
-    await firstRow.getByText('AIA-25120019').click();
+    // The type cell delegates to the number link without reloading the document.
+    await page.evaluate(() => {
+      document.documentElement.dataset.navigationProbe = 'retained';
+    });
+    await firstRow.getByRole('cell').first().click();
 
     await expect(page).toHaveURL(/\/arende\/AIA-25120019\/grundinformation$/);
+    await expect(page.locator('html')).toHaveAttribute('data-navigation-probe', 'retained');
+  });
+
+  test('keeps text selection on report rows from opening the report', async ({ page }) => {
+    const row = page.getByTestId('errand-table').locator('tbody').getByRole('row').first();
+    const typeCell = row.getByRole('cell').first();
+    await typeCell.evaluate((element) => {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    });
+    await typeCell.dispatchEvent('click');
+    await expect(page).toHaveURL(/\/oversikt$/);
+    await expect(row.getByRole('link')).toHaveCount(1);
+  });
+
+  test('uses the shared Next link for registration without reloading the document', async ({ page }) => {
+    await page.evaluate(() => {
+      document.documentElement.dataset.navigationProbe = 'retained';
+    });
+    await page.getByTestId('register-new-errand-button').click();
+    await expect(page).toHaveURL(/\/arende\/registrera$/);
+    await expect(page.locator('html')).toHaveAttribute('data-navigation-probe', 'retained');
   });
 
   test('Keeps the notification dialog inside the viewport', async ({ page }) => {

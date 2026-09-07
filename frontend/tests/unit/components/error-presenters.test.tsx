@@ -21,7 +21,10 @@ const overview = vi.hoisted((): { value: ReturnType<typeof useOverviewErrands> }
 }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
-vi.mock('src/hooks/use-media-query', () => ({ useMediaQuery: () => state.mobile }));
+vi.mock('@astryxdesign/core/hooks', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@astryxdesign/core/hooks')>()),
+  useMediaQuery: () => state.mobile,
+}));
 vi.mock('src/hooks/use-overview-errands', () => ({ useOverviewErrands: () => overview.value }));
 vi.mock('src/hooks/use-status-buttons', () => ({
   useActiveStatusLabel: () => 'Inskickade',

@@ -4,9 +4,11 @@
 // vy hinner formatera ett datum. Själva språkvalet sätts av LocalizationProvider.
 import '@utils/dayjs-locale';
 
+import { LinkProvider } from '@astryxdesign/core/Link';
 import { Theme } from '@astryxdesign/core/theme';
 import { useUserStore } from '@services/user-service/user-service';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
+import NextLink from 'next/link';
 import { ReactNode, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -25,9 +27,11 @@ const AppLayout = ({ children }: ClientApplicationProps) => {
   }, [getMe]);
 
   return (
-    <Theme theme={katlaTheme} mode={colorScheme}>
-      {children}
-    </Theme>
+    <LinkProvider component={NextLink}>
+      <Theme theme={katlaTheme} mode={colorScheme}>
+        {children}
+      </Theme>
+    </LinkProvider>
   );
 };
 

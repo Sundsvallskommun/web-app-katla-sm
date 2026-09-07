@@ -1,6 +1,6 @@
 import { pathWithoutLocale } from '@app/locale-path';
 import { AppShell } from '@astryxdesign/core/AppShell';
-import { LinkButton } from '@components/navigation/link-button.component';
+import { Button } from '@astryxdesign/core/Button';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { AppHeader } from '@layouts/app-header.component';
 import { storeErrandFormHandover } from '@utils/errand-form-handover';
@@ -42,7 +42,7 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
           onBeforeLanguageSwitch={saveFormBeforeLanguageSwitch}
           actions={
             registerNewErrand ? undefined : (
-              <LinkButton
+              <Button
                 href="/arende/registrera"
                 data-cy="register-new-errand-button"
                 role="menuitem"

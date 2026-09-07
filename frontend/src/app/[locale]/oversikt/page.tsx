@@ -1,7 +1,9 @@
 'use client';
 
+import { Button } from '@astryxdesign/core/Button';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { Heading } from '@astryxdesign/core/Heading';
+import { useMediaQuery } from '@astryxdesign/core/hooks';
 import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
 import { Stack } from '@astryxdesign/core/Stack';
 import { Text } from '@astryxdesign/core/Text';
@@ -10,11 +12,9 @@ import { ErrandListSkeleton } from '@components/errand-table/errand-list-skeleto
 import { ErrandStatusFilter } from '@components/errand-table/errand-status-filter.component';
 import { ErrandTable } from '@components/errand-table/errand-table.component';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
-import { LinkButton } from '@components/navigation/link-button.component';
 import { Files, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
-import { useMediaQuery } from 'src/hooks/use-media-query';
 import { useOverviewErrands } from 'src/hooks/use-overview-errands';
 import { useActiveStatusLabel } from 'src/hooks/use-status-buttons';
 
@@ -32,7 +32,7 @@ export default function Oversikt() {
         <Stack gap={6}>
           <Stack direction="horizontal" justify="between" align="center" gap={4} wrap="wrap">
             <Heading level={1}>{t('filtering:my_reports')}</Heading>
-            <LinkButton
+            <Button
               href="/arende/registrera"
               data-cy="register-new-errand-button"
               label={t('filtering:new_errand_mobile')}
