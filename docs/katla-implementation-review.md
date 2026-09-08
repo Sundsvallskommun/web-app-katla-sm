@@ -1,6 +1,6 @@
 # Katla-plattformen – underlag för granskning
 
-Datum: 2026-09-07. Implementation i separat worktree på `feature/katla-platform`. Inga images är publicerade och ingen miljö är driftsatt. Verklig IdP-/Draken-acceptans och introduktion med en annan utvecklare återstår.
+Uppdaterad: 2026-09-08. Implementation i separat worktree på `feature/katla-platform`. Inga images är publicerade och ingen miljö är driftsatt. Verklig IdP-/Draken-acceptans och introduktion med en annan utvecklare återstår.
 
 ## Resultat
 
@@ -44,9 +44,9 @@ Avvikelsedefinitionens produktval följer den tidigare exempelkonfigurationen. D
 | --- | --- |
 | Definitions- och CLI-kontrakt | 8 + 6 tester godkända, inklusive generering, typkontroll av genererad Katla och skydd mot överskrivning. |
 | Backend | 202 tester godkända. |
-| Frontend | 384 tester godkända, inklusive flera formulär, historiska schema-id:n och sparning vid byte mellan desktop/mobil. |
+| Frontend | 390 tester godkända, inklusive flera formulär, historiska schema-id:n och sparning vid byte mellan desktop/mobil. |
 | Statisk kvalitet | Gemensam typkontroll, strikt lint, formatkontroller, Node-/TypeScript-kontrakt och `git diff --check` godkända. |
-| Avvikelse i webbläsare | 94 tester godkända mot fristående produktionsbygge. |
+| Avvikelse i webbläsare | 104 tester godkända mot fristående produktionsbygge. |
 | Standard-Katla i webbläsare | 6 tester godkända mot produktionsbygge: giltig inskickning, obligatoriska fält och utkast/återöppning med ursprunglig schemaversion på desktop och mobil. |
 | Mina Katlor i webbläsare | 7 tester godkända mot produktionsbygge med `/portal`: noll/en/flera tilldelningar, återförsök, revisionsfel, direktlänk, avgränsade rutter och tangentbord/reflow på svenska och engelska. |
 | Fristående frontend | Avvikelse-test, schema-test och katalog startar utanför källrepot. Definitionsrevision och bildkodning/-avkodning med AVIF/WebP kontrollerade. |
@@ -54,11 +54,13 @@ Avvikelsedefinitionens produktval följer den tidigare exempelkonfigurationen. D
 | Dockerimages | Gemensam backend samt Avvikelse- och katalogfrontend byggda på Linux arm64. Båda frontendcontainers startar som användare 1001, visar login och konverterar AVIF/WebP. Backendens artefaktkontroll passerar även inuti imagen. |
 | RHEL 8.10 | Bygge och båda artefaktkontrollerna godkända i UBI 8.10, Linux amd64, Node 22.18.0 och Yarn 1.22.22. |
 
-Totalt 600 enhets-/kontrakttester och 107 webbläsarscenarier. Browserproven använder kontrollerade API-/identitetsfixtures. De verifierar inte organisationens verkliga inloggning eller mottagning i Draken.
+Totalt 606 enhets-/kontrakttester och 117 webbläsarscenarier. Browserproven använder kontrollerade API-/identitetsfixtures. De verifierar inte organisationens verkliga inloggning eller mottagning i Draken.
+
+Enhets-, kontrakts-, browser- och frontendens artefaktkontroller upprepades 2026-09-08 efter integration av Astryx-branchen till `fe7469c`. Typkontroll, lint och formatkontroller är också gröna. Docker- och RHEL-proven av paketeringen genomfördes 2026-09-07; CI innehåller dessa kontroller för PR-versionen.
 
 Monorepots selektiva beroendeval ligger i roten med workspace-anpassade sökvägar. Nexts Sharp och dess native-bibliotek kontrolleras genom faktisk bildkonvertering i det isolerade paketet. Dockerbygget kör också denna kontroll så saknade bibliotek stoppar bygget.
 
-Lokala image-taggar är `katla-api:worktree-903e`, `katla-web:avvikelse-worktree-903e` och `katla-web:catalogue-worktree-903e`. De är granskningsbyggen med lokala adresser, inte releaser för drift.
+Lokala image-taggar är `katla-api:worktree-903e`, `katla-web:avvikelse-worktree-903e` och `katla-web:catalogue-worktree-903e`. De är granskningsbyggen av paketeringen från 2026-09-07 med lokala adresser, inte releaser för drift.
 
 ## Återstående acceptans och återställning
 
