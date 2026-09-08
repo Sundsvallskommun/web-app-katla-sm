@@ -62,6 +62,18 @@ Monorepots selektiva beroendeval ligger i roten med workspace-anpassade sökväg
 
 Lokala image-taggar är `katla-api:worktree-903e`, `katla-web:avvikelse-worktree-903e` och `katla-web:catalogue-worktree-903e`. De är granskningsbyggen av paketeringen från 2026-09-07 med lokala adresser, inte releaser för drift.
 
+## Rättningar efter PR- och Sonar-granskning 2026-09-08
+
+Sonar-analysen av `8a81f00` markerade samtliga 38 tidigare öppna fynd som `CLOSED / FIXED`. Quality Gate är godkänd med 0 öppna fynd och 0 säkerhetshotspots. Inga fynd accepterades eller undantogs. Aktuell CI-status för den senaste revisionen finns i PR #102; Sonars Quality Gate och GitHubs importerade säkerhetslarm är separata kontroller.
+
+- Backendartefaktens plats ägs av paketeringsskriptet och delas med startkontrollen. Fria sökvägsargument är borttagna; befintliga kataloger skrivs aldrig över. Två nya beteendetester skyddar mot sökvägs-/programargument och överskrivning via katalog eller symlänk.
+- Katla-kommandon startar Yarn genom dess explicita programfil. Loggen från anslutningskontrollen innehåller inte längre API-data.
+- Ärendeskrivningen skiljer nu mellan formulärmedlemskap, schemavärden och verksamhetsklassificering. Befintliga gränstester skyddar samma felkoder och livscykel. Frontendens gemensamma sparningskontrakt har stabila callbacks.
+- Linux-testernas klippta utloggningsrubrik vid 200 procent text åtgärdas med radbrytning inom rubrikens tillgängliga bredd. Reflow-testernas assertions är oförändrade.
+- PR-beskrivningen innehåller Mermaid-diagram över definitioner och delad kod, images och namespaces samt SAML och åtkomstkontroll.
+
+De lokala enhets-/kontraktssviterna omfattar nu 608 tester (8 definitioner, 8 verktyg, 202 backend, 390 frontend). Den isolerade backendkontrollen startar utan ärende-API-hemligheter efter en ren produktionsinstallation. Som tidigare behövs verklig extern acceptans före lansering.
+
 ## Återstående acceptans och återställning
 
 Före lansering behöver en riktig testmiljö verifiera SAML/SSO och gruppändringar, mottagningen i Draken, SupportManagements rapportörsfilter och versionskontroll samt verkliga historiska utkast. En annan utvecklare ska också följa guiden från ren klon. Först det försöket ger underlag för hur snabbt en verksamhets-Katla kan införas.
