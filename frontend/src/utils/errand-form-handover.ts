@@ -1,6 +1,8 @@
 import { ErrandFormDTO } from '@interfaces/errand-form';
+import { applicationStorageScope } from 'src/config/appconfig';
 
-const STORAGE_KEY = 'errand-form-handover';
+export const ERRAND_FORM_HANDOVER_KEY = `${applicationStorageScope}:form-handover`;
+const STORAGE_KEY = ERRAND_FORM_HANDOVER_KEY;
 
 /**
  * Hur länge en överlämning får ligga kvar. Navigeringen sker på klienten och är i praktiken

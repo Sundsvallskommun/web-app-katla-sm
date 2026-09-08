@@ -9,6 +9,7 @@
 # testing
 /coverage
 /test-results
+/test-results-*
 /playwright-report
 /blob-report
 
@@ -19,11 +20,6 @@ next-env.d.ts
 
 # production
 /build
-
-# quirks
-# middleware envs needs to be generated for edge runtime to work
-./middleware-envs.js
-middleware-envs.js
 
 # misc
 .DS_Store

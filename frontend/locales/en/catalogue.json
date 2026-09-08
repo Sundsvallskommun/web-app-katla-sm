@@ -1,0 +1,11 @@
+{
+  "title": "My Katlas",
+  "description": "Choose an application to register or follow your cases.",
+  "available": "Available applications",
+  "loading": "Loading your Katlas",
+  "error": "Your Katlas could not be loaded. Please try again.",
+  "retry": "Try again",
+  "open": "Open",
+  "empty_title": "You have no available Katlas",
+  "empty_description": "Contact your manager or your organisation's IT support if you need access to an application."
+}

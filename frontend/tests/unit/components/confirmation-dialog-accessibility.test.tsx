@@ -1,5 +1,6 @@
 import { CancelErrandDialog } from '@components/cancel-errand-dialog.component';
 import { WizardBottomBar } from '@components/wizard/wizard-bottom-bar.component';
+import { ErrandSubmissionProvider } from '@contexts/errand-submission-provider';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
 import type { ErrandFormDTO } from '@interfaces/errand-form';
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
@@ -9,9 +10,11 @@ import { createInstance } from 'i18next';
 import { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { I18nextProvider } from 'react-i18next';
+import { useMetadataStore } from 'src/stores/metadata-store';
 import { useWizardStore } from 'src/stores/wizard-store';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { classificationLabels } from '../../../e2e/fixtures/avvikelseClassification';
 import errandEn from '../../../locales/en/errand-information.json';
 import errandSv from '../../../locales/sv/errand-information.json';
 
@@ -30,6 +33,7 @@ const i18n = createInstance();
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  useMetadataStore.setState({ metadata: { labels: { labelStructure: classificationLabels } } });
   useWizardStore.setState({ currentStep: 4, stepErrors: {} });
   vi.stubGlobal(
     'fetch',
@@ -90,7 +94,11 @@ function SubmitHarness({ wizard }: { wizard: boolean }) {
       ],
       stakeholders: [{ role: 'PRIMARY' }],
       errandFormData: [
-        { schemaName: 'avvikelse-plats-handelse', schemaId: 'confirmation-accessibility:1', data: '{}' },
+        {
+          schemaName: 'avvikelse-plats-handelse',
+          schemaId: 'confirmation-accessibility:1',
+          data: JSON.stringify({ facilityInfo: { orgName: 'Testenhet' } }),
+        },
       ],
     },
   });
@@ -98,9 +106,11 @@ function SubmitHarness({ wizard }: { wizard: boolean }) {
   return (
     <FormProvider {...form}>
       <FormValidationProvider>
-        {wizard ?
-          <WizardBottomBar />
-        : <ErrandButtonGroup isNewErrand />}
+        <ErrandSubmissionProvider>
+          {wizard ?
+            <WizardBottomBar />
+          : <ErrandButtonGroup isNewErrand />}
+        </ErrandSubmissionProvider>
       </FormValidationProvider>
     </FormProvider>
   );

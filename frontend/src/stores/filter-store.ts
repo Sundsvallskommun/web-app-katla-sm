@@ -1,3 +1,4 @@
+import { applicationStorageScope } from 'src/config/appconfig';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -17,7 +18,7 @@ export const useFilterStore = create<FilterState>()(
       setStatuses: (statuses) => set({ statuses }),
     }),
     {
-      name: 'filter-storage',
+      name: `${applicationStorageScope}:filters`,
     }
   )
 );

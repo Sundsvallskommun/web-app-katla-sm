@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, realpathSync } from 'node:fs';
 
 const readText = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
 const pinnedNodeVersion = readText('.nvmrc').trim();
@@ -8,6 +9,14 @@ const semverParts = pinnedNodeVersion.split('.').map(Number);
 assert.match(pinnedNodeVersion, /^\d+\.\d+\.\d+$/, '.nvmrc must contain one exact Node.js version');
 
 const packagePaths = ['backend/package.json', 'frontend/package.json'];
+const rootPackage = JSON.parse(readText('package.json'));
+const typescriptVersion = rootPackage.devDependencies.typescript;
+assert.equal(rootPackage.packageManager, 'yarn@1.22.22');
+for (const packagePath of [...packagePaths, 'katlor/package.json']) {
+  assert.equal(JSON.parse(readText(packagePath)).devDependencies.typescript, typescriptVersion, 'All workspaces use the same pinned TypeScript version');
+}
+const compiler = realpathSync(new URL('../../node_modules/.bin/tsc', import.meta.url));
+assert.equal(execFileSync(process.execPath, [compiler, '--version'], { encoding: 'utf8' }).trim(), `Version ${typescriptVersion}`, 'The root tsc executable must not resolve to a generator\'s private compiler');
 let canonicalNodeRange;
 for (const packagePath of packagePaths) {
   const packageJson = JSON.parse(readText(packagePath));

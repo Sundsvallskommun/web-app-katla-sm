@@ -1,0 +1,36 @@
+{
+  "name": "katla-platform",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "yarn@1.22.22",
+  "engines": { "node": ">=22.18.0 <=24", "yarn": "1.22.22" },
+  "workspaces": ["frontend", "backend", "katlor"],
+  "scripts": {
+    "postinstall": "yarn definitions:build",
+    "definitions:build": "yarn workspace @katla/definitions build",
+    "katla:new": "node scripts/katla.mjs new",
+    "katla:check": "node scripts/katla.mjs check",
+    "katla:dev": "node scripts/katla.mjs dev",
+    "katla:build": "node scripts/katla.mjs build",
+    "test:platform": "yarn workspace @katla/definitions test && node --test scripts/tests/*.test.mjs",
+    "type-check": "yarn definitions:build && yarn workspace backend type-check && yarn workspace katla-web-app type-check",
+    "lint:strict": "yarn workspace backend lint:strict && yarn workspace katla-web-app lint:strict",
+    "format:platform": "prettier --write \"{katlor/src,katlor/tests,scripts}/**/*.{ts,mjs,cjs,json}\"",
+    "format:platform:check": "prettier --check \"{katlor/src,katlor/tests,scripts}/**/*.{ts,mjs,cjs,json}\"",
+    "test": "yarn test:platform && yarn workspace backend test && yarn workspace katla-web-app test",
+    "standalone:prepare": "node scripts/standalone.mjs prepare",
+    "standalone:check": "node scripts/standalone.mjs check"
+  },
+  "devDependencies": { "ajv": "^8.18.0", "ajv-formats": "^3.0.1", "dotenv": "^17.4.2", "eslint": "^9.39.5", "prettier": "^3.8.1", "tsx": "^4.23.12", "typescript": "5.9.3" },
+  "resolutions": {
+    "@types/express": "^4.17.23",
+    "qs": "^6.16.0",
+    "form-data": "^4.0.4",
+    "multer": "^2.1.1",
+    "**/vitest/vite": "8.2.1",
+    "**/@rjsf/validator-ajv8/ajv": "8.20.0",
+    "typescript-eslint": "8.67.0",
+    "**/next/postcss": "^8.5.26",
+    "**/next/sharp": "^0.35.4"
+  }
+}

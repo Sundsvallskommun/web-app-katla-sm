@@ -60,6 +60,10 @@ vi.mock('@components/tabs/tabs', () => ({
   ],
 }));
 vi.mock('@components/wizard/mobile-wizard.component', () => ({ MobileWizard: () => <div>mobile-wizard</div> }));
+vi.mock('@contexts/errand-submission-provider', () => ({
+  ErrandSubmissionProvider: ({ children }: PropsWithChildren) => <>{children}</>,
+}));
+
 vi.mock('@contexts/form-validation-provider', () => ({
   FormValidationProvider: ({ children }: PropsWithChildren) => <>{children}</>,
 }));
@@ -294,7 +298,8 @@ describe('errand layout route identity', () => {
     };
     expect(mocks.save).toHaveBeenCalledWith(expectedDefaults);
     expect(mocks.register).toHaveBeenCalledWith(expectedDefaults);
-    expect(mocks.wizardReset).toHaveBeenCalledTimes(1);
+    // Loading A and then opening a new registration each reset their own wizard.
+    expect(mocks.wizardReset).toHaveBeenCalledTimes(2);
     expect(getErrandMock).toHaveBeenCalledTimes(1);
   });
 

@@ -12,6 +12,9 @@ import { capitalize } from 'lodash';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appConfig } from 'src/config/appconfig';
+
+import { loginRedirectPath } from './login-redirect';
 
 // Turn on/off automatic login
 const autoLogin = false;
@@ -35,14 +38,12 @@ export const LoginContent: React.FC = () => {
   };
 
   const onLogin = () => {
-    const searchPath = searchParams.get('path');
-    const nonLoginPath = !/\/login/.exec(pathName) && pathName; // Contains path as long as it's not /login
-    const nonLoginSearch = (!searchPath?.match(/\/login|\/logout/) && searchPath) ?? false; // Contains redirect path as long as it's not /login or /logout
-    // Falsklogik bevarad: falla vidare vid false/tom sträng, inte enbart vid null/undefined
-    const path =
-      nonLoginPath ? nonLoginPath
-      : nonLoginSearch ? nonLoginSearch
-      : `${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`;
+    const path = loginRedirectPath({
+      mode: appConfig.mode,
+      basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? '',
+      pathname: pathName,
+      requestedPath: searchParams.get('path'),
+    });
 
     const url = new URL(apiURL('/saml/login'));
     const queries = new URLSearchParams({
@@ -65,7 +66,7 @@ export const LoginContent: React.FC = () => {
         // autologin
         onLogin();
       } else if (failMessage) {
-        setErrorMessage(t(`login:errors.${failMessage}`));
+        setErrorMessage(t(`login:errors.${failMessage}`, { defaultValue: t('login:errors.UNKNOWN_ERROR') }));
         setIsLoading(false);
       } else {
         setIsLoading(false);

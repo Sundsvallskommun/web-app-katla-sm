@@ -1,4 +1,4 @@
-import { DeviationInformation } from '@components/errand-sections/deviation-information.component';
+import { ErrandInformation } from '@components/errand-sections/errand-information.component';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
 import type { ErrandFormDTO } from '@interfaces/errand-form';
 import { render, screen } from '@testing-library/react';
@@ -58,13 +58,13 @@ function TestForm() {
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        <DeviationInformation />
+        <ErrandInformation />
       </FormValidationProvider>
     </FormProvider>
   );
 }
 
-describe('DeviationInformation schema stability', () => {
+describe('ErrandInformation schema stability', () => {
   beforeEach(() => {
     loadFormSchemaForEntryMock.mockReset().mockResolvedValue({
       schema: { type: 'object' },

@@ -1,14 +1,20 @@
 import i18nConfig from '@app/i18nConfig';
 import type { JsonParameterDTO } from '@data-contracts/backend/data-contracts';
 import type { ErrandFormDataItem } from '@interfaces/errand-form';
+import { applyDateBounds } from '@katla/definitions/schema-validation';
 import type { RJSFSchema, RJSFValidationError, UiSchema } from '@rjsf/utils';
 import type { TFunction } from 'i18next';
+import { appConfig } from 'src/config/appconfig';
 
-import { applyDateBounds } from '../schema/date-bounds';
 import { getJsonValueSchemaValidator } from '../schema/form-schema-validator';
 import { createJsonErrorTransformer, fieldTitleFromSchema } from './schema-form-error-handling';
 
-export const ERRAND_FORM_SCHEMA_NAMES = ['avvikelse-plats-handelse'] as const;
+export const ERRAND_FORM_SCHEMA_NAMES = appConfig.katla?.forms.map((form) => form.schemaName) ?? [];
+
+/** A multi-form page must not repeat RJSF field ids. Single-form ids stay stable. */
+export function schemaFieldPrefix(schemaName: string, schemaNames: readonly string[]): string {
+  return new Set(schemaNames).size > 1 ? `form-${encodeURIComponent(schemaName)}` : 'root';
+}
 
 export type ErrandFormDataContractErrorCode = 'invalid-json' | 'missing-schema-id' | 'missing-schema-name';
 
@@ -55,7 +61,7 @@ export function errandFormDataContractErrorMessage(error: unknown, t?: TFunction
   return t ? t(translationKey[error.code], { schemaName: error.schemaName }) : fallback[error.code];
 }
 
-function requireSchemaId(schemaId: unknown, schemaName: string): string {
+export function requireSchemaId(schemaId: unknown, schemaName: string): string {
   if (typeof schemaId !== 'string' || schemaId.trim().length === 0) {
     throw new ErrandFormDataContractError('missing-schema-id', schemaName);
   }
@@ -283,9 +289,9 @@ function uiFieldTitle(
  * RJSF namnger sina fält `root_<egenskap>`, och felets `property` är samma egenskap med en
  * inledande punkt. Nästlade egenskaper skiljs med punkt i property och med understreck i id.
  */
-function fieldIdFromProperty(property: string | undefined): string | undefined {
+function fieldIdFromProperty(property: string | undefined, prefix: string): string | undefined {
   const path = (property ?? '').replace(/^\./, '');
-  return path ? `root_${path.split('.').join('_')}` : undefined;
+  return path ? `${prefix}_${path.split('.').join('_')}` : undefined;
 }
 
 /**
@@ -301,7 +307,8 @@ function schemaFieldValidationErrors(
   uiSchema: UiSchema<Record<string, unknown>> | undefined,
   schemaName: string,
   validationErrors: RJSFValidationError[],
-  t?: TFunction
+  t?: TFunction,
+  prefix = 'root'
 ): ErrandFormValidationError[] {
   const schemaTitle = schema.title ?? schemaName;
   const transformed = t ? createJsonErrorTransformer(schema, t)(validationErrors) : validationErrors;
@@ -309,7 +316,7 @@ function schemaFieldValidationErrors(
   return sortByFormOrder(transformed, uiSchema).map((error) => {
     const message = error.message ?? '';
     const fieldTitle = fieldTitleFromSchema(schema, error.property) ?? uiFieldTitle(uiSchema, error.property);
-    const fieldId = fieldIdFromProperty(error.property);
+    const fieldId = fieldIdFromProperty(error.property, prefix);
 
     if (!t) {
       return {
@@ -340,11 +347,12 @@ export async function collectErrandFormDataErrors(
   // Måste följa det aktiva språket. Annars valideras mot schemat i standardspråket medan
   // formuläret renderas i ett annat, vilket ger både en onödig extra hämtning och
   // fältrubriker på fel språk i felsammanfattningen.
-  locale = i18nConfig.defaultLocale
+  locale = i18nConfig.defaultLocale,
+  requiredSchemaNames: readonly string[] = ERRAND_FORM_SCHEMA_NAMES
 ): Promise<ErrandFormValidationError[]> {
   const errors: ErrandFormValidationError[] = [];
   const entries = formDataEntries ?? [];
-  const missingSchemaNames = ERRAND_FORM_SCHEMA_NAMES.filter(
+  const missingSchemaNames = requiredSchemaNames.filter(
     (schemaName) => !entries.some((entry) => entry.schemaName === schemaName)
   );
 
@@ -372,11 +380,20 @@ export async function collectErrandFormDataErrors(
     try {
       const { schema, uiSchema, schemaId } = await loadFormSchemaForEntry(entry.schemaName, entry.schemaId, t, locale);
       const boundedSchema = applyDateBounds(schema, uiSchema);
-      const validator = getJsonValueSchemaValidator(schemaId);
+      const validator = getJsonValueSchemaValidator(schemaId, boundedSchema.$schema);
       const { errors: validationErrors } = validator.validateFormData(parsedData.value, boundedSchema);
 
       if (validationErrors.length > 0) {
-        errors.push(...schemaFieldValidationErrors(boundedSchema, uiSchema, entry.schemaName, validationErrors, t));
+        errors.push(
+          ...schemaFieldValidationErrors(
+            boundedSchema,
+            uiSchema,
+            entry.schemaName,
+            validationErrors,
+            t,
+            schemaFieldPrefix(entry.schemaName, [...requiredSchemaNames, ...entries.map((item) => item.schemaName)])
+          )
+        );
       }
     } catch (error: unknown) {
       errors.push({
@@ -395,9 +412,10 @@ export async function collectErrandFormDataErrors(
 export async function validateErrandFormData(
   formDataEntries: ErrandFormDataItem[] | undefined,
   t?: TFunction,
-  locale = i18nConfig.defaultLocale
+  locale = i18nConfig.defaultLocale,
+  requiredSchemaNames: readonly string[] = ERRAND_FORM_SCHEMA_NAMES
 ): Promise<string[]> {
-  const errors = await collectErrandFormDataErrors(formDataEntries, t, locale);
+  const errors = await collectErrandFormDataErrors(formDataEntries, t, locale, requiredSchemaNames);
   return errors.map((error) => error.message);
 }
 

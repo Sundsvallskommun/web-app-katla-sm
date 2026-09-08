@@ -1,0 +1,20 @@
+# Docker builds run from the repository root. Never send local credentials.
+.git
+**/node_modules
+**/.next*
+**/dist
+**/.env
+**/.env.*
+**/cert
+**/*.pem
+**/*.key
+**/*.session.json
+**/*.storage-state.json
+**/coverage
+**/playwright-report
+**/test-results*
+**/logs
+.katla
+.claude
+.codex
+.yarn-cache

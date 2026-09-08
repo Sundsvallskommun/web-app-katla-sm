@@ -10,8 +10,7 @@ import { createUserMenuGroups } from '@layouts/userMenuGroup';
 import { useUserStore } from '@services/user-service/user-service';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? '';
+import { appConfig } from 'src/config/appconfig';
 
 interface AppHeaderProps {
   as?: 'header' | 'div';
@@ -36,16 +35,25 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
     <>
       <Stack as={as} paddingInline={2} className="shrink-0 border-b border-default bg-surface">
         <TopNav
-          label={APP_NAME}
-          heading={<TopNavHeading heading={APP_NAME} headingHref={logoHref} />}
+          label={appConfig.applicationName}
+          heading={
+            <TopNavHeading
+              heading={appConfig.applicationName}
+              headingHref={logoHref}
+              superheading={appConfig.mode === 'katla' && appConfig.catalogueUrl ? t('catalogue:title') : undefined}
+              superheadingHref={appConfig.mode === 'katla' ? appConfig.catalogueUrl : undefined}
+            />
+          }
           endContent={
             <Stack direction="horizontal" align="center" gap={1}>
-              <NotificationsBell
-                expanded={showNotifications}
-                toggleShow={() => {
-                  setShowNotifications((shown) => !shown);
-                }}
-              />
+              {appConfig.mode === 'katla' && (
+                <NotificationsBell
+                  expanded={showNotifications}
+                  toggleShow={() => {
+                    setShowNotifications((shown) => !shown);
+                  }}
+                />
+              )}
               <LanguageSwitchButton onBeforeSwitch={onBeforeLanguageSwitch} />
               <AppUserMenu
                 data-cy="usermenu"
@@ -58,7 +66,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
           }
         />
       </Stack>
-      <NotificationsWrapper show={showNotifications} setShow={setShowNotifications} />
+      {appConfig.mode === 'katla' && <NotificationsWrapper show={showNotifications} setShow={setShowNotifications} />}
     </>
   );
 };

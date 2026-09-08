@@ -1,0 +1,10 @@
+{
+  "revision": "test-fixtures-1",
+  "catalogueUrl": "http://localhost:3100/portal",
+  "sessionMaxAgeSeconds": 3600,
+  "applications": [
+    { "id": "avvikelse", "url": "http://localhost:3000", "published": true, "allowedGroups": ["group1"] },
+    { "id": "schema-test", "url": "http://localhost:3200", "published": false, "allowedGroups": ["group1"] },
+    { "id": "avvikelse-test", "url": "http://localhost:3300", "published": false, "allowedGroups": ["group1"] }
+  ]
+}

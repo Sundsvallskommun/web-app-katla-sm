@@ -1,81 +1,45 @@
+# All instances use these same Dockerfiles. Configuration is supplied per instance.
 services:
   backend:
     build:
-      context: ./backend
-    expose:
-      - '3000'
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - ${BACKEND_ENV_FILE:?Set BACKEND_ENV_FILE to the protected server environment file}
     environment:
-      APP_NAME: ${APP_NAME-Katla SM}
-      NODE_ENV: ${NODE_ENV-production}
-      # LOCAL stänger av Secure-flaggan på sessionskakan för lokala prod-byggen över http.
-      # Lämnas tom i TEST/produktion, då är Secure alltid på.
-      ENVIRONMENT: ${ENVIRONMENT-}
+      NODE_ENV: production
       PORT: 3000
-      BASE_URL_PREFIX: ${BASE_URL_PREFIX:?err}
-      API_BASE_URL: ${API_BASE_URL:?err}
-      CLIENT_KEY: ${CLIENT_KEY:?err}
-      CLIENT_SECRET: ${CLIENT_SECRET:?err}
-      SAML_CALLBACK_URL: ${SAML_CALLBACK_URL:?err}
-      SAML_LOGOUT_CALLBACK_URL: ${SAML_LOGOUT_CALLBACK_URL:?err}
-      SAML_FAILURE_REDIRECT: ${SAML_FAILURE_REDIRECT:?err}
-      SAML_SUCCESS_REDIRECT: ${SAML_SUCCESS_REDIRECT:?err}
-      SAML_LOGOUT_REDIRECT: ${SAML_LOGOUT_REDIRECT:?err}
-      SAML_ENTRY_SSO: ${SAML_ENTRY_SSO:?err}
-      SAML_IDP_PUBLIC_CERT: ${SAML_IDP_PUBLIC_CERT:?err}
-      SAML_ISSUER: ${SAML_ISSUER:?err}
-      SAML_PRIVATE_KEY: ${SAML_PRIVATE_KEY:?err}
-      SAML_PUBLIC_KEY: ${SAML_PUBLIC_KEY:?err}
-      SECRET_KEY: ${SECRET_KEY:?err}
-      ORIGIN: ${ORIGIN:?err}
-      MUNICIPALITY_ID: ${MUNICIPALITY_ID:?err}
-      NAMESPACE: ${NAMESPACE:?err}
-      SWAGGER_ENABLED: ${SWAGGER_ENABLED-false}
-      LOG_FORMAT: ${LOG_FORMAT-combined}
-      LOG_DIR: ${LOG_DIR-../../data/logs}
-      CREDENTIALS: ${CREDENTIALS-true}
-      SESSION_MEMORY: ${SESSION_MEMORY-true}
+      APP_MODE: ${APP_MODE:?Set APP_MODE to katla or catalogue}
+      KATLA_ID: ${KATLA_ID-}
+      KATLA_CATALOGUE_FILE: /app/config/catalogue.json
+    expose: ['3000']
     volumes:
+      # Mount the directory so atomic catalogue.json replacement is visible to running instances.
+      - ${KATLA_CONFIG_DIR:?Set KATLA_CONFIG_DIR to the shared policy directory}:/app/config:ro
       - data:/app/data
-
   frontend:
     build:
-      context: ./frontend
-      # Next.js embeds public configuration during the image build.
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
-        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME-Katla}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?err}
+        APP_MODE: ${APP_MODE:?Set APP_MODE}
+        KATLA_ID: ${KATLA_ID-}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?Set the public API root}
+        NEXT_PUBLIC_CATALOGUE_URL: ${NEXT_PUBLIC_CATALOGUE_URL-}
+        NEXT_PUBLIC_SESSION_COOKIE_NAME: ${NEXT_PUBLIC_SESSION_COOKIE_NAME:?Must match backend SESSION_COOKIE_NAME}
         DOMAIN_NAME: ${DOMAIN_NAME-}
         NEXT_PUBLIC_BASE_PATH: ${NEXT_PUBLIC_BASE_PATH-}
         ADMIN_URL: ${ADMIN_URL-}
         NEXT_PUBLIC_PROTECTED_ROUTES: ${NEXT_PUBLIC_PROTECTED_ROUTES-}
         NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT: ${NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT-1500000}
         NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT: ${NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT-300000}
-        NEXT_PUBLIC_DRAFT_ERRAND: ${NEXT_PUBLIC_DRAFT_ERRAND-false}
-        NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO: ${NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO-true}
-        NEXT_PUBLIC_ERRAND_FILTER: ${NEXT_PUBLIC_ERRAND_FILTER-true}
-        NEXT_PUBLIC_DISCLOSURE_DONE_MARK: ${NEXT_PUBLIC_DISCLOSURE_DONE_MARK-false}
-        NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE: ${NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE-false}
-    expose:
-      - '3000'
+    expose: ['3000']
     environment:
-      NODE_ENV: ${NODE_ENV-production}
+      NODE_ENV: production
       PORT: 3000
-      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME-Katla}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?err}
-      DOMAIN_NAME: ${DOMAIN_NAME-}
-      NEXT_PUBLIC_BASE_PATH: ${NEXT_PUBLIC_BASE_PATH-}
-      ADMIN_URL: ${ADMIN_URL-}
-      NEXT_PUBLIC_PROTECTED_ROUTES: ${NEXT_PUBLIC_PROTECTED_ROUTES-}
       HEALTH_AUTH: ${HEALTH_AUTH-false}
       HEALTH_USERNAME: ${HEALTH_USERNAME-}
       HEALTH_PASSWORD: ${HEALTH_PASSWORD-}
-      NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT: ${NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT-1500000}
-      NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT: ${NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT-300000}
-      NEXT_PUBLIC_DRAFT_ERRAND: ${NEXT_PUBLIC_DRAFT_ERRAND-false}
-      NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO: ${NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO-true}
-      NEXT_PUBLIC_ERRAND_FILTER: ${NEXT_PUBLIC_ERRAND_FILTER-true}
-      NEXT_PUBLIC_DISCLOSURE_DONE_MARK: ${NEXT_PUBLIC_DISCLOSURE_DONE_MARK-false}
-      NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE: ${NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE-false}
-
+      ADMIN_URL: ${ADMIN_URL-}
 volumes:
   data:

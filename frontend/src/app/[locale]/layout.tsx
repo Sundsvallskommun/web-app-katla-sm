@@ -1,6 +1,7 @@
 import LocalizationProvider from '@components/localization-provider/localization-provider';
 import { headers } from 'next/headers';
 import { ReactNode } from 'react';
+import { appConfig } from 'src/config/appconfig';
 
 import initLocalization from '../i18n';
 import { pathWithoutLocale } from '../locale-path';
@@ -27,6 +28,8 @@ const namespaces = [
   'forms',
   'messages',
   'editor',
+  'catalogue',
+  'application',
 ];
 
 const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
@@ -59,8 +62,8 @@ export const generateMetadata = async ({ params }: LocaleLayoutProps) => {
 
   const title =
     path ?
-      `${process.env.NEXT_PUBLIC_APP_NAME} - ${t(`paths:${path}.title`, { defaultValue: pathName })}`
-    : process.env.NEXT_PUBLIC_APP_NAME;
+      `${appConfig.applicationName} - ${t(`paths:${path}.title`, { defaultValue: pathName })}`
+    : appConfig.applicationName;
   const description = t(`paths:${path}.description`, { defaultValue: '' });
 
   return {

@@ -8,7 +8,7 @@ import { mockMetadata } from '../fixtures/mockMetadata';
 import { mockNotifications } from '../fixtures/mockNotifications';
 import { mockReporterStakeholder } from '../fixtures/mockStakeholder';
 import { jsonRoute } from '../utils/routes';
-import { expect, test } from '../utils/test';
+import { COOKIE_CONSENT_NAME, expect, test } from '../utils/test';
 
 declare global {
   interface Window {
@@ -92,7 +92,7 @@ for (const mode of ['light', 'dark'] as const) {
 }
 
 test('cookie choices remain reachable on a small screen and survive reload', async ({ page, context, appUrl }) => {
-  await context.clearCookies();
+  await context.clearCookies({ name: COOKIE_CONSENT_NAME });
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto(appUrl('/oversikt'));
   const dialog = page.getByRole('dialog');

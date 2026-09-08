@@ -47,10 +47,6 @@ export const updateErrand = async (id: string, errand: Partial<ErrandDTO>): Prom
   return apiService.patch<ErrandDTO>(`supportmanagement/errand/${id}`, errand).then((res) => res.data);
 };
 
-export const saveErrand = async (errand: ErrandDTO): Promise<ErrandDTO> => {
-  return apiService.patch<ErrandDTO>('supportmanagement/errand/save', errand).then((res) => res.data);
-};
-
 export const getNotifications = async (): Promise<NotificationDTO[]> => {
   return apiService.get<NotificationDTO[]>('supportmanagement/notifications').then((res) => res.data);
 };
@@ -67,8 +63,4 @@ export const acknowledgeNotification = async (notification: NotificationDTO): Pr
   }
 
   return true;
-};
-
-export const upsertErrand = async (errand: ErrandDTO): Promise<ErrandDTO> => {
-  return errand.id ? saveErrand(errand) : createErrand(errand);
 };

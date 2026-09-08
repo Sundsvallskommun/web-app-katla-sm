@@ -1,7 +1,9 @@
+import { KatlaDefinition } from '@katla/definitions';
 import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
+import { appConfig } from 'src/config/appconfig';
 
 export interface WizardStep {
-  id: string;
+  id: 'reporter' | 'about' | 'user' | 'deviation' | 'details' | 'summary';
   titleKey: string;
   /** Samma beskrivning som avsnittet visar på stor skärm. Stegen utan nyckel har ingen. */
   descriptionKey?: string;
@@ -19,7 +21,13 @@ export const ALL_WIZARD_STEPS: WizardStep[] = [
   { id: 'summary', titleKey: 'errand-information:wizard.summary' },
 ];
 
-export function getActiveWizardSteps(eventConcerns: string): WizardStep[] {
+export function getActiveWizardSteps(
+  eventConcerns: string,
+  definition: KatlaDefinition | null = appConfig.katla
+): WizardStep[] {
+  if (definition?.flow !== 'avvikelse') {
+    return [ALL_WIZARD_STEPS[0], { id: 'details', titleKey: 'errand-information:details.title' }, ALL_WIZARD_STEPS[4]];
+  }
   if (eventConcerns === EVENT_CONCERNS_INDIVIDUAL) {
     return ALL_WIZARD_STEPS;
   }

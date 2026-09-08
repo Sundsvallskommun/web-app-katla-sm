@@ -42,7 +42,9 @@
     "event_type_required": "Välj en händelsetyp",
     "event_concerns_required": "Välj vad händelsen berör",
     "event_concerns_group_facility_required": "Välj en plats där avvikelsen inträffat när händelsen berör grupp/hela verksamheten",
-    "facility_incomplete": "Slutför platsvalet genom att välja enhet – platsen styr vilka som får se ärendet"
+    "facility_incomplete": "Slutför platsvalet genom att välja enhet – platsen styr vilka som får se ärendet",
+    "report_type_unavailable": "Rapporttypen saknas i mottagarens konfiguration. Kontakta IT-support.",
+    "facility_required": "Välj enhet eller avdelning innan du skickar rapporten."
   },
   "reporter": {
     "title": "Rapportör",
@@ -132,5 +134,8 @@
     "title_one": "Du behöver åtgärda {{count}} sak",
     "title_other": "Du behöver åtgärda {{count}} saker",
     "go_to_error": "Gå till fältet: {{message}}"
+  },
+  "details": {
+    "title": "Ärendeuppgifter"
   }
 }

@@ -6,8 +6,8 @@ import { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
 
-import schemaReference from '../../../../../backend/src/local-schemas/avvikelse-plats-handelse.schema.json';
-import uiSchemaReference from '../../../../../backend/src/local-schemas/avvikelse-plats-handelse.ui-schema.json';
+import schemaReference from '../../../../../backend/src/tests/fixtures/schemas/avvikelse-plats-handelse.schema.json';
+import uiSchemaReference from '../../../../../backend/src/tests/fixtures/schemas/avvikelse-plats-handelse.ui-schema.json';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),

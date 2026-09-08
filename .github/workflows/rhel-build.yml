@@ -1,9 +1,5 @@
 name: RHEL 8.10 build
 
-# Verifierar att frontend och backend går att installera och bygga i samma
-# miljö som våra servrar kör (RHEL 8.10). Fångar t.ex. glibc-inkompatibilitet
-# i Node-binärer och native moduler som bara byggs på Ubuntu-runnern.
-
 permissions:
   contents: read
 
@@ -11,9 +7,7 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches:
-      - develop
-      - main
+    branches: [develop, main]
 
 concurrency:
   group: rhel-build-${{ github.ref }}
@@ -24,104 +18,48 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.package }} – yarn install & build (RHEL 8.10)
+    name: Workspaces and isolated artifacts (RHEL 8.10)
     runs-on: ubuntu-latest
     container:
-      # UBI 8.10 = RHEL 8.10 userspace, fritt att hämta utan subscription.
       image: registry.access.redhat.com/ubi8/ubi:8.10
-    strategy:
-      fail-fast: false
-      matrix:
-        package: [backend, frontend]
     env:
       YARN_CACHE_FOLDER: ${{ github.workspace }}/.yarn-cache
-      # next.config.js kör envalid.cleanEnv vid build – dessa måste finnas.
-      NEXT_PUBLIC_APP_NAME: 'Katla'
+      APP_MODE: katla
+      KATLA_ID: avvikelse
       NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      NEXT_PUBLIC_SESSION_COOKIE_NAME: katla.avvikelse.sid
       DOMAIN_NAME: localhost
       NEXT_PUBLIC_BASE_PATH: ''
       NEXT_PUBLIC_PROTECTED_ROUTES: ''
-      HEALTH_AUTH: false
+      HEALTH_AUTH: 'false'
       HEALTH_USERNAME: ''
       HEALTH_PASSWORD: ''
-      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_TELEMETRY_DISABLED: '1'
     steps:
-      # Måste ligga före checkout: UBI-imagen saknar git/tar som actions behöver.
       - name: Install OS build dependencies
         run: |
-          dnf install -y --setopt=install_weak_deps=False \
-            git tar gzip xz gcc-c++ make python3
+          dnf install -y --setopt=install_weak_deps=False git tar gzip xz gcc-c++ make python3
           dnf clean all
-
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Install Node.js (version från .nvmrc)
+      - uses: actions/checkout@v7
+      - name: Install pinned Node.js
         run: |
           set -euo pipefail
           NODE_VERSION="$(tr -d '[:space:]v' < .nvmrc)"
-          echo "Installerar Node.js v${NODE_VERSION}"
-          curl --proto '=https' --proto-redir '=https' -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
-            -o /tmp/node.tar.xz
+          curl --proto '=https' --proto-redir '=https' -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" -o /tmp/node.tar.xz
           mkdir -p /usr/local/lib/nodejs
           tar -xJf /tmp/node.tar.xz -C /usr/local/lib/nodejs
           echo "/usr/local/lib/nodejs/node-v${NODE_VERSION}-linux-x64/bin" >> "$GITHUB_PATH"
-
-      - name: Install Yarn
-        run: npm install --global --ignore-scripts "yarn@${YARN_VERSION}"
-
-      - name: Environment info
-        run: |
-          cat /etc/redhat-release
-          ldd --version | head -n 1
-          echo "node  $(node --version)"
-          echo "yarn  $(yarn --version)"
-
-      - name: Restore Yarn cache
-        uses: actions/cache@v4
+      - run: npm install --global --ignore-scripts "yarn@${YARN_VERSION}"
+      - uses: actions/cache@v4
         with:
           path: ${{ env.YARN_CACHE_FOLDER }}
-          key: rhel8-yarn-${{ matrix.package }}-${{ hashFiles(format('{0}/yarn.lock', matrix.package)) }}
-          restore-keys: |
-            rhel8-yarn-${{ matrix.package }}-
-
-      - name: Install dependencies
-        working-directory: ${{ matrix.package }}
-        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
-
-      - name: Build
-        working-directory: ${{ matrix.package }}
-        run: yarn build
-
-      - name: Verify standalone image processing
-        if: matrix.package == 'frontend'
-        working-directory: frontend
-        run: |
-          node <<'NODE'
-          const assert = require('node:assert/strict');
-          const { createRequire } = require('node:module');
-          const path = require('node:path');
-
-          // Start with the packaged module so a previously loaded source libvips cannot hide missing files.
-          const standalone = path.resolve('.next/standalone');
-          const requireStandalone = createRequire(path.join(standalone, 'server.js'));
-          assert.ok(requireStandalone.resolve('sharp').startsWith(`${standalone}${path.sep}`));
-          const sharp = requireStandalone('sharp');
-
-          (async () => {
-            console.log(`Standalone sharp ${sharp.versions.sharp}, libvips ${sharp.versions.vips}`);
-            for (const format of ['avif', 'webp']) {
-              const buffer = await sharp({
-                create: { width: 64, height: 64, channels: 3, background: '#624ee3' },
-              }).resize(32, 32).toFormat(format).toBuffer();
-              const metadata = await sharp(buffer).metadata();
-              assert.equal(metadata.width, 32);
-              assert.equal(metadata.height, 32);
-              assert.equal(metadata.format, format === 'avif' ? 'heif' : 'webp');
-              console.log(`${format}: encoded and decoded 32x32`);
-            }
-          })().catch(error => {
-            console.error(error);
-            process.exitCode = 1;
-          });
-          NODE
+          key: rhel8-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: rhel8-yarn-
+      - run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
+      - run: yarn definitions:build
+      - run: yarn workspace backend build
+      - run: yarn workspace katla-web-app build
+      - run: yarn standalone:prepare && yarn standalone:check
+      - run: node scripts/backend-artifact.mjs /tmp/katla-api-artifact
+      - run: yarn --cwd /tmp/katla-api-artifact install --frozen-lockfile --production --ignore-scripts
+      - run: node scripts/backend-smoke.mjs /tmp/katla-api-artifact

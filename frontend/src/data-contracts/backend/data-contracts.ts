@@ -312,3 +312,27 @@ export interface OrgLeafNodeDTO {
   orgName: string;
   parentId?: number;
 }
+
+export interface ApplicationSummaryDTO {
+  id: string;
+  applicationName: string;
+  description?: string;
+  url: string;
+}
+
+export interface ApplicationsResponseDTO {
+  data: ApplicationSummaryDTO[];
+  message: string;
+}
+
+export interface AppContextDTO {
+  mode: "katla" | "catalogue";
+  katlaId?: string;
+  definitionRevision?: string;
+  catalogueUrl?: string;
+}
+
+export interface AppContextResponseDTO {
+  data: AppContextDTO;
+  message: string;
+}

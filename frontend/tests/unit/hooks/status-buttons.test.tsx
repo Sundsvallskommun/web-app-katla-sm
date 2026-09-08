@@ -5,6 +5,7 @@ import { useMetadataStore } from 'src/stores/metadata-store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const appConfigMocks = vi.hoisted(() => ({
+  applicationStorageScope: 'status-buttons-test',
   appConfig: { applicationName: 'test', features: { draftEnabled: false } },
 }));
 // Samma objekt varje anrop: ett nytt t per rendering skulle få effekterna att köra om i all evighet.

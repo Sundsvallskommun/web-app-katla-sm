@@ -1,5 +1,6 @@
 import { NotificationDTO } from '@data-contracts/backend/data-contracts';
 import { sortBy } from 'lodash';
+import { applicationStorageScope } from 'src/config/appconfig';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -23,7 +24,7 @@ export const useNotificationStore = create<NotificationState>()(
         }),
     }),
     {
-      name: 'notification-storage',
+      name: `${applicationStorageScope}:notifications`,
       storage: createJSONStorage(() => sessionStorage),
     }
   )

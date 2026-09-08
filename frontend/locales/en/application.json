@@ -1,0 +1,8 @@
+{
+  "loading": "Connecting to the application",
+  "title": "The application cannot be opened",
+  "mismatch": "The application's components have different configurations. No case data has been loaded.",
+  "unavailable": "The application cannot be reached right now.",
+  "next_step": "Try again. Contact your organisation's IT support if the problem persists.",
+  "retry": "Try again"
+}

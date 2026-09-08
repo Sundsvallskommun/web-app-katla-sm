@@ -3,6 +3,7 @@ import type { LabelDTO } from '@data-contracts/backend/data-contracts';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
 import { act, render, screen } from '@testing-library/react';
 import { focusInvalidField, INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
+import { FacilitySearchWidget } from 'src/flows/avvikelse/facility-search-widget';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -55,6 +56,7 @@ const renderForm = () => {
 
   return render(
     <SchemaForm
+      fields={{ FacilitySearchWidget }}
       schemaId="facility-validation:1"
       schema={schema}
       uiSchema={uiSchema}

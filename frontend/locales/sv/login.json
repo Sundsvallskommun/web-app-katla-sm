@@ -5,10 +5,13 @@
     "SAML_MISSING_GROUP": "Användaren saknar rätt grupper",
     "SAML_MISSING_ATTRIBUTES": "Användaren saknar rätt attribut",
     "MISSING_PERMISSIONS": "Användaren saknar rättigheter",
-    "NO_USER": "Misslyckades att konfigurera användare"
+    "NO_USER": "Misslyckades att konfigurera användare",
+    "SESSION_CLAIMS_EXPIRED": "Din inloggning behöver förnyas för att kontrollera din åtkomst. Logga in igen.",
+    "ACCESS_POLICY_UNAVAILABLE": "Åtkomsten kan inte kontrolleras just nu. Försök igen senare eller kontakta IT-support.",
+    "UNKNOWN_ERROR": "Inloggningen misslyckades. Försök igen eller kontakta IT-support."
   },
-  "login_problem": "Har du problem med inloggning, kontakta loerem ipsum",
+  "login_problem": "Har du problem med inloggningen, kontakta organisationens IT-support.",
   "choose_login_method": "Välj hur du vill logga in",
-  "logged_out_title": "Du är nu utloggad",
+  "logged_out_title": "Du är utloggad från denna applikation",
   "login_again_button": "Logga in igen"
 }

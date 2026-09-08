@@ -8,6 +8,8 @@ export interface User {
   password: string;
   username: string;
   groups: string[];
+  groupsVerifiedAt?: number;
+  sessionInstanceId?: string;
 }
 
 export interface ClientUser {

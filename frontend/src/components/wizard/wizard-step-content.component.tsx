@@ -1,14 +1,14 @@
 import { Heading } from '@astryxdesign/core/Heading';
 import { Stack } from '@astryxdesign/core/Stack';
 import { Text } from '@astryxdesign/core/Text';
-import { AboutErrandContent } from '@components/errand-sections/about-errand.component';
-import { DeviationInformation } from '@components/errand-sections/deviation-information.component';
+import { ErrandInformation } from '@components/errand-sections/errand-information.component';
 import { OtherPartiesContent } from '@components/errand-sections/other-parties.component';
 import { ReporterContent } from '@components/errand-sections/reporter.component';
-import { UserContent } from '@components/errand-sections/user.component';
 import { SectionHeader } from '@components/misc/section-header.component';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
+import { AboutErrandContent } from 'src/flows/avvikelse/about-errand.component';
+import { UserContent } from 'src/flows/avvikelse/user.component';
 import { useActiveWizardSteps } from 'src/hooks/use-active-wizard-steps';
 import { useWizardStore } from 'src/stores/wizard-store';
 
@@ -44,8 +44,9 @@ export const WizardStepContent: React.FC = () => {
         );
       case 'user':
         return <UserContent />;
+      case 'details':
       case 'deviation':
-        return <DeviationInformation compact />;
+        return <ErrandInformation compact />;
       case 'summary':
         return <WizardSummary />;
       default:

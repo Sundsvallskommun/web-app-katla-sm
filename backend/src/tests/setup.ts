@@ -1,5 +1,11 @@
+import { resolve } from 'node:path';
+
 Object.assign(process.env, {
   NODE_ENV: 'test',
+  APP_MODE: 'katla',
+  KATLA_ID: 'avvikelse',
+  KATLA_CATALOGUE_FILE: resolve('src/tests/fixtures/catalogue.json'),
+  SESSION_COOKIE_NAME: 'katla.avvikelse.sid',
   APP_NAME: 'Katla test',
   PORT: '3001',
   BASE_URL_PREFIX: '/api',
@@ -19,7 +25,7 @@ Object.assign(process.env, {
   SAML_ISSUER: 'test-issuer',
   SAML_PRIVATE_KEY: 'test-private-key',
   SAML_PUBLIC_KEY: 'test-public-key',
-  SECRET_KEY: 'test-secret-key',
+  SECRET_KEY: 'test-secret-key-generated-fixture-0123456789',
   LOG_FORMAT: 'dev',
   LOG_DIR: '../../data/test-logs',
   ORIGIN: 'http://localhost:3000',

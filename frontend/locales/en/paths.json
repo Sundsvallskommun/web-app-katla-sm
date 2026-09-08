@@ -6,5 +6,9 @@
   "/example": {
     "title": "Example page",
     "description": "Description of the example page"
+  },
+  "/katlor": {
+    "title": "My Katlas",
+    "description": "The applications you have access to."
   }
 }

@@ -8,6 +8,7 @@ import { VStack } from '@astryxdesign/core/VStack';
 import NextLink from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appConfig } from 'src/config/appconfig';
 
 // Existing consent is persisted under this name; changing UI must not reset it.
 const CONSENT_COOKIE = 'SKCookieConsent';
@@ -48,7 +49,7 @@ export const CookieConsentSection: React.FC = () => {
       }}
       width={560}
     >
-      <DialogHeader title={t('layout:cookies.title', { app: process.env.NEXT_PUBLIC_APP_NAME })} />
+      <DialogHeader title={t('layout:cookies.title', { app: appConfig.applicationName })} />
       <VStack gap={4} padding={5} isScrollable className="min-h-0">
         {isEditing ?
           <fieldset className="flex flex-col gap-4">

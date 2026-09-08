@@ -16,7 +16,7 @@ export default tseslint.config(
   },
   {
     ignores: [
-      '.next/**',
+      '.next*/**',
       'out/**',
       'coverage/**',
       'playwright-report/**',
@@ -28,7 +28,6 @@ export default tseslint.config(
       '*.config.mjs',
       '*.config.mts',
       '*.config.ts',
-      'middleware-envs-generator.mjs',
     ],
   },
   // Next.js (React + react-hooks + @next/next + core-web-vitals + @typescript-eslint-bas).
@@ -36,6 +35,8 @@ export default tseslint.config(
   // Maximal, typmedveten strikthet — samma uppsättning som web-app-starter.
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  // Node E2E fixture scripts are JavaScript; only TypeScript files have a typed parser project.
+  { ...tseslint.configs.disableTypeChecked, files: ['**/*.{js,mjs}'] },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

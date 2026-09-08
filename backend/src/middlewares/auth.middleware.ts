@@ -1,15 +1,27 @@
 import { HttpException } from '@exceptions/HttpException';
 import { NextFunction, Request, Response } from 'express';
 
+import { loadRuntimeConfiguration, readCataloguePolicy } from '@/config/katla-config';
+import { assertSessionAccess } from '@/services/authorization.service';
+import { logger } from '@/utils/logger';
+
 const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!req.isAuthenticated()) {
+    next(new HttpException(401, 'NOT_AUTHORIZED'));
+    return;
+  }
   try {
-    if (req.isAuthenticated()) {
-      next();
-    } else {
-      next(new HttpException(401, 'NOT_AUTHORIZED'));
+    const configuration = loadRuntimeConfiguration();
+    assertSessionAccess(req.user, configuration, readCataloguePolicy(configuration));
+    next();
+  } catch (error) {
+    if (error instanceof HttpException) {
+      next(error);
+      return;
     }
-  } catch {
-    next(new HttpException(401, 'AUTH_FAILED'));
+    logger.error('Application access policy could not be validated');
+    next(new HttpException(503, 'ACCESS_POLICY_UNAVAILABLE'));
   }
 };
 

@@ -1,3 +1,4 @@
+import { applicationStorageScope } from 'src/config/appconfig';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -49,7 +50,7 @@ export const useSortStore = create<SortState>()(
       reset: () => set({ ...DEFAULTS }),
     }),
     {
-      name: 'sort-storage',
+      name: `${applicationStorageScope}:sort`,
     }
   )
 );

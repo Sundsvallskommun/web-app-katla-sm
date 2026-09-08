@@ -1,5 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 
+import { getKatlaDefinition } from '@katla/definitions';
 import type { Locator } from '@playwright/test';
 
 import { getMe } from '../fixtures/getMe';
@@ -151,7 +152,11 @@ test.describe('Shared errand header accessibility', () => {
         await page.setViewportSize({ width, height: 960 });
         for (const path of ['/oversikt', `/arende/${mockErrand.errandNumber}/meddelanden`]) {
           await page.goto(appUrl(path));
-          const identity = page.getByRole('banner').getByText(process.env.NEXT_PUBLIC_APP_NAME ?? '', { exact: true });
+          const identity = page
+            .getByRole('banner')
+            .getByText(getKatlaDefinition('avvikelse-test', { allowTestDefinitions: true }).applicationName, {
+              exact: true,
+            });
           await expect(identity).toBeVisible();
           await expect.poll(() => textContrast(identity)).toBeGreaterThanOrEqual(4.5);
         }

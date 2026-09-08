@@ -26,6 +26,7 @@ import {
   MarkMessagesAsReadDTO,
 } from '@/responses/conversation.response';
 import ApiService from '@/services/api.service';
+import { requireReporterErrand } from '@/services/errand-access.service';
 import { isSystemMessage, SenderName, toConversationMessage } from '@/utils/conversation-mapping';
 import { assertAllowedAttachments, attachmentUploadOptions } from '@/utils/file-upload';
 import { apiURL } from '@/utils/util';
@@ -52,10 +53,11 @@ export class SupportManagementConversationController {
   private citizenBase = getApiBase('citizen');
 
   private conversationsPath(errandId: string): string {
-    return `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${errandId}/communication/conversations`;
+    return `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${encodeURIComponent(errandId)}/communication/conversations`;
   }
 
   private async readConversations(req: RequestWithUser, errandId: string): Promise<Conversation[]> {
+    await requireReporterErrand(req, errandId);
     const res = await this.apiService.get<Conversation[]>({ baseURL: apiURL(this.apiBase), url: this.conversationsPath(errandId) }, req);
 
     if (!Array.isArray(res.data)) throw new HttpException(502, 'Invalid response when reading conversations');
@@ -120,7 +122,7 @@ export class SupportManagementConversationController {
     const res = await this.apiService.get<PageMessage>(
       {
         baseURL: apiURL(this.apiBase),
-        url: `${this.conversationsPath(errandId)}/${conversationId}/messages`,
+        url: `${this.conversationsPath(errandId)}/${encodeURIComponent(conversationId)}/messages`,
         params: { page: query.page, size: 50, sort: ['created,desc', 'id,desc'] },
         paramsSerializer: { indexes: null },
       },
@@ -217,7 +219,7 @@ export class SupportManagementConversationController {
     await this.apiService.post<unknown>(
       {
         baseURL: apiURL(this.apiBase),
-        url: `${this.conversationsPath(errandId)}/${conversationId}/messages`,
+        url: `${this.conversationsPath(errandId)}/${encodeURIComponent(conversationId)}/messages`,
         data: formData,
         headers: { 'Content-Type': 'multipart/form-data' },
       },
@@ -243,7 +245,7 @@ export class SupportManagementConversationController {
     await this.apiService.post<unknown>(
       {
         baseURL: apiURL(this.apiBase),
-        url: `${this.conversationsPath(errandId)}/${conversationId}/messages/mark-as-read`,
+        url: `${this.conversationsPath(errandId)}/${encodeURIComponent(conversationId)}/messages/mark-as-read`,
         data: request,
       },
       req,
@@ -265,7 +267,7 @@ export class SupportManagementConversationController {
     const res = await this.apiService.get<ArrayBuffer>(
       {
         baseURL: apiURL(this.apiBase),
-        url: `${this.conversationsPath(errandId)}/${conversationId}/messages/${messageId}/attachments/${attachmentId}`,
+        url: `${this.conversationsPath(errandId)}/${encodeURIComponent(conversationId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`,
         responseType: 'arraybuffer',
       },
       req,

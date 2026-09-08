@@ -46,9 +46,9 @@ import { routingControllersToSpec } from 'routing-controllers-openapi';
 import createFileStore from 'session-file-store';
 import swaggerUi from 'swagger-ui-express';
 
-import { HttpException } from './exceptions/HttpException';
+import { loadRuntimeConfiguration } from './config/katla-config';
 import { Profile } from './interfaces/profile.interface';
-import { authorizeGroups, getRole } from './services/authorization.service';
+import { authorizeGroups, createVerifiedSessionClaims, getRole } from './services/authorization.service';
 import { getSafeRedirect, getSamlRedirects } from './utils/isValidOrigin';
 import { buildOpenApiSchemas } from './utils/openapi-spec';
 
@@ -56,26 +56,22 @@ type ControllerClass = new () => object;
 
 const corsWhitelist = (ORIGIN ?? '').split(',');
 
-const sessionTTL = 4 * 24 * 60 * 60;
+const sessionTTL = 24 * 60 * 60;
 // NOTE: memory uses ms while file uses seconds
 const sessionStore: session.Store = SESSION_MEMORY
   ? new (createMemoryStore(session))({ checkPeriod: sessionTTL * 1000 })
-  : new (createFileStore(session))({ sessionTTL, path: './data/sessions' });
+  : new (createFileStore(session))({ sessionTTL, path: `./data/sessions/${SESSION_COOKIE_NAME}` });
 
-// Tom sträng ska, precis som ett saknat värde, falla tillbaka på nästa alternativ.
-const firstNonEmpty = (...values: (string | undefined)[]): string | undefined => values.find(value => value !== undefined && value !== '');
+/** Namn och UI-monteringsrot måste vara explicit konfigurerade och matcha frontend. */
+export const getSessionCookieName = (): string => {
+  if (!SESSION_COOKIE_NAME) throw new Error('SESSION_COOKIE_NAME saknas. Ange katla.<id>.sid eller katla.catalogue.sid.');
+  return SESSION_COOKIE_NAME;
+};
 
-export const DEFAULT_SESSION_COOKIE_NAME = 'connect.sid';
-
-export const getSessionCookieName = (): string => firstNonEmpty(SESSION_COOKIE_NAME) ?? DEFAULT_SESSION_COOKIE_NAME;
-
-// Sessionskakans path måste täcka HELA appen, inte bara API-prefixet: Next-middlewaren
-// (frontend/src/proxy.ts) läser kakan på UI-vägar som /oversikt, och en kaka med
-// path=/api skickas aldrig dit av webbläsaren (RFC 6265 §5.1.4) — resultatet blir en
-// oändlig loop tillbaka till /login trots giltig session. Sätt SESSION_COOKIE_PATH till
-// appens monteringsrot (t.ex. /registrering/avvikelse_iaf, eller / lokalt där frontend
-// saknar basePath). Faller tillbaka på BASE_URL_PREFIX för bakåtkompatibilitet.
-export const getSessionCookiePath = (): string => firstNonEmpty(SESSION_COOKIE_PATH, BASE_URL_PREFIX) ?? '/';
+export const getSessionCookiePath = (): string => {
+  if (!SESSION_COOKIE_PATH) throw new Error('SESSION_COOKIE_PATH saknas. Ange appens monteringsrot, inte API-prefixet.');
+  return SESSION_COOKIE_PATH;
+};
 
 export const getSessionCookieOptions = (
   environment: string | undefined,
@@ -159,7 +155,7 @@ const samlStrategy = new Strategy(
     const groups = profile['http://schemas.xmlsoap.org/claims/Group']?.join(',') ?? profile.groups;
     const username = profile['urn:oid:0.9.2342.19200300.100.1.1'];
 
-    if (!givenName || !sn || !email || !groups || !username) {
+    if (!givenName || !sn || !email || typeof groups !== 'string' || !username) {
       logger.error(
         'Could not extract necessary profile data fields from the IDP profile. Does the Profile interface match the IDP profile response? The profile response may differ, for example Onegate vs ADFS.',
       );
@@ -170,41 +166,33 @@ const samlStrategy = new Strategy(
       return;
     }
 
-    if (!authorizeGroups(groups)) {
-      logger.error('Group authorization failed. Is the user a member of the authorized groups?');
-      done(null, undefined, {
-        name: 'SAML_MISSING_GROUP',
-        message: 'SAML_MISSING_GROUP',
-      });
-      return;
-    }
-
-    const groupList: string[] = groups !== undefined ? groups.split(',').map(x => x.toLowerCase()) : [];
-
-    const appGroups: string[] = groupList.length > 0 ? groupList : [];
-
     try {
+      if (!authorizeGroups(groups)) {
+        logger.error('Group authorization failed. Is the user a member of the authorized groups?');
+        done(null, undefined, { name: 'SAML_MISSING_GROUP', message: 'SAML_MISSING_GROUP' });
+        return;
+      }
+      const appGroups = groups
+        .split(',')
+        .map(group => group.trim().toLowerCase())
+        .filter(Boolean);
       const findUser = {
         name: `${givenName} ${sn}`,
         firstName: givenName,
         lastName: sn,
         username: username,
         email: email,
-        groups: appGroups,
+        ...createVerifiedSessionClaims(appGroups, loadRuntimeConfiguration()),
         role: getRole(appGroups),
         // permissions: getPermissions(appGroups),
       };
 
-      logger.info(`Found user: ${JSON.stringify(findUser)}`);
+      logger.info('SAML authentication completed');
 
       done(null, findUser);
-    } catch (err) {
-      if (err instanceof HttpException && err?.status === 404) {
-        // TODO: Handle missing person form Citizen?
-        logger.error('Error when calling Citizen:');
-        logger.error(err);
-      }
-      done(err instanceof Error ? err : null);
+    } catch {
+      logger.error('SAML access policy could not be validated');
+      done({ name: 'SAML_ACCESS_POLICY_UNAVAILABLE', message: 'Access policy unavailable' });
     }
   },
   function (profile: Profile | null, done: VerifiedCallback) {

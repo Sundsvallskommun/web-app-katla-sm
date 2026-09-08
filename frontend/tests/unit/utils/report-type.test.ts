@@ -1,6 +1,6 @@
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
+import { getErrandReportType, getSelectedEventType } from '@katla/definitions/avvikelse';
 import { getTypeDisplayName } from '@utils/errand-helpers';
-import { getErrandReportType, getSelectedEventType } from '@utils/report-type';
 import type { TFunction } from 'i18next';
 import { describe, expect, it } from 'vitest';
 

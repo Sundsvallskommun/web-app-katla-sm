@@ -1,3 +1,5 @@
+import { getKatlaDefinition } from '@katla/definitions';
+import { definitionRevision } from '@katla/definitions/server';
 import { test as base } from '@playwright/test';
 
 import { getMe } from '../fixtures/getMe';
@@ -26,10 +28,23 @@ interface AppFixtures {
 // trigga react-hooks/rules-of-hooks, som tolkar `use(...)` som Reacts use-hook.
 export const test = base.extend<AppFixtures>({
   page: async ({ page, context, baseURL }, run) => {
+    const definition = getKatlaDefinition(process.env.KATLA_ID ?? 'avvikelse-test', { allowTestDefinitions: true });
     await context.addCookies([
+      {
+        name: process.env.NEXT_PUBLIC_SESSION_COOKIE_NAME ?? 'katla.avvikelse-test.sid',
+        value: 'fixture-many',
+        url: baseURL ?? DEFAULT_BASE_URL,
+      },
       { name: COOKIE_CONSENT_NAME, value: DEFAULT_COOKIE_VALUE, url: baseURL ?? DEFAULT_BASE_URL },
     ]);
     await page.route('**/api/me', jsonRoute(getMe));
+    await page.route(
+      '**/api/app-context',
+      jsonRoute({
+        data: { mode: 'katla', katlaId: definition.id, definitionRevision: definitionRevision(definition) },
+        message: 'success',
+      })
+    );
     await run(page);
   },
   appUrl: async ({ baseURL }, run) => {

@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { focusInvalidField } from '@utils/focus-first-error';
 import type { ComponentType } from 'react';
 import { renderToString } from 'react-dom/server';
+import { FacilitySearchWidget } from 'src/flows/avvikelse/facility-search-widget';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -168,6 +169,7 @@ describe('SchemaForm accessibility contract', () => {
 
     render(
       <SchemaForm
+        fields={{ FacilitySearchWidget }}
         schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
         schema={schema}
         uiSchema={uiSchema}
@@ -238,7 +240,15 @@ describe('SchemaForm accessibility contract', () => {
       },
     };
 
-    render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
+    render(
+      <SchemaForm
+        fields={{ FacilitySearchWidget }}
+        schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
+        schema={schema}
+        uiSchema={uiSchema}
+        hideSubmitButton
+      />
+    );
 
     const group = screen.getByRole('group', { name: /^Händelsetyp/ });
     const radios = screen.getAllByRole('radio');
@@ -273,7 +283,14 @@ describe('SchemaForm accessibility contract', () => {
     };
 
     expect(() =>
-      renderToString(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} hideSubmitButton />)
+      renderToString(
+        <SchemaForm
+          fields={{ FacilitySearchWidget }}
+          schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
+          schema={schema}
+          hideSubmitButton
+        />
+      )
     ).not.toThrow();
   });
 
@@ -290,7 +307,15 @@ describe('SchemaForm accessibility contract', () => {
       notes: { 'ui:widget': 'texteditor', 'ui:options': { hideLabel: true } },
     };
 
-    render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
+    render(
+      <SchemaForm
+        fields={{ FacilitySearchWidget }}
+        schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
+        schema={schema}
+        uiSchema={uiSchema}
+        hideSubmitButton
+      />
+    );
 
     const summary = screen.getByRole('textbox', { name: /^Dold sammanfattning/ });
     const summaryLabel = document.querySelector<HTMLLabelElement>(`label[for="${summary.id}"]`);
@@ -314,7 +339,15 @@ describe('SchemaForm accessibility contract', () => {
       notes: { 'ui:widget': 'texteditor' },
     };
 
-    render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
+    render(
+      <SchemaForm
+        fields={{ FacilitySearchWidget }}
+        schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
+        schema={schema}
+        uiSchema={uiSchema}
+        hideSubmitButton
+      />
+    );
 
     const editor = await screen.findByRole('textbox', { name: /^Anteckning/ });
     const label = document.querySelector<HTMLLabelElement>(`label[for="${editor.id}"]`);
@@ -339,6 +372,7 @@ describe('SchemaForm accessibility contract', () => {
 
     const { unmount } = render(
       <SchemaForm
+        fields={{ FacilitySearchWidget }}
         schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
         schema={editableSchema}
         uiSchema={uiSchema}
@@ -368,6 +402,7 @@ describe('SchemaForm accessibility contract', () => {
 
     render(
       <SchemaForm
+        fields={{ FacilitySearchWidget }}
         schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
         schema={readonlySchema}
         uiSchema={uiSchema}
@@ -409,7 +444,15 @@ describe('SchemaForm accessibility contract', () => {
     useMetadataStore.setState({ metadata: { labels: { labelStructure: placeLabelStructure } } });
 
     const user = userEvent.setup();
-    render(<SchemaForm schemaId={ACCESSIBILITY_TEST_SCHEMA_ID} schema={schema} uiSchema={uiSchema} hideSubmitButton />);
+    render(
+      <SchemaForm
+        fields={{ FacilitySearchWidget }}
+        schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
+        schema={schema}
+        uiSchema={uiSchema}
+        hideSubmitButton
+      />
+    );
 
     // i18n-mocken ekar nyckeln, så det är nyckeln som blir fältets tillgängliga namn här.
     const input = screen.getByRole('combobox', { name: /^facility_search.search_label/ });
@@ -475,6 +518,7 @@ describe('SchemaForm accessibility contract', () => {
 
     render(
       <SchemaForm
+        fields={{ FacilitySearchWidget }}
         schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
         schema={schema}
         uiSchema={uiSchema}
@@ -524,6 +568,7 @@ describe('SchemaForm accessibility contract', () => {
 
     render(
       <SchemaForm
+        fields={{ FacilitySearchWidget }}
         schemaId={ACCESSIBILITY_TEST_SCHEMA_ID}
         schema={schema}
         uiSchema={uiSchema}
@@ -545,6 +590,7 @@ describe('SchemaForm accessibility contract', () => {
   it('associates searchable-field errors and rich help while the error summary reaches the Astryx trigger', () => {
     render(
       <SchemaForm
+        fields={{ FacilitySearchWidget }}
         schemaId="searchable-field-accessibility:1"
         schema={{
           type: 'object',
@@ -601,6 +647,7 @@ describe('SchemaForm accessibility contract', () => {
     };
     const form = (showValidation: boolean) => (
       <SchemaForm
+        fields={{ FacilitySearchWidget }}
         schemaId="rendered-description-contract:1"
         schema={schema}
         uiSchema={uiSchema}

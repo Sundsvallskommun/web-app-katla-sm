@@ -13,12 +13,19 @@ import { ErrandStatusFilter } from '@components/errand-table/errand-status-filte
 import { ErrandTable } from '@components/errand-table/errand-table.component';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { Files, Plus } from 'lucide-react';
+import { redirect } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import { appConfig } from 'src/config/appconfig';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
 import { useOverviewErrands } from 'src/hooks/use-overview-errands';
 import { useActiveStatusLabel } from 'src/hooks/use-status-buttons';
 
 export default function Oversikt() {
+  if (appConfig.mode === 'catalogue') redirect('/katlor');
+  return <ErrandOverview />;
+}
+
+function ErrandOverview() {
   const { t } = useTranslation();
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const activeStatusLabel = useActiveStatusLabel();

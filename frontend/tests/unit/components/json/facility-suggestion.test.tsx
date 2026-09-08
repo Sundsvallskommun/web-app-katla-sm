@@ -4,6 +4,7 @@ import type { RJSFSchema, UiSchema } from '@rjsf/utils';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
+import { FacilitySearchWidget } from 'src/flows/avvikelse/facility-search-widget';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -101,7 +102,16 @@ const employment = (orgName: string, isMainEmployment = false): UserEmploymentDT
 });
 
 const renderForm = (schemaId: string, formData?: Record<string, unknown>) =>
-  render(<SchemaForm schemaId={schemaId} schema={schema} uiSchema={uiSchema} formData={formData} hideSubmitButton />);
+  render(
+    <SchemaForm
+      fields={{ FacilitySearchWidget }}
+      schemaId={schemaId}
+      schema={schema}
+      uiSchema={uiSchema}
+      formData={formData}
+      hideSubmitButton
+    />
+  );
 
 beforeEach(() => {
   useMetadataStore.setState({ metadata: { labels: { labelStructure: placeLabelStructure } } });
@@ -137,6 +147,7 @@ function EditableFacility() {
   return (
     <>
       <SchemaForm
+        fields={{ FacilitySearchWidget }}
         schemaId="facility-employment-contract:1"
         schema={schema}
         uiSchema={uiSchema}

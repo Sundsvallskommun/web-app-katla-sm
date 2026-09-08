@@ -3,16 +3,10 @@ import { Button } from '@astryxdesign/core/Button';
 import { Stack } from '@astryxdesign/core/Stack';
 import { useToast } from '@astryxdesign/core/Toast';
 import { CancelErrandDialog } from '@components/cancel-errand-dialog.component';
-import {
-  errandFormDataContractErrorMessage,
-  jsonParametersToErrandFormData,
-  validateErrandFormData,
-} from '@components/json/utils/schema-utils';
 import { SubmitErrandDialog } from '@components/submit-errand-dialog.component';
 import { useFormValidation } from '@contexts/form-validation-context';
+import { useErrandSubmission } from '@hooks/use-errand-submission';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { createErrand, updateErrand } from '@services/errand-service/errand-service';
-import { getSelectedEventType } from '@utils/report-type';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -20,7 +14,6 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
 import { useActiveWizardSteps } from 'src/hooks/use-active-wizard-steps';
-import { usePrepareErrand } from 'src/hooks/use-prepare-errand';
 import { useWizardStore } from 'src/stores/wizard-store';
 
 import { validateStep } from './wizard-step-validator';
@@ -31,55 +24,20 @@ export const WizardBottomBar: React.FC = () => {
   const locale = i18n.resolvedLanguage ?? i18nConfig.defaultLocale;
   const toast = useToast();
   const router = useRouter();
-  const { getValues, reset, watch } = useFormContext<ErrandFormDTO>();
+  const { getValues } = useFormContext<ErrandFormDTO>();
   const { setShowValidation, focusFirstError } = useFormValidation();
   const { currentStep, goNext, goBack, setStepErrors } = useWizardStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
-  const { prepareErrandForApi, getFacilityStatus } = usePrepareErrand();
-
+  const { validate, save, isSaving } = useErrandSubmission();
   const steps = useActiveWizardSteps();
-  const errandId = watch('id');
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
   const draftEnabled = appConfig.features.draftEnabled;
-
-  const onSaveDraft = async () => {
-    try {
-      const errandData = prepareErrandForApi(getValues(), 'DRAFT');
-      const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
-      const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
-      toast({ type: 'info', body: t('errand-information:save_message.draft') });
-      reset({ ...errand, errandFormData });
-      router.push(`/arende/${errand.errandNumber}/grundinformation`);
-    } catch (error: unknown) {
-      toast({
-        type: 'error',
-        body: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
-      });
-    }
-  };
-
+  const onSaveDraft = () => save('DRAFT');
   const onRegister = async () => {
     setIsOpen(false);
-    try {
-      const errandData = prepareErrandForApi(getValues(), 'NEW');
-      const errand = await (errandId ? updateErrand(errandId, errandData) : createErrand(errandData));
-      const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
-      toast({
-        type: 'info',
-        body: t('errand-information:save_message.register'),
-      });
-      reset({ ...errand, errandFormData });
-      // Kvittosidan, inte ärendet: rapportören är klar och ska inte landa i ett formulär
-      // som inte längre går att ändra.
-      router.push('/arende/inskickad');
-    } catch (error: unknown) {
-      toast({
-        type: 'error',
-        body: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
-      });
-    }
+    await save('NEW');
   };
 
   // Felmeddelandet berättar vad som saknas och fokus flyttas till fältet, så att det går att
@@ -91,7 +49,12 @@ export const WizardBottomBar: React.FC = () => {
 
   const handleNext = async () => {
     const step = steps[currentStep];
-    const errors = await validateStep(step, getValues(), step.id === 'deviation' ? tForms : t, locale);
+    const errors = await validateStep(
+      step,
+      getValues(),
+      ['deviation', 'details'].includes(step.id) ? tForms : t,
+      locale
+    );
     setStepErrors(currentStep, errors);
 
     if (errors.length > 0) {
@@ -105,37 +68,11 @@ export const WizardBottomBar: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    setShowValidation(true);
-
-    const values = getValues();
-    const eventType = getSelectedEventType(values);
-    const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
-
-    if (!eventType) {
-      reportValidationError(t('errand-information:about.event_type_required'));
+    const errors = await validate();
+    if (errors.length) {
+      reportValidationError(errors[0].message);
       return;
     }
-    if (!eventConcerns) {
-      reportValidationError(t('errand-information:about.event_concerns_required'));
-      return;
-    }
-    const formDataErrors = await validateErrandFormData(values.errandFormData, tForms, locale);
-    if (formDataErrors.length > 0) {
-      reportValidationError(formDataErrors[0]);
-      return;
-    }
-
-    const facilityStatus = getFacilityStatus(values.errandFormData);
-    if (eventConcerns === 'GRUPP_VERKSAMHET' && facilityStatus === 'NONE') {
-      reportValidationError(t('errand-information:about.event_concerns_group_facility_required'));
-      return;
-    }
-    // En plats som inte är vald hela vägen ner ger fel label, och därmed fel behörighet
-    if (facilityStatus === 'INCOMPLETE') {
-      reportValidationError(t('errand-information:about.facility_incomplete'));
-      return;
-    }
-
     setIsOpen(true);
   };
 
@@ -146,6 +83,7 @@ export const WizardBottomBar: React.FC = () => {
           <Button
             label={t('errand-information:wizard.back')}
             size="lg"
+            isDisabled={isSaving}
             variant="ghost"
             icon={<ChevronLeft size={18} />}
             onClick={() => {
@@ -158,6 +96,7 @@ export const WizardBottomBar: React.FC = () => {
         <Button
           label={t('errand-information:wizard.cancel')}
           size="lg"
+          isDisabled={isSaving}
           variant="ghost"
           onClick={() => {
             setIsCancelOpen(true);
@@ -168,6 +107,7 @@ export const WizardBottomBar: React.FC = () => {
           <Button
             label={t('errand-information:wizard.save')}
             size="lg"
+            isDisabled={isSaving}
             variant="secondary"
             onClick={() => {
               void onSaveDraft();
@@ -179,6 +119,7 @@ export const WizardBottomBar: React.FC = () => {
           <Button
             label={t('errand-information:wizard.submit')}
             size="lg"
+            isDisabled={isSaving}
             variant="primary"
 
             onClick={() => {
@@ -189,6 +130,7 @@ export const WizardBottomBar: React.FC = () => {
         : <Button
             label={t('errand-information:wizard.next')}
             size="lg"
+            isDisabled={isSaving}
             variant="primary"
 
             endContent={<ChevronRight size={18} />}
