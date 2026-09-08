@@ -13,7 +13,7 @@ export interface Label {
  * ut en nod som faktiskt finns i strukturen — både sökningen och ärendets labels byggs från det här
  * trädet istället för från organisationsträdet i company-API:t.
  */
-const PLACE_STRUCTURE_ROOT_NAMES = ['platsstruktur', 'place_structure', 'placestructure'];
+const PLACE_STRUCTURE_ROOT_NAMES = new Set(['platsstruktur', 'place_structure', 'placestructure']);
 const PLACE_STRUCTURE_ROOT_LEVEL = 2;
 const PLACE_LEVEL = 6;
 const DEPARTMENT_LEVEL = 7;
@@ -46,8 +46,8 @@ export const isSameLabel = (a: Label | undefined, b: Label | undefined): boolean
 export const getPlaceStructureRoot = (labelStructure: Label[] | undefined): Label | undefined =>
   labelStructure?.find(
     (label) =>
-      PLACE_STRUCTURE_ROOT_NAMES.includes(normalizeLabelName(label.resourceName)) ||
-      PLACE_STRUCTURE_ROOT_NAMES.includes(normalizeLabelName(label.displayName)),
+      PLACE_STRUCTURE_ROOT_NAMES.has(normalizeLabelName(label.resourceName)) ||
+      PLACE_STRUCTURE_ROOT_NAMES.has(normalizeLabelName(label.displayName)),
   );
 
 /** Alla noder under platsstrukturens rot, var och en med sin väg från roten */
@@ -79,7 +79,7 @@ export const placeName = (node: PlaceNode): string => labelName(node.label);
 
 /** Föräldern inom platsstrukturen. Roten räknas inte som förälder. */
 export const placeParentName = (node: PlaceNode): string | undefined => {
-  const parent = node.path[node.path.length - 2];
+  const parent = node.path.at(-2);
   return parent && !isSameLabel(parent, node.path[0]) ? labelName(parent) : undefined;
 };
 
@@ -297,6 +297,8 @@ export const resolveAvvikelseLabels = (
     ...(rootLabel && typeLabel ? [toErrandLabel(rootLabel), toErrandLabel(typeLabel)] : []),
     ...(placeNode ? toErrandLabels(placeNode) : []),
   ];
+  let facilityStatus: FacilitySelectionStatus = 'NONE';
+  if (facility?.orgName) facilityStatus = !placeNode || hasSubPlaces(placeNode) ? 'INCOMPLETE' : 'COMPLETE';
   const seen = new Set<string>();
   return {
     labels: labels.filter((label) => {
@@ -305,7 +307,7 @@ export const resolveAvvikelseLabels = (
       seen.add(key);
       return true;
     }),
-    facilityStatus: !facility?.orgName ? 'NONE' : !placeNode || hasSubPlaces(placeNode) ? 'INCOMPLETE' : 'COMPLETE',
+    facilityStatus,
     reportTypeConfigured: Boolean(rootLabel && typeLabel),
   };
 };

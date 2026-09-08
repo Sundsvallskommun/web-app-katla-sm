@@ -4,11 +4,12 @@ import { randomBytes } from 'node:crypto';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { setTimeout as pause } from 'node:timers/promises';
 
-const artifactRoot = process.argv[2];
-if (!artifactRoot) throw new Error('Usage: node scripts/backend-smoke.mjs <isolated-artifact-root>');
+import { backendArtifactDirectory } from './backend-artifact.mjs';
+
+if (process.argv.length !== 2) throw new Error('Usage: node scripts/backend-smoke.mjs (no arguments).');
 const temporary = await mkdtemp(join(tmpdir(), 'katla-backend-smoke-'));
 const portProbe = createServer();
 await new Promise((done) => portProbe.listen(0, '127.0.0.1', done));
@@ -23,7 +24,7 @@ await writeFile(
   JSON.stringify({ revision: 'isolated-smoke', catalogueUrl: origin, sessionMaxAgeSeconds: 3600, applications: [] }),
 );
 // Deliberately omit every upstream client secret and start outside the source checkout.
-const child = spawn(process.execPath, [resolve(artifactRoot, 'backend/dist/server.js')], {
+const child = spawn(process.execPath, ['--', join(backendArtifactDirectory, 'backend/dist/server.js')], {
   cwd: temporary,
   env: {
     PATH: process.env.PATH,

@@ -187,7 +187,8 @@ export class SupportManagementController {
   @UseBefore(authMiddleware)
   @ResponseSchema(ErrandDTO)
   async getErrand(@Req() req: RequestWithUser, @Param('errandNumber') errandNumber: string): Promise<ErrandDTO> {
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands?filter=${encodeURIComponent(`${toFilterTerm('errandNumber', errandNumber)} and ${toFilterTerm('reporterUserId', req.user.username)}`)}`;
+    const filter = `${toFilterTerm('errandNumber', errandNumber)} and ${toFilterTerm('reporterUserId', req.user.username)}`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands?filter=${encodeURIComponent(filter)}`;
 
     const res = await this.apiService.get<PageErrand>({ url }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when reading errand');

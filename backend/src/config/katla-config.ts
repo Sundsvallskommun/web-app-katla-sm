@@ -24,6 +24,23 @@ const required = (environment: Environment, field: string): string => {
   return value;
 };
 
+/** Namespace, municipality and upstream credentials belong to the recipient connection. */
+const validateRecipientConfiguration = (environment: Environment): void => {
+  for (const field of ['API_BASE_URL', 'CLIENT_KEY', 'CLIENT_SECRET', 'MUNICIPALITY_ID', 'NAMESPACE']) required(environment, field);
+  let apiBaseUrl: URL;
+  try {
+    apiBaseUrl = new URL(environment.API_BASE_URL ?? '');
+  } catch {
+    throw new Error('API_BASE_URL: ange en fullständig HTTP(S)-adress.');
+  }
+  if (!['https:', 'http:'].includes(apiBaseUrl.protocol) || apiBaseUrl.username || apiBaseUrl.password || apiBaseUrl.search || apiBaseUrl.hash) {
+    throw new Error('API_BASE_URL: använd en HTTP(S)-adress utan inloggningsuppgifter, query eller fragment.');
+  }
+
+  if (!/^\d{4}$/.test(environment.MUNICIPALITY_ID ?? '')) throw new Error('MUNICIPALITY_ID: ange en fyrsiffrig kommunkod.');
+  if (!/^[A-Za-z0-9_-]+$/.test(environment.NAMESPACE ?? '')) throw new Error('NAMESPACE: ange ett namespace utan sökvägsseparatorer.');
+};
+
 /** Validerar startkonfiguration utan nätverksanrop eller utdata av hemliga värden. */
 export const loadRuntimeConfiguration = (environment: Environment = process.env): RuntimeConfiguration => {
   const mode = environment.APP_MODE;
@@ -54,19 +71,7 @@ export const loadRuntimeConfiguration = (environment: Environment = process.env)
   };
   if (mode === 'catalogue') return { ...shared, mode };
   if (!katlaId) throw new Error('KATLA_ID saknas.');
-  for (const field of ['API_BASE_URL', 'CLIENT_KEY', 'CLIENT_SECRET', 'MUNICIPALITY_ID', 'NAMESPACE']) required(environment, field);
-  let apiBaseUrl: URL;
-  try {
-    apiBaseUrl = new URL(environment.API_BASE_URL ?? '');
-  } catch {
-    throw new Error('API_BASE_URL: ange en fullständig HTTP(S)-adress.');
-  }
-  if (!['https:', 'http:'].includes(apiBaseUrl.protocol) || apiBaseUrl.username || apiBaseUrl.password || apiBaseUrl.search || apiBaseUrl.hash) {
-    throw new Error('API_BASE_URL: använd en HTTP(S)-adress utan inloggningsuppgifter, query eller fragment.');
-  }
-
-  if (!/^\d{4}$/.test(environment.MUNICIPALITY_ID ?? '')) throw new Error('MUNICIPALITY_ID: ange en fyrsiffrig kommunkod.');
-  if (!/^[A-Za-z0-9_-]+$/.test(environment.NAMESPACE ?? '')) throw new Error('NAMESPACE: ange ett namespace utan sökvägsseparatorer.');
+  validateRecipientConfiguration(environment);
   const definition = getKatlaDefinition(katlaId, { allowTestDefinitions });
   return { ...shared, mode, katlaId, definition, definitionRevision: definitionRevision(definition) };
 };

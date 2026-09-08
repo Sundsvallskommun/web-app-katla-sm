@@ -1,3 +1,4 @@
+import type { KatlaDefinition } from '@katla/definitions';
 import {
   getAvvikelsePartyIssues,
   getFacilityInfoFromJsonParameters,
@@ -29,6 +30,46 @@ const isJsonParameter = (value: unknown): value is JsonParameter => {
   );
 };
 
+const readValidationUiSchema = async (req: RequestWithUser, schemaId: string): Promise<Record<string, unknown>> => {
+  const api = new ApiService();
+  let uiSchema: Record<string, unknown> = {};
+  try {
+    const ui = await api.get<UiSchema>(
+      {
+        baseURL: apiURL(getApiBase('jsonschema')),
+        url: `${MUNICIPALITY_ID}/schemas/${encodeURIComponent(schemaId)}/ui-schema`,
+      },
+      req,
+    );
+    uiSchema = mapUiSchema(ui.data);
+  } catch (error) {
+    if (!(error instanceof HttpException) || error.status !== 404) throw error;
+  }
+  return uiSchema;
+};
+
+const validateSchemaValue = async (
+  req: RequestWithUser,
+  parameter: JsonParameter,
+  schema: ReturnType<typeof mapSchemaResponse>['schema'],
+): Promise<void> => {
+  if (schema.$async === true) throw new HttpException(502, 'SCHEMA_VALIDATION_UNAVAILABLE');
+  let ajv: ReturnType<typeof createSchemaAjv>;
+  try {
+    ajv = createSchemaAjv(schema.$schema);
+  } catch {
+    throw new HttpException(502, 'SCHEMA_DIALECT_UNSUPPORTED');
+  }
+  const uiSchema = await readValidationUiSchema(req, parameter.schemaId);
+  let valid: boolean | Promise<unknown>;
+  try {
+    valid = ajv.compile(applyDateBounds(schema, uiSchema))(parameter.value);
+  } catch {
+    throw new HttpException(502, 'SCHEMA_VALIDATION_UNAVAILABLE');
+  }
+  if (!valid) throw new HttpException(400, `SCHEMA_DATA_INVALID: ${parameter.key}`);
+};
+
 /** Validerar immutable schema-id:n utan coercion/defaults som kan ändra sparade uppgifter. */
 const validateJsonParameters = async (req: RequestWithUser, parameters: JsonParameter[], validateValues: boolean): Promise<void> => {
   const api = new ApiService();
@@ -44,47 +85,12 @@ const validateJsonParameters = async (req: RequestWithUser, parameters: JsonPara
     const mapped = mapSchemaResponse(response.data, parameter.schemaId);
     if (response.data?.name !== parameter.key) throw new HttpException(400, 'SCHEMA_NAME_MISMATCH');
     if (!validateValues) continue;
-    if (mapped.schema.$async === true) throw new HttpException(502, 'SCHEMA_VALIDATION_UNAVAILABLE');
-    let ajv: ReturnType<typeof createSchemaAjv>;
-    try {
-      ajv = createSchemaAjv(mapped.schema.$schema);
-    } catch {
-      throw new HttpException(502, 'SCHEMA_DIALECT_UNSUPPORTED');
-    }
-    let uiSchema: Record<string, unknown> = {};
-    try {
-      const ui = await api.get<UiSchema>(
-        {
-          baseURL: apiURL(getApiBase('jsonschema')),
-          url: `${MUNICIPALITY_ID}/schemas/${encodeURIComponent(parameter.schemaId)}/ui-schema`,
-        },
-        req,
-      );
-      uiSchema = mapUiSchema(ui.data);
-    } catch (error) {
-      if (!(error instanceof HttpException) || error.status !== 404) throw error;
-    }
-    let valid: boolean | Promise<unknown>;
-    try {
-      valid = ajv.compile(applyDateBounds(mapped.schema, uiSchema))(parameter.value);
-    } catch {
-      throw new HttpException(502, 'SCHEMA_VALIDATION_UNAVAILABLE');
-    }
-    if (!valid) throw new HttpException(400, `SCHEMA_DATA_INVALID: ${parameter.key}`);
+    await validateSchemaValue(req, parameter, mapped.schema);
   }
 };
 
-/** Servern beslutar om livscykel, forms och rättighetslabels före alla skrivvägar. */
-export const prepareErrandWrite = async (req: RequestWithUser, input: Partial<Errand>, previous?: Errand): Promise<Partial<Errand>> => {
-  const configuration = loadRuntimeConfiguration();
-  if (configuration.mode !== 'katla') throw new HttpException(404, 'Not found');
-  const definition = configuration.definition;
-  const status = input.status ?? previous?.status;
-  if (status !== 'DRAFT' && status !== 'NEW') throw new HttpException(400, 'ERRAND_STATUS_NOT_ALLOWED');
-  if (previous && previous.status !== 'DRAFT') throw new HttpException(409, 'ERRAND_ALREADY_SUBMITTED');
-  if (status === 'DRAFT' && !definition.features.draftEnabled && !previous) throw new HttpException(400, 'DRAFTS_DISABLED');
-  const parameters = input.jsonParameters ?? previous?.jsonParameters ?? [];
-  if (!Array.isArray(parameters) || !parameters.every(isJsonParameter)) throw new HttpException(400, 'JSON_PARAMETERS_INVALID');
+/** Saved drafts retain their original form identities; configured forms govern new drafts. */
+const validateFormMembership = (definition: KatlaDefinition, parameters: JsonParameter[], previous?: Errand): void => {
   const keys = new Set(parameters.map(parameter => parameter.key));
   if (keys.size !== parameters.length) throw new HttpException(400, 'DUPLICATE_SCHEMA_PARAMETER');
   for (const saved of previous?.jsonParameters ?? []) {
@@ -101,6 +107,54 @@ export const prepareErrandWrite = async (req: RequestWithUser, input: Partial<Er
     ? previous.jsonParameters.map(parameter => parameter.key)
     : definition.forms.map(form => form.schemaName);
   if (requiredKeys.some(key => !keys.has(key))) throw new HttpException(400, 'REQUIRED_SCHEMA_MISSING');
+};
+
+const resolveWriteLabels = async (
+  req: RequestWithUser,
+  definition: KatlaDefinition,
+  input: Partial<Errand>,
+  parameters: JsonParameter[],
+  status: 'DRAFT' | 'NEW',
+  previous?: Errand,
+): Promise<Errand['labels']> => {
+  if (definition.flow !== 'avvikelse') {
+    if ((input.labels?.length ?? 0) > 0) throw new HttpException(400, 'LABELS_NOT_SUPPORTED_BY_FLOW');
+    return [];
+  }
+  const errand = { ...previous, ...input };
+  if (status === 'NEW') {
+    const issues = getAvvikelsePartyIssues(errand);
+    if (issues.length) throw new HttpException(400, `AVVIKELSE_${issues[0]}`);
+  }
+  const response = await new ApiService().get<MetadataResponse>(
+    {
+      url: `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${NAMESPACE}/metadata`,
+    },
+    req,
+  );
+  if (!response.data?.labels?.labelStructure) throw new HttpException(502, 'LABEL_METADATA_UNAVAILABLE');
+  const resolution = resolveAvvikelseLabels(
+    response.data.labels.labelStructure,
+    getSelectedEventType(errand),
+    getFacilityInfoFromJsonParameters(parameters),
+  );
+  if (status === 'NEW' && (!resolution.reportTypeConfigured || resolution.facilityStatus !== 'COMPLETE'))
+    throw new HttpException(400, 'AVVIKELSE_CLASSIFICATION_INVALID');
+  return resolution.labels;
+};
+
+/** Servern beslutar om livscykel, forms och rättighetslabels före alla skrivvägar. */
+export const prepareErrandWrite = async (req: RequestWithUser, input: Partial<Errand>, previous?: Errand): Promise<Partial<Errand>> => {
+  const configuration = loadRuntimeConfiguration();
+  if (configuration.mode !== 'katla') throw new HttpException(404, 'Not found');
+  const definition = configuration.definition;
+  const status = input.status ?? previous?.status;
+  if (status !== 'DRAFT' && status !== 'NEW') throw new HttpException(400, 'ERRAND_STATUS_NOT_ALLOWED');
+  if (previous && previous.status !== 'DRAFT') throw new HttpException(409, 'ERRAND_ALREADY_SUBMITTED');
+  if (status === 'DRAFT' && !definition.features.draftEnabled && !previous) throw new HttpException(400, 'DRAFTS_DISABLED');
+  const parameters = input.jsonParameters ?? previous?.jsonParameters ?? [];
+  if (!Array.isArray(parameters) || !parameters.every(isJsonParameter)) throw new HttpException(400, 'JSON_PARAMETERS_INVALID');
+  validateFormMembership(definition, parameters, previous);
   await validateJsonParameters(req, parameters, status === 'NEW');
 
   const result: Partial<Errand> = {
@@ -109,29 +163,6 @@ export const prepareErrandWrite = async (req: RequestWithUser, input: Partial<Er
     jsonParameters: parameters,
     ...(previous?.version !== undefined ? { version: input.version ?? previous.version } : {}),
   };
-  if (definition.flow === 'avvikelse') {
-    if (status === 'NEW') {
-      const issues = getAvvikelsePartyIssues({ ...previous, ...input });
-      if (issues.length) throw new HttpException(400, `AVVIKELSE_${issues[0]}`);
-    }
-    const response = await new ApiService().get<MetadataResponse>(
-      {
-        url: `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${NAMESPACE}/metadata`,
-      },
-      req,
-    );
-    if (!response.data?.labels?.labelStructure) throw new HttpException(502, 'LABEL_METADATA_UNAVAILABLE');
-    const resolution = resolveAvvikelseLabels(
-      response.data.labels.labelStructure,
-      getSelectedEventType({ ...previous, ...input }),
-      getFacilityInfoFromJsonParameters(parameters),
-    );
-    if (status === 'NEW' && (!resolution.reportTypeConfigured || resolution.facilityStatus !== 'COMPLETE'))
-      throw new HttpException(400, 'AVVIKELSE_CLASSIFICATION_INVALID');
-    result.labels = resolution.labels;
-  } else {
-    if ((input.labels?.length ?? 0) > 0) throw new HttpException(400, 'LABELS_NOT_SUPPORTED_BY_FLOW');
-    result.labels = [];
-  }
+  result.labels = await resolveWriteLabels(req, definition, input, parameters, status, previous);
   return result;
 };

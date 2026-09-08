@@ -104,7 +104,8 @@ describe('Mina Katlor server access', () => {
   });
 
   it('requires authentication even when request headers name an allowed group', async () => {
-    await request(server(undefined)).get('/api/applications').set('X-Groups', 'group-one').expect(401);
+    const response = await request(server(undefined)).get('/api/applications').set('X-Groups', 'group-one');
+    expect(response.status).toBe(401);
   });
 
   it('returns identity publicly without policy, groups or service secrets', async () => {

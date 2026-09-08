@@ -177,25 +177,31 @@ describe('server-owned errand boundary', () => {
 
   it('rejects malformed saved JSON parameters with a client error', async () => {
     fakeUpstream();
-    await request(server())
+    const response = await request(server())
       .patch('/api/supportmanagement/errand/errand-1')
-      .send({ status: 'NEW', jsonParameters: [null] })
-      .expect(400, { message: 'JSON_PARAMETERS_INVALID' });
+      .send({ status: 'NEW', jsonParameters: [null] });
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ message: 'JSON_PARAMETERS_INVALID' });
   });
 
   it('cannot resubmit an already submitted errand or set handling statuses', async () => {
     persisted = { ...persisted, status: 'NEW' };
     fakeUpstream();
-    await request(server()).patch('/api/supportmanagement/errand/errand-1').send({ status: 'NEW' }).expect(409);
-    await request(server()).post('/api/supportmanagement/errand/create').send({ status: 'SOLVED' }).expect(400);
+    const resubmit = await request(server()).patch('/api/supportmanagement/errand/errand-1').send({ status: 'NEW' });
+    expect(resubmit.status).toBe(409);
+    expect(resubmit.body).toEqual({ message: 'ERRAND_ALREADY_SUBMITTED' });
+    const invalidStatus = await request(server()).post('/api/supportmanagement/errand/create').send({ status: 'SOLVED' });
+    expect(invalidStatus.status).toBe(400);
+    expect(invalidStatus.body).toEqual({ message: 'ERRAND_STATUS_NOT_ALLOWED' });
   });
 
   it('rejects client labels in the schema flow', async () => {
     fakeUpstream();
-    await request(server())
+    const response = await request(server())
       .post('/api/supportmanagement/errand/create')
-      .send({ status: 'NEW', jsonParameters: [parameter()], labels: [{ resourceName: 'GRANT_ACCESS' }] })
-      .expect(400);
+      .send({ status: 'NEW', jsonParameters: [parameter()], labels: [{ resourceName: 'GRANT_ACCESS' }] });
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ message: 'LABELS_NOT_SUPPORTED_BY_FLOW' });
   });
 
   it('derives avvikelse access labels from current metadata and ignores forged client labels', async () => {

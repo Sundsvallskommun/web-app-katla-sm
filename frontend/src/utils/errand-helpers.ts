@@ -48,7 +48,11 @@ export const hasReportContent = (values: ErrandFormDTO): boolean => {
   return hasParameters || hasFormData || hasAddedStakeholders;
 };
 
-export const getTypeDisplayName = (errand: ErrandDTO, t: TFunction) =>
-  appConfig.katla?.flow !== 'avvikelse' ? (errand.title ?? appConfig.applicationName)
-  : isMisconduct(errand) ? t('errand-information:about.event_type_misconduct')
-  : t('errand-information:about.event_type_deviation');
+export const getTypeDisplayName = (errand: ErrandDTO, t: TFunction) => {
+  if (appConfig.katla?.flow !== 'avvikelse') return errand.title ?? appConfig.applicationName;
+  return t(
+    isMisconduct(errand) ?
+      'errand-information:about.event_type_misconduct'
+    : 'errand-information:about.event_type_deviation'
+  );
+};

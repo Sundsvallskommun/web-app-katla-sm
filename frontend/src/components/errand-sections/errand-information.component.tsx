@@ -29,7 +29,7 @@ interface SchemaFormFieldProps {
   compact?: boolean;
 }
 
-function SchemaFormField({ schemaName, schemaNames, compact }: SchemaFormFieldProps) {
+function SchemaFormField({ schemaName, schemaNames, compact }: Readonly<SchemaFormFieldProps>) {
   const { getValues, watch, setValue } = useFormContext<ErrandFormDTO>();
   const { showValidation } = useFormValidation();
   const { t } = useTranslation('forms');
@@ -45,10 +45,9 @@ function SchemaFormField({ schemaName, schemaNames, compact }: SchemaFormFieldPr
   const rawData = entry?.data ?? '{}';
   const parsedFormData = parseErrandFormData(rawData, schemaName);
   const formData = parsedFormData.valid && isJsonObject(parsedFormData.value) ? parsedFormData.value : undefined;
-  const formDataError =
-    !parsedFormData.valid ? errandFormDataContractErrorMessage(parsedFormData.error, t)
-    : !formData ? t('unsupported_form_data', { schemaName })
-    : undefined;
+  let formDataError: string | undefined;
+  if (!parsedFormData.valid) formDataError = errandFormDataContractErrorMessage(parsedFormData.error, t);
+  else if (!formData) formDataError = t('unsupported_form_data', { schemaName });
 
   const handleChange = useCallback(
     (data: Record<string, unknown>) => {

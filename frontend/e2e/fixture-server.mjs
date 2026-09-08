@@ -62,15 +62,8 @@ const server = createServer((request, response) => {
   if (pathname === '/api/me')
     return reply(200, { name: 'Testanvändare Katla', username: 'katla-test', initials: 'TK' });
   if (pathname === '/api/applications' && mode === 'catalogue') {
-    return reply(
-      200,
-      applications.slice(
-        0,
-        identity === 'fixture-none' ? 0
-        : identity === 'fixture-one' ? 1
-        : 2
-      )
-    );
+    const applicationCount = { 'fixture-none': 0, 'fixture-one': 1, 'fixture-many': 2 }[identity];
+    return reply(200, applications.slice(0, applicationCount));
   }
   return reply(404, null, 'E2E_ROUTE_NOT_IMPLEMENTED');
 });

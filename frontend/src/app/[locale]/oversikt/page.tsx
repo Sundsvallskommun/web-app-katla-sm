@@ -63,21 +63,35 @@ function ErrandOverview() {
               {initialLoading ? t('common:errand-table.loading') : ''}
             </Text>
             <Stack aria-busy={initialLoading} aria-label={activeStatusLabel} role="region">
-              {initialLoading ?
-                isMobile ?
-                  <ErrandListSkeleton />
-                : <ErrandTable {...data} />
-              : rows.length > 0 ?
-                isMobile ?
-                  <ErrandList {...data} />
-                : <ErrandTable {...data} />
-              : errors.length === 0 && !isLoading ?
-                <EmptyState title={t('errand-information:no_errands')} icon={<Files aria-hidden="true" />} />
-              : null}
+              <ErrandOverviewResults
+                data={data}
+                isMobile={isMobile}
+                initialLoading={initialLoading}
+                hasErrors={errors.length > 0}
+              />
             </Stack>
           </Stack>
         </Stack>
       </LayoutContent>
     </Layout>
   );
+}
+
+/** Loading, populated and empty results share one presentation decision. */
+function ErrandOverviewResults({
+  data,
+  isMobile,
+  initialLoading,
+  hasErrors,
+}: Readonly<{
+  data: ReturnType<typeof useOverviewErrands>;
+  isMobile: boolean;
+  initialLoading: boolean;
+  hasErrors: boolean;
+}>) {
+  const { t } = useTranslation();
+  if (initialLoading) return isMobile ? <ErrandListSkeleton /> : <ErrandTable {...data} />;
+  if (data.rows.length > 0) return isMobile ? <ErrandList {...data} /> : <ErrandTable {...data} />;
+  if (hasErrors || data.isLoading) return null;
+  return <EmptyState title={t('errand-information:no_errands')} icon={<Files aria-hidden="true" />} />;
 }

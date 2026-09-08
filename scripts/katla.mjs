@@ -90,15 +90,12 @@ export function createKatla(repository, id, options = {}) {
       { flag: 'wx' },
     );
     mkdirSync(path.dirname(policyFile), { recursive: true });
-    writeFileSync(
-      policyFile,
-      `${JSON.stringify({ id, url: `https://${id}.example.invalid`, published: false, allowedGroups: [] }, null, 2)}\n`,
-      { flag: 'wx' },
-    );
+    const policyEntry = { id, url: `https://${id}.example.invalid`, published: false, allowedGroups: [] };
+    writeFileSync(policyFile, `${JSON.stringify(policyEntry, null, 2)}\n`, { flag: 'wx' });
     created.push(policyFile);
     writeFileSync(registryPath, updated);
   } catch (error) {
-    for (const filename of created.reverse()) rmSync(filename, { recursive: true, force: true });
+    for (const filename of created.toReversed()) rmSync(filename, { recursive: true, force: true });
     throw error;
   }
   return { directory, policyFile };
@@ -123,9 +120,18 @@ export function validateExample(example, label) {
   if (validate(example.invalid)) throw new Error(`${label}: the invalid example must demonstrate a rejected input.`);
 }
 
+function yarnArguments(args) {
+  // Yarn supplies its own absolute entry point, so nested commands do not search PATH.
+  const cli = process.env.npm_execpath;
+  if (!cli || !path.isAbsolute(cli) || !['yarn.js', 'cli.js'].includes(path.basename(cli))) {
+    throw new Error('Run Katla commands through Yarn 1: yarn katla:check, katla:dev or katla:build.');
+  }
+  return ['--', cli, ...args];
+}
+
 function run(args, cwd = root, env = process.env) {
   return new Promise((resolve, reject) => {
-    const child = spawn('yarn', args, { cwd, env, stdio: 'inherit' });
+    const child = spawn(process.execPath, yarnArguments(args), { cwd, env, stdio: 'inherit' });
     child.once('error', reject);
     child.once('exit', (code, signal) =>
       code === 0 ? resolve() : reject(new Error(`yarn ${args.join(' ')} failed (${signal ?? code}).`)),
@@ -143,6 +149,24 @@ function readEnv(filename, required = false) {
     values.KATLA_CATALOGUE_FILE = path.resolve(path.dirname(filename), values.KATLA_CATALOGUE_FILE);
   }
   return values;
+}
+
+function applyInstanceSelection(environments, id, selection, requireMatchingSelection) {
+  if (requireMatchingSelection) {
+    for (const env of environments) {
+      if ((env.APP_MODE && env.APP_MODE !== selection.APP_MODE) || (env.KATLA_ID && env.KATLA_ID !== id)) {
+        throw new Error(
+          'The environment file selects another instance. Supply the intended instance file with --env-file so its namespace and URLs cannot be reused accidentally.',
+        );
+      }
+    }
+  }
+  for (const env of environments) {
+    Object.assign(env, selection);
+    if (id === 'catalogue') delete env.KATLA_ID;
+    else env.KATLA_ID = id;
+    if (env.KATLA_CATALOGUE_FILE) env.KATLA_CATALOGUE_FILE = path.resolve(env.KATLA_CATALOGUE_FILE);
+  }
 }
 
 export function instanceEnvironment(id, options, requireMatchingSelection = false) {
@@ -163,22 +187,8 @@ export function instanceEnvironment(id, options, requireMatchingSelection = fals
     TEST: String(options.test === true),
     ALLOW_TEST_KATLA: String(options.test === true),
   };
-  if (requireMatchingSelection) {
-    for (const env of [frontend, backend]) {
-      if ((env.APP_MODE && env.APP_MODE !== selection.APP_MODE) || (env.KATLA_ID && env.KATLA_ID !== id)) {
-        throw new Error(
-          'The environment file selects another instance. Supply the intended instance file with --env-file so its namespace and URLs cannot be reused accidentally.',
-        );
-      }
-    }
-  }
+  applyInstanceSelection([frontend, backend], id, selection, requireMatchingSelection);
   const cookie = `katla.${id}.sid`;
-  for (const env of [frontend, backend]) {
-    Object.assign(env, selection);
-    if (id === 'catalogue') delete env.KATLA_ID;
-    else env.KATLA_ID = id;
-    if (env.KATLA_CATALOGUE_FILE) env.KATLA_CATALOGUE_FILE = path.resolve(env.KATLA_CATALOGUE_FILE);
-  }
   backend.SESSION_COOKIE_NAME ||= cookie;
   backend.SESSION_COOKIE_PATH ||= frontend.NEXT_PUBLIC_BASE_PATH || '/';
   frontend.NEXT_PUBLIC_SESSION_COOKIE_NAME ||= cookie;
@@ -238,6 +248,25 @@ export function sessionCookie(filename, apiUrl, name, now = Date.now()) {
   return `${name}=${cookies[0].value}`;
 }
 
+async function checkRecipientContracts(get, definition) {
+  for (const { schemaName } of definition.forms) {
+    const latest = await get(`/schemas/latest/${encodeURIComponent(schemaName)}`);
+    if (typeof latest.schemaId !== 'string' || !latest.schemaId || latest.schema?.type !== 'object')
+      throw new Error(`${schemaName}: missing immutable schemaId or unsupported non-object form schema.`);
+    const saved = await get(`/schemas/${encodeURIComponent(latest.schemaId)}`);
+    if (saved.schemaId !== latest.schemaId)
+      throw new Error(`${schemaName}: reading the immutable schemaId returned a different identity.`);
+  }
+  const metadata = await get('/supportmanagement/metadata');
+  const statuses = new Set(
+    metadata.statuses?.filter((status) => status.deprecated !== true).map((status) => status.name),
+  );
+  for (const status of ['DRAFT', 'NEW', 'SOLVED'])
+    if (!statuses.has(status)) throw new Error(`Recipient metadata is missing required status ${status}.`);
+  if (!metadata.roles?.some((role) => role.name === 'REPORTER' && role.deprecated !== true))
+    throw new Error('Recipient metadata is missing REPORTER.');
+}
+
 export async function connectedCheck({ apiUrl, sessionFile, id, definition, revision, fetcher = fetch }) {
   const base = new URL(apiUrl);
   if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password || base.search || base.hash)
@@ -266,33 +295,15 @@ export async function connectedCheck({ apiUrl, sessionFile, id, definition, revi
   }
   const context = (await get('/app-context')).data;
   if (
-    !context ||
-    context.mode !== (id === 'catalogue' ? 'catalogue' : 'katla') ||
-    (definition && (context.katlaId !== id || context.definitionRevision !== revision))
+    context?.mode !== (id === 'catalogue' ? 'catalogue' : 'katla') ||
+    (definition && (context?.katlaId !== id || context.definitionRevision !== revision))
   )
     throw new Error(
       'Backend mode, Katla id or definition revision differs from this checkout. Deploy the matching release pair.',
     );
   const applications = (await get('/applications')).data;
   if (!Array.isArray(applications)) throw new Error('Invalid applications response.');
-  if (definition) {
-    for (const { schemaName } of definition.forms) {
-      const latest = await get(`/schemas/latest/${encodeURIComponent(schemaName)}`);
-      if (typeof latest.schemaId !== 'string' || !latest.schemaId || !latest.schema || latest.schema.type !== 'object')
-        throw new Error(`${schemaName}: missing immutable schemaId or unsupported non-object form schema.`);
-      const saved = await get(`/schemas/${encodeURIComponent(latest.schemaId)}`);
-      if (saved.schemaId !== latest.schemaId)
-        throw new Error(`${schemaName}: reading the immutable schemaId returned a different identity.`);
-    }
-    const metadata = await get('/supportmanagement/metadata');
-    const statuses = new Set(
-      metadata.statuses?.filter((status) => status.deprecated !== true).map((status) => status.name),
-    );
-    for (const status of ['DRAFT', 'NEW', 'SOLVED'])
-      if (!statuses.has(status)) throw new Error(`Recipient metadata is missing required status ${status}.`);
-    if (!metadata.roles?.some((role) => role.name === 'REPORTER' && role.deprecated !== true))
-      throw new Error('Recipient metadata is missing REPORTER.');
-  }
+  if (definition) await checkRecipientContracts(get, definition);
   return { applicationCount: applications.length };
 }
 
@@ -310,13 +321,13 @@ async function startDevelopment(frontend, backend, options) {
   );
   readCataloguePolicy(loadRuntimeConfiguration(backend));
   const children = [
-    spawn('yarn', ['dev'], {
+    spawn(process.execPath, yarnArguments(['dev']), {
       cwd: path.join(root, 'backend'),
       env: backend,
       stdio: 'inherit',
       detached: process.platform !== 'win32',
     }),
-    spawn('yarn', ['dev'], {
+    spawn(process.execPath, yarnArguments(['dev']), {
       cwd: path.join(root, 'frontend'),
       env: frontend,
       stdio: 'inherit',
@@ -353,6 +364,48 @@ async function startDevelopment(frontend, backend, options) {
   }
 }
 
+async function checkInstance({ id, options, definition, revision, backend }) {
+  console.log(
+    JSON.stringify(definition ? { definition, definitionRevision: revision } : { mode: 'catalogue' }, null, 2),
+  );
+  const examplePath = path.join(root, 'katlor/src', id, 'example.json');
+  if (definition?.flow === 'schema') {
+    if (!existsSync(examplePath))
+      throw new Error(`${id}: missing example.json. Add representative valid and invalid inputs.`);
+    validateExample(JSON.parse(readFileSync(examplePath, 'utf8')), id);
+    console.log('Local schema example: valid input accepted, invalid input rejected.');
+  }
+  const policy = options.policy ?? backend.KATLA_CATALOGUE_FILE;
+  if (policy) await checkPolicy(path.resolve(policy), id, options);
+  else console.log('Policy not checked: supply --policy or an environment file with KATLA_CATALOGUE_FILE.');
+  if (options['env-file']) {
+    const { loadRuntimeConfiguration, readCataloguePolicy } = await tsImport(
+      path.join(root, 'backend/src/config/katla-config.ts'),
+      import.meta.url,
+    );
+    readCataloguePolicy(loadRuntimeConfiguration(backend));
+    console.log(
+      'Runtime selection, required connection settings and instance cookie configuration: valid. No secrets printed.',
+    );
+  }
+  if (options.connected) {
+    if (!options['api-url'] || !options['session-file'])
+      throw new Error(
+        '--connected requires explicit --api-url and --session-file. Use a session exported after login to that test instance.',
+      );
+    await connectedCheck({
+      apiUrl: options['api-url'],
+      sessionFile: options['session-file'],
+      id,
+      definition,
+      revision,
+    });
+    console.log(
+      'Read-only connection checks passed. No errands were written. Draken reception and real SSO still require verification.',
+    );
+  } else console.log('Local checks passed. External services, SSO and Draken reception have not been verified.');
+}
+
 export async function main(args) {
   const { command, id, options } = parseArguments(args);
   if (options.help) {
@@ -378,45 +431,7 @@ export async function main(args) {
   const revision = definition ? definitionRevision(definition) : undefined;
   const { frontend, backend } = instanceEnvironment(id, options, command === 'dev' || !!options['env-file']);
   if (command === 'check') {
-    console.log(
-      JSON.stringify(definition ? { definition, definitionRevision: revision } : { mode: 'catalogue' }, null, 2),
-    );
-    const examplePath = path.join(root, 'katlor/src', id, 'example.json');
-    if (definition?.flow === 'schema') {
-      if (!existsSync(examplePath))
-        throw new Error(`${id}: missing example.json. Add representative valid and invalid inputs.`);
-      validateExample(JSON.parse(readFileSync(examplePath, 'utf8')), id);
-      console.log('Local schema example: valid input accepted, invalid input rejected.');
-    }
-    const policy = options.policy ?? backend.KATLA_CATALOGUE_FILE;
-    if (policy) await checkPolicy(path.resolve(policy), id, options);
-    else console.log('Policy not checked: supply --policy or an environment file with KATLA_CATALOGUE_FILE.');
-    if (options['env-file']) {
-      const { loadRuntimeConfiguration, readCataloguePolicy } = await tsImport(
-        path.join(root, 'backend/src/config/katla-config.ts'),
-        import.meta.url,
-      );
-      readCataloguePolicy(loadRuntimeConfiguration(backend));
-      console.log(
-        'Runtime selection, required connection settings and instance cookie configuration: valid. No secrets printed.',
-      );
-    }
-    if (options.connected) {
-      if (!options['api-url'] || !options['session-file'])
-        throw new Error(
-          '--connected requires explicit --api-url and --session-file. Use a session exported after login to that test instance.',
-        );
-      const result = await connectedCheck({
-        apiUrl: options['api-url'],
-        sessionFile: options['session-file'],
-        id,
-        definition,
-        revision,
-      });
-      console.log(
-        `Read-only connection checks passed; ${result.applicationCount} application(s) visible to this session. No errands were written. Draken reception and real SSO still require verification.`,
-      );
-    } else console.log('Local checks passed. External services, SSO and Draken reception have not been verified.');
+    await checkInstance({ id, options, definition, revision, backend });
   } else if (command === 'dev') {
     await startDevelopment(frontend, backend, options);
   } else {
@@ -439,8 +454,10 @@ export async function main(args) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main(process.argv.slice(2)).catch((error) => {
-    console.error(`Katla: ${error.message}`);
+  try {
+    await main(process.argv.slice(2));
+  } catch (error) {
+    console.error('Katla:', JSON.stringify(error.message));
     process.exitCode = 1;
-  });
+  }
 }

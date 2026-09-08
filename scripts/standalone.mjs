@@ -95,7 +95,7 @@ if (command === 'prepare') {
       'Isolated frontend artifact: login responds, definition revision matches, Sharp encodes/decodes AVIF and WebP.',
     );
   } finally {
-    if (child && child.exitCode === null) {
+    if (child?.exitCode === null) {
       child.kill('SIGTERM');
       await new Promise((resolve) => child.once('exit', resolve));
     }

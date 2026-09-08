@@ -291,7 +291,7 @@ function uiFieldTitle(
  */
 function fieldIdFromProperty(property: string | undefined, prefix: string): string | undefined {
   const path = (property ?? '').replace(/^\./, '');
-  return path ? `${prefix}_${path.split('.').join('_')}` : undefined;
+  return path ? `${prefix}_${path.replaceAll('.', '_')}` : undefined;
 }
 
 /**

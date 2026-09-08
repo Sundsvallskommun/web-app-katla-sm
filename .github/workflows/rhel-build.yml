@@ -60,6 +60,6 @@ jobs:
       - run: yarn workspace backend build
       - run: yarn workspace katla-web-app build
       - run: yarn standalone:prepare && yarn standalone:check
-      - run: node scripts/backend-artifact.mjs /tmp/katla-api-artifact
-      - run: yarn --cwd /tmp/katla-api-artifact install --frozen-lockfile --production --ignore-scripts
-      - run: node scripts/backend-smoke.mjs /tmp/katla-api-artifact
+      - run: node scripts/backend-artifact.mjs
+      - run: yarn --cwd /tmp/katla-backend-artifact install --frozen-lockfile --production --ignore-scripts
+      - run: node scripts/backend-smoke.mjs

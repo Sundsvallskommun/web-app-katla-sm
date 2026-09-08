@@ -15,10 +15,10 @@ COPY katlor/package.json katlor/package.json
 RUN yarn install --frozen-lockfile --ignore-scripts
 COPY . .
 RUN yarn definitions:build && yarn workspace backend build
-RUN node scripts/backend-artifact.mjs /artifact
+RUN node scripts/backend-artifact.mjs
 
 FROM build-base AS runtime-dependencies
-COPY --from=builder /artifact/ ./
+COPY --from=builder /tmp/katla-backend-artifact/ ./
 RUN yarn install --frozen-lockfile --production --ignore-scripts
 
 FROM node:${NODE_VERSION}-slim AS runner

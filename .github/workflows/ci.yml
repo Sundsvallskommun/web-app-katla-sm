@@ -104,7 +104,7 @@ jobs:
           cache-dependency-path: yarn.lock
       - run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
       - run: yarn definitions:build
-      - run: yarn workspace katla-web-app playwright install --with-deps chromium
+      - run: node node_modules/@playwright/test/cli.js install --with-deps chromium
       - run: yarn workspace katla-web-app build
       - run: yarn standalone:prepare
       - run: yarn standalone:check
@@ -132,9 +132,9 @@ jobs:
           cache-dependency-path: yarn.lock
       - run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
       - run: yarn definitions:build && yarn workspace backend build
-      - run: node scripts/backend-artifact.mjs "$RUNNER_TEMP/katla-api"
-      - run: yarn --cwd "$RUNNER_TEMP/katla-api" install --frozen-lockfile --production --ignore-scripts
-      - run: node scripts/backend-smoke.mjs "$RUNNER_TEMP/katla-api"
+      - run: node scripts/backend-artifact.mjs
+      - run: yarn --cwd /tmp/katla-backend-artifact install --frozen-lockfile --production --ignore-scripts
+      - run: node scripts/backend-smoke.mjs
 
   images:
     name: Shared Dockerfiles build without publishing
