@@ -52,6 +52,12 @@
     "stats": {
       "displayName": "Statistics cookies",
       "description": "These cookies allow us to count visits and traffic sources, so that we can measure and improve the performance of our website."
-    }
+    },
+    "choose": "Choose which cookies we may use",
+    "save": "Save my choices",
+    "back": "Back",
+    "accept_all": "Accept all",
+    "accept_necessary": "Accept necessary only",
+    "manage": "Manage cookies"
   }
 }

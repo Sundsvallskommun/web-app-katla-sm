@@ -1,85 +1,60 @@
 'use client';
-import { titleId, type WidgetProps } from '@rjsf/utils';
-import { Combobox } from '@sk-web-gui/react';
+import { MultiSelector } from '@astryxdesign/core/MultiSelector';
+import { Selector } from '@astryxdesign/core/Selector';
+import type { WidgetProps } from '@rjsf/utils';
 import { useTranslation } from 'react-i18next';
 
-import { getCommonProps, getWidgetOptions, requiredProps } from './types';
+import { getCommonProps, getWidgetOptions } from './types';
 
-const DEFAULT_CLASS = 'w-full';
-
+/** RJSF äger värdena; Astryx äger sökning, tangentbord, fokus och felpresentation. */
 export function ComboboxWidget(props: WidgetProps) {
   const { t } = useTranslation('forms');
-  const {
+  const { id, value, disabled, readonly, required, invalid, label, hideLabel, className, onChange, onBlur, onFocus } =
+    getCommonProps(props, 'w-full');
+  const { enumOptions = [], placeholder: customPlaceholder, multiple: optMultiple } = getWidgetOptions(props.options);
+  const multiple = optMultiple ?? props.schema.type === 'array';
+  const options = enumOptions.map((option) => ({ value: String(option.value), label: option.label }));
+  const common = {
     id,
-    value,
-    disabled,
-    readonly,
-    required,
-    invalid,
-    describedBy,
     label,
-    hideLabel,
+    isLabelHidden: hideLabel,
+    isRequired: required,
+    isOptional: !required,
+    isDisabled: disabled || readonly,
     className,
-    onChange,
+    width: '100%',
+    hasSearch: true,
+    placeholder: (customPlaceholder ?? '') || t('combobox_placeholder'),
+    options,
     onBlur,
     onFocus,
-  } = getCommonProps(props, DEFAULT_CLASS);
-  const { enumOptions = [], placeholder: customPlaceholder, multiple: optMultiple } = getWidgetOptions(props.options);
-
-  const schemaRecord = props.schema as Record<string, unknown>;
-  const multiple = optMultiple ?? schemaRecord.type === 'array';
-  const placeholder = (customPlaceholder ?? '') || t('combobox_placeholder');
-  const currentValue: string | string[] =
-    multiple ?
+    status: invalid ? { type: 'error' as const, message: props.rawErrors?.[0] } : undefined,
+    statusVariant: 'detached' as const,
+  };
+  if (multiple) {
+    const currentValue =
       Array.isArray(value) ? value.map(String)
       : typeof value === 'string' || typeof value === 'number' ? [String(value)]
-      : []
-    : typeof value === 'string' ? value
-    : '';
-
-  const handleChange = (e: { target: { value: unknown } }) => {
-    const raw = e?.target?.value;
-    if (multiple) {
-      const arr = Array.isArray(raw) ? raw : [raw];
-      onChange(arr.filter((x) => x !== undefined && x !== null && x !== ''));
-    } else {
-      onChange(raw ?? '');
-    }
-  };
-
-  return (
-    <Combobox
-      id={`${id}__combobox`}
-      className={className}
-      multiple={multiple}
-      value={currentValue}
-      disabled={disabled || readonly}
-      aria-label={hideLabel ? label : undefined}
-      aria-labelledby={hideLabel ? undefined : titleId(id)}
-      aria-describedby={describedBy}
-      onChange={handleChange}
-    >
-      <Combobox.Input
-        id={id}
-        placeholder={placeholder}
-        className="w-full"
-        disabled={disabled || readonly}
-        readOnly={readonly}
-        {...requiredProps(required)}
-        aria-label={hideLabel ? label : undefined}
-        aria-labelledby={hideLabel ? undefined : titleId(id)}
-        aria-describedby={describedBy}
-        aria-invalid={invalid}
-        onBlur={onBlur}
-        onFocus={onFocus}
+      : [];
+    return (
+      <MultiSelector
+        {...common}
+        value={currentValue}
+        triggerDisplay="labels"
+        hasClear
+        onChange={(values) => {
+          onChange(values.filter((item) => item !== ''));
+        }}
       />
-      <Combobox.List>
-        {enumOptions.map((option) => (
-          <Combobox.Option key={String(option.value)} value={String(option.value)}>
-            {option.label}
-          </Combobox.Option>
-        ))}
-      </Combobox.List>
-    </Combobox>
+    );
+  }
+  return (
+    <Selector
+      {...common}
+      value={typeof value === 'string' ? value : ''}
+      onChange={(selected) => {
+        onChange(selected);
+      }}
+    />
   );
 }

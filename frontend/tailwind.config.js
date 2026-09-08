@@ -1,20 +1,20 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 module.exports = {
-  content: [
-    './src/app/**/*.{js,ts,jsx,tsx}',
-    './src/components/**/*.{js,ts,jsx,tsx}',
-    './src/layouts/**/*.{js,ts,jsx,tsx}',
-    './src/services/**/*.{js,ts,jsx,tsx}',
-    './node_modules/@sk-web-gui/*/dist/**/*.js',
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  corePlugins: { preflight: false },
   theme: {
-    // extend: {
-    // if you want to override max content width
-    // maxWidth: {
-    //   content: screens['desktop-max'], // default in core is based on screens
-    // },
+    extend: {
+      // Utility layouts read the same semantic colors as Astryx components.
+      colors: {
+        foreground: 'var(--color-text-primary)',
+        muted: 'var(--color-text-secondary)',
+        accent: 'var(--color-text-accent)',
+        danger: 'var(--color-text-red)',
+        surface: 'var(--color-background-surface)',
+        canvas: 'var(--color-background-body)',
+        subtle: 'var(--color-background-muted)',
+        'accent-subtle': 'var(--color-accent-muted)',
+        default: 'var(--color-border)',
+      },
+    },
   },
-  darkMode: 'class', // or 'media' or 'class'
-  presets: [require('@sk-web-gui/core').preset()],
-  // plugins: [require('@tailwindcss/forms'), require('@sk-web-gui/core')],
 };

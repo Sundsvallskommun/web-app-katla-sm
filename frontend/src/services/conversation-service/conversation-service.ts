@@ -5,7 +5,6 @@ import {
   ConversationMessagesPageDTO,
 } from '@data-contracts/backend/data-contracts';
 import { apiService } from '@services/api-service';
-import { UploadFile } from '@sk-web-gui/react';
 
 const errandPath = (errandId: string) => `supportmanagement/errand/${errandId}/conversations`;
 
@@ -35,13 +34,13 @@ export const sendConversationMessage = async (
   errandId: string,
   conversationId: string,
   message: string,
-  files: UploadFile[] = []
+  files: File[] = []
 ): Promise<void> => {
   const formData = new FormData();
   // API:t läser meddelandet som JSON i ett eget fält, samma form som handläggarens app skickar.
   formData.append('message', JSON.stringify({ content: message }));
   files.forEach((file) => {
-    formData.append('attachments', file.file);
+    formData.append('attachments', file);
   });
 
   await apiService.post(`${errandPath(errandId)}/${conversationId}/messages`, formData, {

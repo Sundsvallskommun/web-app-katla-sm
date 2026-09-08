@@ -1,8 +1,6 @@
-import { getErrands, getErrandsCount, getMetadata } from '@services/errand-service/errand-service';
+import { getErrands, getMetadata } from '@services/errand-service/errand-service';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useOverviewErrands } from 'src/hooks/use-overview-errands';
-import { useStatusButtons } from 'src/hooks/use-status-buttons';
-import { useErrandCountStore } from 'src/stores/errand-count-store';
 import { useFilterStore } from 'src/stores/filter-store';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { useSortStore } from 'src/stores/sort-store';
@@ -10,7 +8,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const errandServiceMocks = vi.hoisted(() => ({
   getErrands: vi.fn(),
-  getErrandsCount: vi.fn(),
   getMetadata: vi.fn(),
 }));
 const i18nMocks = vi.hoisted(() => ({
@@ -24,7 +21,6 @@ vi.mock('react-i18next', () => ({
 }));
 
 const getErrandsMock = vi.mocked(getErrands);
-const getErrandsCountMock = vi.mocked(getErrandsCount);
 const getMetadataMock = vi.mocked(getMetadata);
 
 const createDeferred = <T,>() => {
@@ -39,13 +35,11 @@ const createDeferred = <T,>() => {
 
 beforeEach(() => {
   getErrandsMock.mockReset();
-  getErrandsCountMock.mockReset();
   getMetadataMock.mockReset();
   useSortStore.setState({ sortColumn: 'created', sortOrder: 'desc', page: 0, size: 12, rowHeight: 'normal' });
   // En satt statuslista: utan den görs ingen hämtning alls, och testerna nedan mäter hämtningen.
   useFilterStore.setState({ activeStatus: 'OPEN', statuses: ['REVIEW'] });
   useMetadataStore.setState({ metadata: null });
-  useErrandCountStore.setState({ openErrandCount: 0, draftErrandCount: 0, closedErrandCount: 0 });
 });
 
 afterEach(() => {
@@ -297,28 +291,5 @@ describe('overview API error state', () => {
     });
 
     expect(result.current.rows).toBe(rowsBeforeUnmount);
-  });
-});
-
-describe('status count API error state', () => {
-  it('updates successful counts and preserves the failed count', async () => {
-    useMetadataStore.setState({ metadata: { statuses: [{ name: 'NEW' }, { name: 'REVIEW' }, { name: 'SOLVED' }] } });
-    useErrandCountStore.setState({ openErrandCount: 8, closedErrandCount: 9 });
-    getErrandsCountMock.mockImplementation((query) => {
-      const statuses = query?.statuses ?? [];
-      if (statuses.includes('REVIEW')) return Promise.reject(new Error('open count unavailable'));
-      return Promise.resolve({ count: 2 });
-    });
-
-    const { result } = renderHook(() => useStatusButtons());
-
-    await waitFor(() => {
-      expect(result.current.error).toBe('api_errors.counts');
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    expect(useErrandCountStore.getState().openErrandCount).toBe(8);
-    expect(useErrandCountStore.getState().closedErrandCount).toBe(2);
-    expect(result.current.statusButtons.find((button) => button.statuses.includes('REVIEW'))?.errandsCount).toBe(8);
   });
 });

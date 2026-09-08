@@ -1,4 +1,6 @@
-import { ariaDescribedByIds, type WidgetProps } from '@rjsf/utils';
+import { descriptionId, errorId, getUiOptions, helpId, type WidgetProps } from '@rjsf/utils';
+
+import { sanitizeFieldDescription } from '../fields/sanitize-field-description';
 
 export interface EnumOption {
   value: string | number | boolean;
@@ -33,6 +35,32 @@ export function getWidgetOptions(options: WidgetProps['options']): WidgetOptions
   };
 }
 
+/** Samma metadata styr vilka beskrivningar som ritas och vilka ARIA-referenser som används. */
+export function getFieldPresentation({
+  id,
+  schema,
+  uiSchema,
+  rawErrors,
+  hideError,
+}: Pick<WidgetProps, 'id' | 'schema' | 'uiSchema' | 'rawErrors' | 'hideError'>) {
+  const uiDescription = uiSchema?.['ui:description'];
+  const descriptionText = typeof uiDescription === 'string' ? uiDescription : (schema.description ?? '');
+  const newTabAnnouncementId = `${descriptionId(id)}__new-tab`;
+  const description = sanitizeFieldDescription(descriptionText, newTabAnnouncementId);
+  const showDescription = Boolean(description.html) && !uiSchema?.['ui:options']?.hideDescription;
+  const hasError = !hideError && Boolean(rawErrors?.length);
+  const ownsField = uiSchema?.['ui:widget'] === 'ComboboxWidget' || uiSchema?.['ui:widget'] === 'combobox';
+  const describedBy =
+    [
+      showDescription ? descriptionId(id) : undefined,
+      getUiOptions(uiSchema).help ? helpId(id) : undefined,
+      hasError && !ownsField ? errorId(id) : undefined,
+    ]
+      .filter(Boolean)
+      .join(' ') || undefined;
+  return { description, showDescription, newTabAnnouncementId, hasError, ownsField, describedBy };
+}
+
 export interface CommonWidgetProps {
   id: string;
   value: unknown;
@@ -40,7 +68,7 @@ export interface CommonWidgetProps {
   readonly: boolean;
   required: boolean;
   invalid: boolean;
-  describedBy: string;
+  describedBy?: string;
   label: string;
   hideLabel: boolean;
   className: string;
@@ -50,9 +78,10 @@ export interface CommonWidgetProps {
 }
 
 export function getCommonProps(props: WidgetProps, defaultClassName: string): CommonWidgetProps {
-  const { id, disabled, readonly, required, rawErrors, label, hideLabel, onChange } = props;
+  const { id, disabled, readonly, required, label, hideLabel, onChange } = props;
   const value: unknown = props.value;
   const options = getWidgetOptions(props.options);
+  const presentation = getFieldPresentation(props);
 
   return {
     id,
@@ -60,8 +89,8 @@ export function getCommonProps(props: WidgetProps, defaultClassName: string): Co
     disabled: !!disabled,
     readonly: !!readonly,
     required: !!required,
-    invalid: Boolean(rawErrors?.length),
-    describedBy: ariaDescribedByIds(id),
+    invalid: presentation.hasError,
+    describedBy: presentation.describedBy,
     label,
     hideLabel: !!hideLabel,
     className: (options.className ?? '') || defaultClassName,
@@ -95,15 +124,5 @@ export function stripHtml(html: string): string {
   return result.trim();
 }
 
-/**
- * Märker fältet som obligatoriskt för hjälpmedel utan att sätta HTML-attributet `required`.
- *
- * Designsystemet ritar röd ram på både `[aria-invalid="true"]` och webbläsarens `:invalid`.
- * Ett tomt `required`-fält är `:invalid` redan vid rendering — `noHtml5Validate` stänger av
- * valideringen vid submit men inte pseudoklassen — så fältet såg felmarkerat ut innan
- * användaren rört det. Valideringen sköts ändå av schemavalidatorn, och kravtexten i etiketten
- * följer FormControl, så ingetdera går förlorat.
- *
- * `required: false` skickas explicit: utan det ärver kontrollen `required` från FormControl.
- */
+/** Schemat äger valideringen; ARIA märker obligatoriet utan webbläsarens tidiga :invalid. */
 export const requiredProps = (required: boolean) => ({ required: false, 'aria-required': required });

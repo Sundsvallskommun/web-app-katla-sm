@@ -3,7 +3,7 @@ import { test as base } from '@playwright/test';
 import { getMe } from '../fixtures/getMe';
 import { jsonRoute } from './routes';
 
-// Samma värde som CookieConsentUtils.defaultCookieConsentName i @sk-web-gui/react
+// Befintliga användares samtycke behåller samma cookie-namn efter UI-migrationen.
 export const COOKIE_CONSENT_NAME = 'SKCookieConsent';
 export const DEFAULT_COOKIE_VALUE = 'necessary%2Cstats';
 

@@ -25,9 +25,8 @@ describe('middleware environment generation', () => {
   });
 
   const runGenerator = async () => {
-    const environment = Object.fromEntries(
-      Object.entries(process.env).filter(([key]) => !environmentKeys.some((environmentKey) => environmentKey === key))
-    );
+    const environment = { ...process.env };
+    for (const key of environmentKeys) environment[key] = undefined;
 
     execFileSync(process.execPath, [generatorPath], {
       cwd: workingDirectory,

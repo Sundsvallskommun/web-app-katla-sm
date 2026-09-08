@@ -29,7 +29,7 @@ function renderTimeField(schema: RJSFSchema, uiSchema: UiSchema<Record<string, u
 }
 
 describe('SchemaForm time widget', () => {
-  it('renderar ett tidsfält från designsystemet för format time', () => {
+  it('renderar ett nativt tidsfält med stabil etikettkoppling för format time', () => {
     const { input } = renderTimeField({
       type: 'object',
       properties: {
@@ -38,7 +38,7 @@ describe('SchemaForm time widget', () => {
     });
 
     expect(input).toHaveAttribute('type', 'time');
-    expect(input).toHaveClass('sk-form-input');
+    expect(input).toHaveAttribute('id', 'root_discoveredTime');
   });
 
   it('renderar samma fält när UI-schemat väljer widgeten', () => {
@@ -53,7 +53,7 @@ describe('SchemaForm time widget', () => {
     );
 
     expect(input).toHaveAttribute('type', 'time');
-    expect(input).toHaveClass('sk-form-input');
+    expect(input).toHaveAttribute('id', 'root_discoveredTime');
   });
 
   it('kompletterar med sekunder och offset bara när schemat kräver time-format', () => {

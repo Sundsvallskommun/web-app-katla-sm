@@ -40,8 +40,8 @@ const switchLanguageTo = async (page: Page, language: string) => {
 };
 
 const selectRequiredErrandParameters = async (page: Page) => {
-  const eventType = page.getByTestId('event-type-deviation');
-  const eventConcerns = page.getByTestId('event-concerns-individual');
+  const eventType = page.getByTestId('event-type-deviation').getByRole('radio');
+  const eventConcerns = page.getByTestId('event-concerns-individual').getByRole('radio');
 
   await eventType.check();
   await expect(eventType).toBeChecked();
@@ -73,8 +73,8 @@ test.describe('Language switching', () => {
 
     // Språkbytet monterar om hela ärendeträdet. Utan överlämningen står användaren
     // inför ett tomt formulär, och priset för att byta språk blir att börja om.
-    await expect(page.getByTestId('event-type-deviation')).toBeChecked();
-    await expect(page.getByTestId('event-concerns-individual')).toBeChecked();
+    await expect(page.getByTestId('event-type-deviation').getByRole('radio')).toBeChecked();
+    await expect(page.getByTestId('event-concerns-individual').getByRole('radio')).toBeChecked();
     await expect(page.getByRole('textbox', { name: /Beskriv händelsen/ })).toHaveValue(MOCK_INCIDENT_DESCRIPTION);
   });
 
@@ -106,18 +106,17 @@ test.describe('Language switching', () => {
       const panel = page.getByRole('menu').filter({ visible: true }).first();
       await expect(panel).toBeVisible();
 
-      const buttonBox = await button.boundingBox();
-      const panelBox = await panel.boundingBox();
-      const viewport = page.viewportSize();
-      if (!buttonBox || !panelBox || !viewport) throw new Error('Saknar mått för knapp, panel eller viewport');
+      // The popover animates a parent of the menu. Await its final visible placement.
+      await expect(async () => {
+        const buttonBox = await button.boundingBox();
+        const panelBox = await panel.boundingBox();
+        const viewport = page.viewportSize();
+        if (!buttonBox || !panelBox || !viewport) throw new Error('Saknar mått för knapp, panel eller viewport');
 
-      // Designsystemet ger panelen bara `right: 0`; den vertikala placeringen kommer från
-      // dess statiska position i normalflödet. Ligger kontrollen i en flex-container med
-      // items-center centreras panelen på knappen i stället och lägger sig över sidhuvudet,
-      // delvis utanför skärmen. Måtten är därför det som fångar en sådan regression.
-      expect(panelBox.y).toBeGreaterThanOrEqual(buttonBox.y + buttonBox.height);
-      expect(panelBox.x).toBeGreaterThanOrEqual(0);
-      expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
+        expect(panelBox.y).toBeGreaterThanOrEqual(buttonBox.y + buttonBox.height);
+        expect(panelBox.x).toBeGreaterThanOrEqual(0);
+        expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
+      }).toPass();
     });
   });
 });

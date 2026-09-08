@@ -1,10 +1,12 @@
-import { StakeholderCard } from '@components/card/stakeholder-card.component';
+import { CheckboxInput } from '@astryxdesign/core/CheckboxInput';
+import { List } from '@astryxdesign/core/List';
+import { Spinner } from '@astryxdesign/core/Spinner';
 import { ErrandSection } from '@components/errand-sections/errand-section.component';
 import { COLLEAGUE_FIELD_ID } from '@components/errand-sections/section-field-ids';
 import { SectionHeader } from '@components/misc/section-header.component';
 import { StakeholderList } from '@components/misc/stakeholder.component';
+import { StakeholderRow } from '@components/misc/stakeholder-row.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { Checkbox, Spinner } from '@sk-web-gui/react';
 import { getReporterStakeholder } from '@utils/stakeholder';
 import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
@@ -31,8 +33,7 @@ export const ReporterContent: React.FC = () => {
     }
   }, [stakeholders]);
 
-  const handleOtherReporterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
+  const handleOtherReporterChange = (checked: boolean) => {
     setValue('reportingForColleague', checked);
 
     if (!checked) {
@@ -48,22 +49,19 @@ export const ReporterContent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-32">
+    <div className="flex flex-col gap-8">
       {getReporterStakeholder(stakeholders) ?
         <>
-          <StakeholderCard
-            stakeholder={getReporterStakeholder(stakeholders) ?? {}}
-            // Avsnittet heter Rapportör och rymmer bara rapportören, så rollraden på kortet
-            // upprepar rubriken. Kortet får i stället ligga i avsnittets fulla bredd.
-            hideRole
-            wide
-            roles={['REPORTER']}
+          <List className="rounded-lg border border-default bg-subtle">
+            <StakeholderRow stakeholder={getReporterStakeholder(stakeholders) ?? {}} hideRole roles={['REPORTER']} />
+          </List>
+          <CheckboxInput
+            value={otherReporter}
+            onChange={handleOtherReporterChange}
+            label={t('errand-information:stakeholder.reporting_for_colleague')}
           />
-          <Checkbox checked={otherReporter} onChange={handleOtherReporterChange}>
-            {t('errand-information:stakeholder.reporting_for_colleague')}
-          </Checkbox>
           {otherReporter && (
-            <div className="flex flex-col gap-32">
+            <div className="flex flex-col gap-8">
               <SectionHeader
                 as="h3"
                 title={t('errand-information:other_reporter.title')}
@@ -75,12 +73,12 @@ export const ReporterContent: React.FC = () => {
                 maxCount={1}
                 fieldId={COLLEAGUE_FIELD_ID}
                 hideRoleSelect
-                sectionCards
+                hideRole
               />
             </div>
           )}
         </>
-      : <Spinner />}
+      : <Spinner label={t('common:loading_information')} />}
     </div>
   );
 };

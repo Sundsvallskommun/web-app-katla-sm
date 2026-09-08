@@ -1,0 +1,18 @@
+{
+  "formatting": "Textformatering",
+  "heading_one": "Rubrik 1",
+  "heading_two": "Rubrik 2",
+  "bold": "Fet",
+  "italic": "Kursiv",
+  "underline": "Understruken",
+  "bullet_list": "Punktlista",
+  "ordered_list": "Numrerad lista",
+  "link": "Länk",
+  "edit_link": "Redigera länk",
+  "link_url": "Länkadress",
+  "save_link": "Spara länk",
+  "remove_link": "Ta bort länk",
+  "cancel": "Avbryt",
+  "loading": "Laddar textredigeraren",
+  "load_error": "Textredigeraren kunde inte laddas. Ladda om sidan och försök igen."
+}

@@ -12,7 +12,8 @@ interface AppConfigFeatures {
 }
 
 export const appConfig: AppConfig = {
-  applicationName: (process.env.NEXT_PUBLIC_APP_NAME ?? '') || 'appen',
+  // Product name shown to people. NEXT_PUBLIC_APP_NAME still owns the persisted storage namespace.
+  applicationName: 'Katla',
   features: {
     draftEnabled: process.env.NEXT_PUBLIC_DRAFT_ERRAND === 'true',
     errandFilter: process.env.NEXT_PUBLIC_ERRAND_FILTER === 'true',

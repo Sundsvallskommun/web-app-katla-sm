@@ -52,6 +52,12 @@
     "stats": {
       "displayName": "Kakor för statistik",
       "description": "Dessa kakor tillåter oss att räkna besök och trafikkällor, så att vi kan mäta och förbättra prestanda på vår webbplats."
-    }
+    },
+    "choose": "Välj vilka kakor vi får använda",
+    "save": "Spara mina val",
+    "back": "Tillbaka",
+    "accept_all": "Godkänn alla",
+    "accept_necessary": "Godkänn endast nödvändiga",
+    "manage": "Hantera kakor"
   }
 }

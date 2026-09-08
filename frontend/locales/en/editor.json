@@ -1,0 +1,18 @@
+{
+  "formatting": "Text formatting",
+  "heading_one": "Heading 1",
+  "heading_two": "Heading 2",
+  "bold": "Bold",
+  "italic": "Italic",
+  "underline": "Underline",
+  "bullet_list": "Bullet list",
+  "ordered_list": "Numbered list",
+  "link": "Link",
+  "edit_link": "Edit link",
+  "link_url": "Link address",
+  "save_link": "Save link",
+  "remove_link": "Remove link",
+  "cancel": "Cancel",
+  "loading": "Loading the text editor",
+  "load_error": "The text editor could not be loaded. Reload the page and try again."
+}

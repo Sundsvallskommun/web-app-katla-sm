@@ -1,0 +1,17 @@
+/* Only viewport and overflow behavior belongs to the application shell.
+   Colors, typography, controls, and component spacing come from Astryx. */
+.municipalityLogo {
+  display: block;
+  width: 111px;
+  height: 44px;
+  flex-shrink: 0;
+  background: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+.entryContent {
+  width: 100%;
+  margin-block: auto;
+}

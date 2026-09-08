@@ -1,6 +1,6 @@
 import SchemaForm from '@components/json/schema/schema-form.component';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -67,7 +67,7 @@ describe('SchemaForm sections', () => {
    * Avsnitten skiljs åt av varsitt kort. En avdelare ovanpå kortkanten upprepar bara den
    * gränsen, så det ska inte finnas några.
    */
-  it('gives every section its own card instead of dividers between them', () => {
+  it('keeps each section heading and its fields together', () => {
     const multiSectionSchema: RJSFSchema = {
       type: 'object',
       properties: {
@@ -98,12 +98,13 @@ describe('SchemaForm sections', () => {
 
     const { container } = render(<MultiSectionForm />);
 
-    expect(container.querySelectorAll('hr.sk-divider')).toHaveLength(0);
-    const sections = container.querySelectorAll('section.bg-background-color-mixin-1');
+    expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+    const sections = container.querySelectorAll('section');
     expect(sections).toHaveLength(2);
-    for (const section of sections) {
-      expect(section.querySelector('h3')).toBeVisible();
-    }
+    expect(within(sections[0]).getByRole('heading', { name: 'Första', level: 3 })).toBeVisible();
+    expect(within(sections[0]).getByRole('textbox', { name: /^Beskrivning/ })).toBeVisible();
+    expect(within(sections[1]).getByRole('heading', { name: 'Sista', level: 3 })).toBeVisible();
+    expect(within(sections[1]).getByRole('textbox', { name: /^Åtgärder/ })).toBeVisible();
   });
 
   it('ignores a leftover icon instead of drawing one next to the heading', () => {

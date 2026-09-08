@@ -101,7 +101,7 @@ export function useOverviewErrands({ mode = 'desktop' }: UseOverviewErrandsOptio
         requestTrackerRef.current = { generation: invalidatedGeneration, pending: 0 };
       }
     };
-  }, [beginRequest, finishRequest, sortColumn, sortOrder, effectivePage, size, statuses, t]);
+  }, [beginRequest, finishRequest, sortColumn, sortOrder, effectivePage, mode, size, statuses, t]);
 
   const hasMore = mode === 'mobile' ? mobilePage + 1 < totalPages : page + 1 < totalPages;
 

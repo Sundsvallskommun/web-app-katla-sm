@@ -35,7 +35,7 @@ module.exports = {
   },
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   experimental: {
-    optimizePackageImports: ['@sk-web-gui/core', '@sk-web-gui/react', 'lodash', 'dayjs'],
+    optimizePackageImports: ['lodash', 'dayjs'],
   },
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];

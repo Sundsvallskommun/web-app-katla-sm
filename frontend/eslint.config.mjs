@@ -23,6 +23,7 @@ export default tseslint.config(
       'test-results/**',
       'next-env.d.ts',
       'src/data-contracts/**',
+      'src/theme/generated/**',
       '*.config.js',
       '*.config.mjs',
       '*.config.mts',
@@ -80,5 +81,5 @@ export default tseslint.config(
     },
   },
   // Måste ligga sist: stänger av stilregler som krockar med Prettier.
-  eslintConfigPrettier,
+  eslintConfigPrettier
 );

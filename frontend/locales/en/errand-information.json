@@ -70,6 +70,7 @@
     "person": "Person",
     "employee": "Employee",
     "no_person_found": "No person was found",
+    "missing_name": "Name missing",
     "missing_person_number": "Personal identity number missing",
     "missing_address": "Address missing",
     "missing_email": "Email address missing",
@@ -83,6 +84,7 @@
     "add_manually": "Add manually",
     "edit_details": "Edit details",
     "remove": "Remove",
+    "remove_person": "Remove {{name}}",
     "reporting_for_colleague": "I am reporting on behalf of a colleague",
     "modal": {
       "edit_title": "Edit person",
@@ -97,7 +99,9 @@
       "save_edit": "Save",
       "save_add": "Add",
       "cancel": "Cancel"
-    }
+    },
+    "clear_search": "Clear search",
+    "search_mode": "Search method"
   },
   "submit_confirm": {
     "question": "Once you submit the report it is registered and can no longer be changed.",

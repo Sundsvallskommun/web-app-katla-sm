@@ -69,6 +69,22 @@ Frontendens `yarn dev`, `yarn build`, `yarn build:test` och analyskommandon anv�
 
 Detta är en tillfällig åtgärd efter en lokal incident med ett skenande antal Node-processer. Turbopacks hjälpprocesser är det främsta spåret, men exakt orsak är inte fastställd. Undvik direkta `next dev`/`next build` utan `--webpack`, eftersom Next 16 annars väljer Turbopack. Den uttryckliga projektroten i `next.config.js` behålls. Beroendeversioner, applikationsflöden och API-kontrakt påverkas inte av valet av byggverktyg.
 
+## Komponenter och tema
+
+Frontend använder Astryx. Katlas tema definieras i `frontend/src/theme/katla.ts`.
+Efter ändringar i temat eller uppgradering av Astryx, kör från `frontend/`:
+
+```sh
+yarn theme:build
+yarn theme:check
+```
+
+Filerna i `frontend/src/theme/generated/` används av appen och versionshanteras,
+men ska genereras med kommandot ovan. Ändra dem inte för hand.
+Använd bibliotekets komponentprops och tematokens för färger, avstånd och typografi.
+Vid biblioteksuppgradering behöver även appens formulär-, språk-, routing- och
+tillgänglighetstester köras.
+
 ## Tester
 
 ### Frontend (`cd frontend`)
@@ -120,3 +136,6 @@ yarn format:check      # som CI: verifiera formatering
 ## CI
 
 GitHub Actions-flödet i `.github/workflows/ci.yml` kör strikt lint, formatkontroll, type-check och enhetstester för både frontend och backend samt Playwright e2e-tester vid pull requests och push till `main`/`develop`.
+
+Skärmbilder och axe-resultat sparas som tillfälliga CI-artifacts under körningen.
+De ska inte kopieras in i repot. Playwrights HTML-rapport laddas upp när tester misslyckas.

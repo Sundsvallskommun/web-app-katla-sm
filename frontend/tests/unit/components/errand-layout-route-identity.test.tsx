@@ -40,10 +40,9 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'sv' } }),
 }));
 
-vi.mock('src/hooks/use-media-query', () => ({ useMediaQuery: () => false }));
 // Layouten renderar inte förrän den aktuella metadatahämtningen är klar. Själva
 // hämtningen hör inte till det här testet, så dess status styrs explicit här.
 vi.mock('src/hooks/use-load-metadata', () => ({
@@ -64,32 +63,15 @@ vi.mock('@components/wizard/mobile-wizard.component', () => ({ MobileWizard: () 
 vi.mock('@contexts/form-validation-provider', () => ({
   FormValidationProvider: ({ children }: PropsWithChildren) => <>{children}</>,
 }));
-vi.mock('@layouts/main/main.component', () => ({
-  default: ({ children }: PropsWithChildren) => <main>{children}</main>,
+
+vi.mock('@layouts/base-errand-layout/base-errand-layout.component', () => ({
+  default: ({ children }: PropsWithChildren) => (
+    <>
+      <header data-testid="base-header">App header</header>
+      {children}
+    </>
+  ),
 }));
-
-vi.mock('@layouts/base-errand-layout/base-errand-layout.component', async () => {
-  const { useFormContext: useContext } = await import('react-hook-form');
-
-  const BaseErrandLayoutMock = ({ children, registerNewErrand }: PropsWithChildren<{ registerNewErrand: boolean }>) => {
-    const { watch } = useContext<ErrandDTO>();
-    const errandNumber = watch('errandNumber');
-    const status = watch('status');
-
-    return (
-      <div>
-        <div data-testid="base-header">
-          {registerNewErrand ? 'new-errand' : `existing:${errandNumber ?? 'missing'}:${status ?? 'missing'}`}
-        </div>
-        {children}
-      </div>
-    );
-  };
-
-  return {
-    default: BaseErrandLayoutMock,
-  };
-});
 
 vi.mock('@layouts/errand-button-group.component', async () => {
   const { useFormContext: useContext } = await import('react-hook-form');
@@ -122,27 +104,6 @@ vi.mock('@layouts/errand-button-group.component', async () => {
   };
 });
 
-vi.mock('@sk-web-gui/react', () => {
-  const Tabs = Object.assign(({ children }: PropsWithChildren) => <div data-testid="errand-tabs">{children}</div>, {
-    Button: ({ children }: PropsWithChildren) => <div>{children}</div>,
-    Content: ({ children }: PropsWithChildren) => <div>{children}</div>,
-    Item: ({ children }: PropsWithChildren) => <div>{children}</div>,
-  });
-  const AlertContent = Object.assign(({ children }: PropsWithChildren) => <div>{children}</div>, {
-    Description: ({ children }: PropsWithChildren) => <div>{children}</div>,
-  });
-  const Alert = Object.assign(({ children }: PropsWithChildren) => <div>{children}</div>, {
-    Content: AlertContent,
-    Icon: () => null,
-  });
-
-  return {
-    Alert,
-    Spinner: ({ 'aria-label': ariaLabel }: { 'aria-label': string }) => <div aria-label={ariaLabel} />,
-    Tabs,
-  };
-});
-
 const getErrandMock = vi.mocked(getErrandUsingErrandNumber);
 
 const createDeferred = <T,>() => {
@@ -166,6 +127,7 @@ const FormIdentityProbe = () => {
 };
 
 beforeEach(() => {
+  getErrandMock.mockReset();
   setExistingRoute('ERRAND-A');
   mocks.metadataLoadState.value = 'ready';
   useMetadataStore.setState({ metadata: { roles: [] } });
@@ -185,14 +147,14 @@ describe('errand layout route identity', () => {
 
     expect(screen.getByLabelText('forms:loading')).toBeInTheDocument();
     expect(screen.queryByText('registration-content')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('base-header')).not.toBeInTheDocument();
+    expect(screen.getByTestId('base-header')).toHaveTextContent('App header');
 
     mocks.metadataLoadState.value = 'ready';
     view.rerender(<ErrandLayoutContent>registration-content</ErrandLayoutContent>);
 
     expect(screen.queryByLabelText('forms:loading')).not.toBeInTheDocument();
     expect(screen.getByText('registration-content')).toBeInTheDocument();
-    expect(screen.getByTestId('base-header')).toHaveTextContent('new-errand');
+    expect(screen.getByTestId('base-header')).toHaveTextContent('App header');
   });
 
   it('removes A header, status and actions synchronously and never exposes A when B fails', async () => {
@@ -207,7 +169,7 @@ describe('errand layout route identity', () => {
       </ErrandLayoutContent>
     );
 
-    expect(await screen.findByTestId('base-header')).toHaveTextContent('existing:ERRAND-A:DRAFT');
+    expect(await screen.findByRole('heading', { level: 1, name: /ERRAND-A/ })).toBeInTheDocument();
     expect(screen.getByTestId('form-identity')).toHaveTextContent('id-a:ERRAND-A');
     const detachedSaveAction = screen.getByRole('button', { name: 'save-action' });
     const detachedRegisterAction = screen.getByRole('button', { name: 'register-action' });
@@ -220,7 +182,7 @@ describe('errand layout route identity', () => {
     );
 
     expect(screen.queryByText(/ERRAND-A/)).not.toBeInTheDocument();
-    expect(screen.queryByTestId('base-header')).not.toBeInTheDocument();
+    expect(screen.getByTestId('base-header')).toHaveTextContent('App header');
     expect(screen.queryByRole('button', { name: 'save-action' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'register-action' })).not.toBeInTheDocument();
     expect(screen.getByLabelText('forms:loading')).toBeInTheDocument();
@@ -265,7 +227,7 @@ describe('errand layout route identity', () => {
       await currentB.promise;
     });
 
-    expect(await screen.findByTestId('base-header')).toHaveTextContent('existing:ERRAND-B:NEW');
+    expect(await screen.findByRole('heading', { level: 1, name: /ERRAND-B/ })).toBeInTheDocument();
     expect(screen.getByTestId('form-identity')).toHaveTextContent('id-b:ERRAND-B');
 
     await act(async () => {
@@ -273,7 +235,7 @@ describe('errand layout route identity', () => {
       await slowA.promise;
     });
 
-    expect(screen.getByTestId('base-header')).toHaveTextContent('existing:ERRAND-B:NEW');
+    expect(screen.getByRole('heading', { level: 1, name: /ERRAND-B/ })).toBeInTheDocument();
     expect(screen.getByTestId('form-identity')).toHaveTextContent('id-b:ERRAND-B');
     expect(mocks.jsonParametersToErrandFormData).toHaveBeenCalledTimes(1);
   });
@@ -295,7 +257,7 @@ describe('errand layout route identity', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('api_errors.errand');
     expect(screen.queryByText(/ERRAND-A/)).not.toBeInTheDocument();
-    expect(screen.queryByTestId('base-header')).not.toBeInTheDocument();
+    expect(screen.getByTestId('base-header')).toHaveTextContent('App header');
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(mocks.jsonParametersToErrandFormData).not.toHaveBeenCalled();
   });
@@ -318,7 +280,7 @@ describe('errand layout route identity', () => {
       </ErrandLayoutContent>
     );
 
-    expect(screen.getByTestId('base-header')).toHaveTextContent('new-errand');
+    expect(screen.getByTestId('base-header')).toHaveTextContent('App header');
     expect(screen.getByTestId('form-identity')).toHaveTextContent('missing:missing');
     fireEvent.click(screen.getByRole('button', { name: 'save-action' }));
     fireEvent.click(screen.getByRole('button', { name: 'register-action' }));
@@ -344,13 +306,19 @@ describe('errand layout route identity', () => {
     getErrandMock.mockResolvedValueOnce({ id: 'id-a', errandNumber: 'ERRAND-A', status: 'DRAFT', jsonParameters: [] });
 
     const view = render(<ErrandLayoutContent>registration-content</ErrandLayoutContent>);
-    expect(await screen.findByTestId('errand-tabs')).toBeInTheDocument();
+    expect(await screen.findByRole('navigation')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'common:tabs.basic_information' })).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('link', { name: 'common:tabs.messages' })).toHaveAttribute(
+      'href',
+      '/arende/ERRAND-A/meddelanden'
+    );
+    expect(screen.getAllByText('registration-content')).toHaveLength(1);
 
     mocks.pathname.value = '/arende/registrera';
     mocks.params.value.errandnumber = undefined;
     view.rerender(<ErrandLayoutContent>registration-content</ErrandLayoutContent>);
 
-    expect(screen.queryByTestId('errand-tabs')).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     expect(screen.getByText('registration-content')).toBeInTheDocument();
   });
 

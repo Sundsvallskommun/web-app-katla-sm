@@ -1,7 +1,6 @@
 'use client';
 
-import { FormLabel, useFormControlContext } from '@sk-web-gui/react';
-import type { ComponentProps } from 'react';
+import type { HTMLAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /** Gemensam märkning även för kontroller, som kryssrutor, som äger sin egen etikett. */
@@ -11,21 +10,25 @@ export function FieldRequirementIndicator({ required }: { required: boolean }) {
   return (
     <>
       {' '}
-      <span className="font-normal text-dark-secondary whitespace-nowrap">
+      <span className="font-normal text-muted whitespace-nowrap">
         {t(required ? 'required_label' : 'optional_label')}
       </span>
     </>
   );
 }
 
-/** FormControl äger obligatoriet; appen skriver ut det i text i stället för med en stjärna. */
-export function FormFieldLabel({ children, ...props }: ComponentProps<typeof FormLabel> & { showRequired?: never }) {
-  const formControl = useFormControlContext();
-
+/** Schemafält äger obligatoriet uttryckligen; etiketten har ingen bibliotekskontext. */
+export function FormFieldLabel({
+  children,
+  as: Element = 'label',
+  required,
+  className = '',
+  ...props
+}: HTMLAttributes<HTMLElement> & { as?: 'label' | 'legend'; htmlFor?: string; required?: boolean }) {
   return (
-    <FormLabel {...props} showRequired={false}>
+    <Element {...props} className={`text-sm font-semibold text-foreground ${className}`}>
       {children}
-      {formControl && <FieldRequirementIndicator required={!!formControl.required} />}
-    </FormLabel>
+      {required !== undefined && <FieldRequirementIndicator required={required} />}
+    </Element>
   );
 }

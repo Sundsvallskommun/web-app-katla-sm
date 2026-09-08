@@ -1,8 +1,16 @@
 'use client';
 
 import { pathWithoutLocale } from '@app/locale-path';
+import { Button } from '@astryxdesign/core/Button';
+import { Heading } from '@astryxdesign/core/Heading';
+import { useMediaQuery } from '@astryxdesign/core/hooks';
+import { Layout, LayoutContent, LayoutFooter } from '@astryxdesign/core/Layout';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Tab, TabList } from '@astryxdesign/core/TabList';
+import { Text } from '@astryxdesign/core/Text';
 import { jsonParametersToErrandFormData } from '@components/json/utils/schema-utils';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
+import { StatusLabel } from '@components/misc/status-label.component';
 import { getVisibleTabs } from '@components/tabs/tabs';
 import { MobileWizard } from '@components/wizard/mobile-wizard.component';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
@@ -10,11 +18,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import BaseErrandLayout from '@layouts/base-errand-layout/base-errand-layout.component';
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
-import Main from '@layouts/main/main.component';
 import { getErrandUsingErrandNumber } from '@services/errand-service/errand-service';
-import { Spinner, Tabs } from '@sk-web-gui/react';
 import { ErrandFormHandover, takeErrandFormHandover } from '@utils/errand-form-handover';
-import { default as NextLink } from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { FormProvider, Resolver, useForm } from 'react-hook-form';
@@ -22,11 +28,12 @@ import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
 import { useAutoInitReporter } from 'src/hooks/use-auto-init-reporter';
 import { useLoadMetadata } from 'src/hooks/use-load-metadata';
-import { useMediaQuery } from 'src/hooks/use-media-query';
 import { useUnsavedReportWarning } from 'src/hooks/use-unsaved-report-warning';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { useWizardStore } from 'src/stores/wizard-store';
 import * as yup from 'yup';
+
+import { ErrandContentSkeleton } from './errand-content-skeleton.component';
 
 const ReporterInit: React.FC = () => {
   useAutoInitReporter();
@@ -73,25 +80,6 @@ interface ErrandRouteContentProps {
   children: React.ReactNode;
   route: ErrandRoute;
 }
-
-// Tabs identifierar sitt direkta Button-barn via komponentreferens. Att skicka
-// de polymorfa länkpropsen genom ett objekt bevarar den identiteten och går
-// samtidigt runt den installerade deklarationen, som inte exponerar målets props.
-const createLinkTabProps = (href: string) => ({ as: NextLink, href });
-
-/**
- * Registreringen visar bara ett innehåll och får därför ingen fliklist — en ensam flik är
- * en kontroll som inte leder någonstans. Innehållsytan delas med flikvyn, så att sidorna
- * ser likadana ut när ärendet väl finns och flikarna tillkommer.
- *
- * Formuläret har inget eget ytterkort: avsnitten bär sina egna kort, och ett kort runt dem
- * hade bara ramat in ramarna. Sidmarginalen behövs därför bara på smal skärm, där innehållet
- * annars går ända ut i kanten.
- */
-const ERRAND_CONTENT_CLASS = 'mx-auto w-full max-w-[160rem] px-16 md:px-[12rem]';
-const ERRAND_PANEL_CLASS = 'pt-24 pb-80';
-/** Kvittot har ingen rubrikrad ovanför sig och behöver därför sitt eget toppavstånd. */
-const RECEIPT_PANEL_CLASS = 'pt-64 pb-80';
 
 const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route }) => {
   const { t } = useTranslation();
@@ -190,6 +178,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   // Utan det här villkoret bytte ett återupptaget utkast till flikvyn på mobil.
   // Utkastets standardstatus är DRAFT, så kvittot måste undantas explicit — annars
   // öppnas wizarden ovanpå beskedet på mobil.
+  const showReportActions = !submittedView && (registerNewErrand || isDraft);
   const showMobileWizard = isMobile && !submittedView && (registerNewErrand || isDraft);
 
   const getHeaderTitle = () => {
@@ -209,92 +198,99 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
     (message): message is string => message !== null
   );
 
-  if (loadErrors.length > 0 || loadState !== 'ready' || metadataLoadState !== 'ready' || !metadata) {
-    return (
-      <FormProvider {...methods}>
-        <div className="bg-background-content h-screen min-h-screen flex items-center justify-center p-24">
-          {loadErrors.length > 0 ?
-            <ErrorAlertList messages={loadErrors} />
-          : <Spinner aria-label={t('forms:loading')} />}
-        </div>
-      </FormProvider>
-    );
-  }
+  const isReady = loadErrors.length === 0 && loadState === 'ready' && metadataLoadState === 'ready' && !!metadata;
 
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        <a
-          href="#content"
-          // Över sidhuvudet (15), under modala bakgrunder (19+). Vanlig ankarnavigering
-          // flyttar fokus till sidans gemensamma, programmässigt fokuserbara main.
-          className="sr-only rounded-button-md bg-background-content text-dark-primary focus:not-sr-only focus:fixed focus:top-16 focus:left-16 focus:z-[18] focus:w-max focus:max-w-[calc(100vw-3.2rem)] focus:p-12 focus:ring focus:ring-offset-2"
-        >
-          {t('layout:header.goto_content')}
-        </a>
-        {registerNewErrand && <ReporterInit />}
+        {isReady && registerNewErrand && <ReporterInit />}
         {/* Bara registreringen: där är allt innehåll osparat. Ett laddat utkast bär redan
             sparade värden, så "har innehåll" skulle varna för att lämna en orörd sida. */}
-        {registerNewErrand && <UnsavedReportWarning />}
+        {isReady && registerNewErrand && <UnsavedReportWarning />}
         <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
-          {showMobileWizard ?
+          {!isReady ?
+            <Layout height="auto" contentWidth={960} padding={4}>
+              <LayoutContent isScrollable={false}>
+                <Stack gap={6}>
+                  <Text role="status" className="sr-only">
+                    {loadErrors.length === 0 ? t('forms:loading') : ''}
+                  </Text>
+                  {loadErrors.length > 0 ?
+                    <ErrorAlertList messages={loadErrors} />
+                  : <Stack role="region" aria-label={t('forms:loading')} aria-busy="true">
+                      <ErrandContentSkeleton />
+                    </Stack>
+                  }
+                </Stack>
+              </LayoutContent>
+            </Layout>
+          : showMobileWizard ?
             <MobileWizard />
-          : <div className="grow shrink overflow-y-auto">
-              <div className="bg-transparent">
-                <div className="mb-xl">
-                  {/* Kvittot bär sitt eget besked i kortet och har inga åtgärder kvar, så hela
-                      raden med rubrik och knappar utgår där. */}
-                  {/* Raden följer med vid skroll så att åtgärderna alltid är nåbara — rapporten
-                      är lång, och utan detta måste man skrolla tillbaka upp för att skicka in.
-                      Egen bakgrund krävs: kortet skulle annars synas rakt igenom raden.
-                      Klistrar mot skrollytan (.grow.shrink.overflow-y-auto), inte mot fönstret. */}
+          : <Layout
+              height={showReportActions ? 'fill' : 'auto'}
+              contentWidth={960}
+              padding={isMobile ? 4 : 6}
+              footer={
+                showReportActions && (
+                  <LayoutFooter hasDivider padding={0} className="pb-safe" data-cy="report-actions">
+                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                  </LayoutFooter>
+                )
+              }
+            >
+              <LayoutContent isScrollable={showReportActions} className="scroll-py-2">
+                <Stack gap={6}>
                   {!submittedView && (
-                    <div
-                      className={
-                        // Raden klistrar sig mot sidhuvudet vid skroll, och en toppmarginal försvinner då ur
-                        // beräkningen. Utan den är avståndet detsamma överst på sidan som under skroll.
-                        `sticky top-0 z-10 bg-background-content flex flex-col md:flex-row justify-between py-24 gap-12 ${ERRAND_CONTENT_CLASS}`
-                      }
-                    >
-                      <h1 className="text-h2-sm md:text-h2-lg">{getHeaderTitle()}</h1>
-                      <ErrandButtonGroup isNewErrand={registerNewErrand} />
-                    </div>
-                  )}
-                  <Main>
-                    {registerNewErrand || submittedView ?
-                      <div className={ERRAND_CONTENT_CLASS}>
-                        <div className={submittedView ? RECEIPT_PANEL_CLASS : ERRAND_PANEL_CLASS}>{children}</div>
-                      </div>
-                    : <Tabs
-                        className={`${ERRAND_CONTENT_CLASS} pt-22`}
-                        tabslistClassName="border-0 -m-b-12 flex-wrap ml-10 overflow-x-auto"
-                        panelsClassName="border-t-1"
-                        size="sm"
-                        // Vilken flik som är vald ligger i adressen, inte i komponentens eget läge:
-                        // varje flik är en länk, och en direktlänk ska markera rätt flik.
-                        current={activeTabIndex}
+                    <Stack gap={4}>
+                      {!registerNewErrand && (
+                        <Button
+                          href="/oversikt"
+                          variant="ghost"
+                          className="self-start"
+                          icon={<ArrowLeft aria-hidden="true" />}
+                          label={t('filtering:my_reports')}
+                        />
+                      )}
+                      <Stack
+                        data-cy="errand-identity"
+                        direction={isMobile ? 'horizontal' : 'vertical'}
+                        align={isMobile ? 'center' : 'start'}
+                        justify={isMobile ? 'between' : 'start'}
+                        wrap="wrap"
+                        gap={2}
                       >
-                        {tabs.map((tab, index) => {
-                          return (
-                            <Tabs.Item key={tab.path}>
-                              <Tabs.Button {...createLinkTabProps(tab.path)} className="text-base whitespace-nowrap">
-                                {t(tab.labelKey)}
-                              </Tabs.Button>
-                              <Tabs.Content>
-                                {/* Varje flik är en egen sida, och children är den sida som just nu
-                                    är laddad. Bara den valda flikens panel får innehållet — annars
-                                    hade sidan renderats en gång per flik. */}
-                                <div className={ERRAND_PANEL_CLASS}>{index === activeTabIndex ? children : null}</div>
-                              </Tabs.Content>
-                            </Tabs.Item>
-                          );
-                        })}
-                      </Tabs>
-                    }
-                  </Main>
-                </div>
-              </div>
-            </div>
+                        {isMobile ?
+                          <Text
+                            as="h1"
+                            type="large"
+                            weight="semibold"
+                            aria-label={getHeaderTitle()}
+                            className="min-w-0 break-words"
+                          >
+                            {errandNumber ?? getHeaderTitle()}
+                          </Text>
+                        : <Heading level={1}>{getHeaderTitle()}</Heading>}
+                        {!registerNewErrand && <StatusLabel status={errandStatus} />}
+                      </Stack>
+                    </Stack>
+                  )}
+                  {!registerNewErrand && !submittedView && (
+                    <TabList
+                      value={tabs[activeTabIndex]?.path ?? ''}
+                      onChange={() => undefined}
+                      aria-label={getHeaderTitle()}
+                      hasDivider
+                      size="lg"
+                    >
+                      {tabs.map((tab) => (
+                        <Tab key={tab.path} value={tab.path} label={t(tab.labelKey)} href={tab.path} />
+                      ))}
+                    </TabList>
+                  )}
+                  {children}
+                </Stack>
+              </LayoutContent>
+            </Layout>
           }
         </BaseErrandLayout>
       </FormValidationProvider>

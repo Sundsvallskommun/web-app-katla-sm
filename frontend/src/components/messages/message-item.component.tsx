@@ -1,16 +1,17 @@
 'use client';
 
+import { Avatar } from '@astryxdesign/core/Avatar';
+import { Button } from '@astryxdesign/core/Button';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@astryxdesign/core/Text';
+import { Token } from '@astryxdesign/core/Token';
 import { ConversationMessageAttachmentDTO, ConversationMessageDTO } from '@data-contracts/backend/data-contracts';
 import { getConversationAttachment } from '@services/conversation-service/conversation-service';
-import { Avatar, Button, Label } from '@sk-web-gui/react';
 import { sanitizeMessage } from '@utils/sanitize-message';
 import dayjs from 'dayjs';
 import { Paperclip } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-const initials = (firstName?: string, lastName?: string): string =>
-  `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
 
 /** Filen kommer base64-kodad; webbläsaren behöver en blob för att kunna spara den. */
 const toBlob = (base64: string, contentType: string): Blob => {
@@ -54,16 +55,15 @@ const AttachmentButton: React.FC<{
   return (
     <Button
       data-cy="message-attachment"
-      variant="tertiary"
+      variant="secondary"
       size="sm"
-      leftIcon={<Paperclip size={16} aria-hidden="true" />}
-      loading={isDownloading}
+      icon={<Paperclip size={16} aria-hidden="true" />}
+      isLoading={isDownloading}
       onClick={() => {
         void download();
       }}
-    >
-      {attachment.name ?? t('messages:attachment_fallback_name')}
-    </Button>
+      label={attachment.name ?? t('messages:attachment_fallback_name')}
+    />
   );
 };
 
@@ -77,34 +77,35 @@ export const MessageItem: React.FC<{
   const senderName = [message.firstName, message.lastName].filter(Boolean).join(' ');
 
   return (
-    <article
-      data-cy="message"
-      className="bg-background-content border-1 rounded-utility flex w-full flex-col gap-16 p-16 md:p-24"
-    >
-      <header className="flex flex-wrap items-center gap-12">
-        <Avatar size="sm" initials={initials(message.firstName, message.lastName)} aria-hidden="true" />
-        <div className="flex min-w-0 flex-col">
-          <span className="font-semibold break-words">{senderName || t('messages:unknown_sender')}</span>
+    <Stack as="article" data-cy="message" gap={4} paddingBlock={4}>
+      <Stack as="header" direction="horizontal" wrap="wrap" align="center" gap={3}>
+        <Avatar size="sm" name={senderName} tooltip={false} aria-hidden="true" />
+        <Stack gap={1} className="min-w-0">
+          <Text weight="semibold" className="break-words">
+            {senderName || t('messages:unknown_sender')}
+          </Text>
           {message.sent && (
-            <time className="text-small text-dark-secondary" dateTime={message.sent}>
-              {dayjs(message.sent).format('YYYY-MM-DD, HH:mm')}
-            </time>
+            <Text color="secondary" type="supporting">
+              <time dateTime={message.sent}>{dayjs(message.sent).format('YYYY-MM-DD, HH:mm')}</time>
+            </Text>
           )}
-        </div>
-        <Label rounded inverted color={isOutbound ? 'vattjom' : 'gronsta'} className="ml-auto whitespace-nowrap">
-          {isOutbound ? t('messages:direction_sent') : t('messages:direction_received')}
-        </Label>
-      </header>
+        </Stack>
+        <Token
+          color={isOutbound ? 'blue' : 'default'}
+          className="ml-auto whitespace-nowrap"
+          label={isOutbound ? t('messages:direction_sent') : t('messages:direction_received')}
+        />
+      </Stack>
 
       {/* Texten är HTML från en skrivruta och saneras innan den renderas. */}
-      <div
+      <section
         data-cy="message-body"
-        className="break-words [&_p]:mb-8 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-24"
+        className="break-words [&_p]:mb-2 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-6"
         dangerouslySetInnerHTML={{ __html: sanitizeMessage(message.message) }}
       />
 
       {message.attachments.length > 0 && (
-        <div className="flex flex-wrap gap-8">
+        <Stack direction="horizontal" wrap="wrap" gap={2}>
           {message.attachments.map((attachment) => (
             <AttachmentButton
               key={attachment.attachmentId}
@@ -114,8 +115,8 @@ export const MessageItem: React.FC<{
               onError={onError}
             />
           ))}
-        </div>
+        </Stack>
       )}
-    </article>
+    </Stack>
   );
 };

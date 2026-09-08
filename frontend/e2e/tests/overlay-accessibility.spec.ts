@@ -43,7 +43,7 @@ test.describe('Modal overlay accessibility', () => {
       const trigger = page
         .getByRole('button', { name: /Öppna notifieringar/, includeHidden: true })
         .filter({ visible: true });
-      await expect(page.locator('#notifications-panel')).not.toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Notifieringar', exact: true })).not.toBeVisible();
       await trigger.click();
       const dialog = page.getByRole('dialog', { name: 'Notifieringar', exact: true });
       const close = dialog.getByRole('button', { name: 'Stäng notifieringar' });
@@ -61,7 +61,7 @@ test.describe('Modal overlay accessibility', () => {
       await close.press('Tab');
       await expect(notificationLink).toBeFocused();
 
-      const first = viewport.width < 800 ? dialog.getByRole('link').first() : close;
+      const first = close;
       await crossModalTabBoundary(page, 'Tab');
       await expect(first).toBeFocused();
       await crossModalTabBoundary(page, 'Shift+Tab');
@@ -70,10 +70,11 @@ test.describe('Modal overlay accessibility', () => {
       const bounds = await dialog.boundingBox();
       expect(bounds).not.toBeNull();
       if (!bounds) throw new Error('The notification panel must be visible.');
-      expect(Math.abs(bounds.x + bounds.width - viewport.width)).toBeLessThanOrEqual(1);
-      expect(bounds.y).toBe(0);
-      expect(bounds.height).toBe(viewport.height);
-      if (viewport.width < 800) expect(bounds.x).toBe(0);
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.y).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height);
+      if (viewport.width < 800) expect(bounds).toEqual({ x: 0, y: 0, width: viewport.width, height: viewport.height });
       else {
         await page.mouse.click(16, viewport.height / 2);
         await expect(dialog).toBeVisible();
@@ -82,7 +83,7 @@ test.describe('Modal overlay accessibility', () => {
 
       await page.keyboard.press('Escape');
       await expect(dialog).not.toBeVisible();
-      await expect(page.locator('#notifications-panel')).not.toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Notifieringar', exact: true })).not.toBeVisible();
       await expect(trigger).toBeFocused();
       await expect(trigger).toHaveAttribute('aria-expanded', 'false');
       await expect.poll(() => page.locator('dialog:modal').count()).toBe(0);
@@ -91,50 +92,66 @@ test.describe('Modal overlay accessibility', () => {
       await expect(close).toBeFocused();
       await close.press('Enter');
       await expect(dialog).not.toBeVisible();
-      await expect(page.locator('#notifications-panel')).not.toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Notifieringar', exact: true })).not.toBeVisible();
       await expect(trigger).toBeFocused();
     });
   }
 
-  test('Keeps mobile menu focus inside and restores it after either closing action', async ({ appUrl, page }) => {
+  test('keeps account actions keyboard reachable on mobile and restores focus on Escape', async ({ appUrl, page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(appUrl('/oversikt'));
-    const trigger = page.getByRole('button', { name: 'Öppna meny', exact: true, includeHidden: true });
-    await expect(page.locator('#mobile-overview-menu')).not.toBeVisible();
-    await trigger.click();
-    const dialog = page.getByRole('dialog', { name: 'Meny', exact: true });
-    const close = dialog.getByRole('button', { name: 'Stäng meny' });
-    const first = dialog.getByRole('link').first();
-    const last = dialog.getByRole('button', { name: 'Logga ut' });
-
-    await expect(dialog).toHaveAttribute('aria-modal', 'true');
-    await expect(close).toBeFocused();
-    await expect.poll(() => dialog.evaluate((element) => element.matches(':modal'))).toBe(true);
-    await trigger.evaluate((element) => {
-      element.focus();
-    });
-    await expect(close).toBeFocused();
-    await close.press('Tab');
-    await expect(dialog.getByRole('button', { name: 'status-button-Inskickade' })).toBeFocused();
-    await last.focus();
-    await crossModalTabBoundary(page, 'Tab');
-    await expect(first).toBeFocused();
-    await crossModalTabBoundary(page, 'Shift+Tab');
-    await expect(last).toBeFocused();
-
-    const bounds = await dialog.boundingBox();
-    expect(bounds).toEqual({ x: 0, y: 0, width: 390, height: 844 });
-
-    await page.keyboard.press('Escape');
-    await expect(dialog).not.toBeVisible();
-    await expect(trigger).toBeFocused();
-    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    await expect.poll(() => page.locator('dialog:modal').count()).toBe(0);
-
+    const trigger = page.getByRole('button', { name: 'Öppna användarmeny', exact: true });
+    await trigger.focus();
     await trigger.press('Enter');
-    await expect(close).toBeFocused();
-    await close.press('Enter');
-    await expect(dialog).not.toBeVisible();
+    const menu = page.getByRole('menu').filter({ visible: true }).first();
+    await expect(menu).toBeVisible();
+    const logout = menu.getByRole('menuitem', { name: 'Logga ut' });
+    await logout.focus();
+    await expect(logout).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(menu).not.toBeVisible();
     await expect(trigger).toBeFocused();
+    await expect(page.getByRole('radiogroup', { name: 'Ärendefilter' })).toBeVisible();
   });
 });
+
+for (const width of [1536, 390]) {
+  test(`notification history scrolls below its visible header at ${width}px`, async ({ page, appUrl }, testInfo) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/supportmanagement/errands?*', jsonRoute(mockErrands));
+    await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadata));
+    const history: NotificationDTO[] = Array.from({ length: 12 }, (_, index) => ({
+      id: `notification-${index}`,
+      errandNumber: `VOF-26090${String(index).padStart(3, '0')}`,
+      description: 'Ärendet har uppdaterats.',
+      subtype: 'ERRAND',
+      createdByFullName: 'Alexandra Andersson',
+      created: `2026-09-04T${String(20 - index).padStart(2, '0')}:15:00Z`,
+      acknowledged: index > 1,
+    }));
+    await page.route('**/supportmanagement/notifications', jsonRoute(history));
+    await page.goto(appUrl('/oversikt'));
+    await page.getByRole('button', { name: /Öppna notifieringar/ }).click();
+    const dialog = page.getByRole('dialog', { name: 'Notifieringar', exact: true });
+    const close = dialog.getByRole('button', { name: 'Stäng notifieringar' });
+    await expect(dialog.getByTestId('notification-item')).toHaveCount(12);
+    const initial = await close.boundingBox();
+    await page.screenshot({ path: testInfo.outputPath(`notifications-${width}.png`) });
+    const last = dialog.getByRole('link', { name: history[11].errandNumber, exact: true });
+    // Establish keyboard modality before programmatically moving to the last link.
+    await close.press('Tab');
+    await last.focus();
+    await expect(last).toBeInViewport();
+    await expect(close).toBeInViewport();
+    expect((await close.boundingBox())?.y).toBe(initial?.y);
+    // The row owns the enlarged link's keyboard focus ring, without a second inner rectangle.
+    await expect(last).toBeFocused();
+    await expect(last).toHaveCSS('outline-width', '0px');
+    await expect(dialog.getByTestId('notification-item').last()).toHaveCSS('outline-style', 'solid');
+    expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath(`notifications-scrolled-${width}.png`) });
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+  });
+}

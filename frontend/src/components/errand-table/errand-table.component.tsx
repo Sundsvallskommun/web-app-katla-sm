@@ -1,96 +1,93 @@
 'use client';
 
-import { ErrorAlertList } from '@components/misc/error-alert.component';
+import { useClickableContainer } from '@astryxdesign/core/hooks';
+import { Link } from '@astryxdesign/core/Link';
+import { Skeleton } from '@astryxdesign/core/Skeleton';
+import { Table, TableBody, TableCell, TableRow } from '@astryxdesign/core/Table';
+import { VStack } from '@astryxdesign/core/VStack';
 import { StatusLabel } from '@components/misc/status-label.component';
-import { LinkButton } from '@components/navigation/link-button.component';
-import { CenterDiv } from '@layouts/center-div.component';
-import { Spinner, Table } from '@sk-web-gui/react';
+import type { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { getTypeDisplayName } from '@utils/errand-helpers';
 import dayjs from 'dayjs';
 import { ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useOverviewErrands } from 'src/hooks/use-overview-errands';
 import { useSortStore } from 'src/stores/sort-store';
 
 import { ErrandTableFooter } from './errand-table-footer.component';
 import { ErrandTableHeader } from './errand-table-header.component';
 
-export const ErrandTable: React.FC = () => {
+interface ErrandTableProps {
+  rows: ErrandDTO[];
+  isLoading: boolean;
+  totalPages: number;
+}
+
+export const ErrandTable: React.FC<ErrandTableProps> = ({ rows, isLoading, totalPages }) => {
   const { t } = useTranslation();
-  const router = useRouter();
   const { rowHeight } = useSortStore();
-  const { rows, isLoading, totalPages, totalElements, errandsError, metadataError } = useOverviewErrands();
-
-  const errors = [metadataError, errandsError].filter((message): message is string => message !== null);
-
   return (
-    <div className="flex flex-col gap-16">
-      {/* Felen står först. Utan statuslista görs ingen hämtning, så laddläget kan bli stående —
-          och då är felet som förklarar varför det enda som får användaren vidare. */}
-      <ErrorAlertList messages={errors} />
-      {isLoading && rows.length === 0 && (
-        <CenterDiv className="mt-[20rem]">
-          <div role="status" aria-live="polite">
-            <Spinner aria-hidden="true" />
-            <span className="sr-only">{t('common:errand-table.loading')}</span>
-          </div>
-        </CenterDiv>
-      )}
-      {!isLoading && rows.length === 0 && errors.length === 0 && (
-        <CenterDiv className="mt-[20rem]">{t('errand-information:no_errands')}</CenterDiv>
-      )}
-      {rows.length > 0 && (
-        <>
-          <p className="text-dark-secondary" data-cy="errand-count">
-            {t('filtering:showing_count', { count: totalElements })}
-          </p>
-          <Table data-cy="errand-table" dense={rowHeight === 'dense'}>
-            <ErrandTableHeader />
-
-            <Table.Body>
-              {rows.map((errand, index) => {
-                const errandUrl = `/arende/${errand.errandNumber}/grundinformation`;
-
-                return (
-                  <Table.Row
-                    key={`errand-row-${index}`}
-                    className="cursor-pointer"
-                    // Hela raden öppnar ärendet för den som pekar. Pilen är kvar som riktig länk:
-                    // den är det som går att nå med tangentbord och som skärmläsaren annonserar.
-                    onClick={() => {
-                      router.push(errandUrl);
-                    }}
-                  >
-                    <Table.Column>{getTypeDisplayName(errand, t)}</Table.Column>
-                    <Table.Column>
-                      <StatusLabel status={errand?.status} />
-                    </Table.Column>
-                    <Table.Column>{errand.errandNumber}</Table.Column>
-                    <Table.Column>{dayjs(errand.created).format('YYYY-MM-DD, HH:mm')}</Table.Column>
-                    <Table.Column className="justify-end">
-                      <LinkButton
-                        href={errandUrl}
-                        data-cy="open-errand-button"
-                        aria-label={t('common:errand-table.open_errand', { errandNumber: errand.errandNumber })}
-                        iconButton
-                        variant="tertiary"
-                        // Pilen står för sig själv i designen; en knappyta ritar en ruta runt den.
-                        showBackground={false}
-                        leftIcon={<ArrowRight aria-hidden="true" />}
-                      />
-                    </Table.Column>
-                  </Table.Row>
-                );
-              })}
-            </Table.Body>
-
-            <Table.Footer>
-              <ErrandTableFooter totalPages={totalPages} />
-            </Table.Footer>
-          </Table>
-        </>
-      )}
-    </div>
+    <VStack gap={4}>
+      <Table
+        data-cy="errand-table"
+        aria-label={t('filtering:reports_heading')}
+        data-density={rowHeight}
+        density={rowHeight === 'dense' ? 'compact' : 'balanced'}
+        hasHover
+        aria-busy={isLoading}
+        className="min-w-[46rem]"
+      >
+        <ErrandTableHeader />
+        <TableBody>
+          {isLoading &&
+            rows.length === 0 &&
+            [0, 1, 2, 3, 4].map((row) => (
+              <TableRow key={row} aria-hidden="true" data-cy="errand-table-skeleton">
+                {[0, 1, 2, 3, 4].map((column) => (
+                  <TableCell key={column}>
+                    <Skeleton width="70%" height="1.5em" index={row} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          {rows.map((errand) => (
+            <ErrandTableRow key={errand.errandNumber} errand={errand} />
+          ))}
+        </TableBody>
+      </Table>
+      {rows.length > 0 && <ErrandTableFooter totalPages={totalPages} />}
+    </VStack>
   );
 };
+
+/** One primary link owns both keyboard navigation and delegated row clicks. */
+function ErrandTableRow({ errand }: { errand: ErrandDTO }) {
+  const { t } = useTranslation();
+  const containerRef = useRef<HTMLTableRowElement>(null);
+  const interactiveRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null);
+  const rowInteraction = useClickableContainer({ containerRef, interactiveRef });
+  return (
+    <TableRow ref={containerRef} {...rowInteraction} className="cursor-pointer">
+      <TableCell>
+        <strong>{getTypeDisplayName(errand, t)}</strong>
+      </TableCell>
+      <TableCell>
+        <StatusLabel status={errand.status} />
+      </TableCell>
+      <TableCell>
+        <Link
+          ref={interactiveRef}
+          href={`/arende/${errand.errandNumber}/grundinformation`}
+          data-cy="open-errand-button"
+          hasUnderline
+        >
+          {errand.errandNumber}
+        </Link>
+      </TableCell>
+      <TableCell>{dayjs(errand.created).format('YYYY-MM-DD, HH:mm')}</TableCell>
+      <TableCell>
+        <ArrowRight aria-hidden="true" />
+      </TableCell>
+    </TableRow>
+  );
+}

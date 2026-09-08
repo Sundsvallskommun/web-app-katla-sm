@@ -1,0 +1,54 @@
+/* RJSF owns control IDs and descriptions. Astryx supplies the shared field
+   appearance while native controls keep the schema's form and focus contract. */
+.control {
+  /* These are native controls, not flex wrappers. Flex changes the browser's
+     date/time shadow layout and pulls the picker indicator away from the end. */
+  display: block;
+  font: inherit;
+  color: var(--color-text-primary);
+}
+
+.control:not(textarea) {
+  min-height: 44px;
+}
+
+.control::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.control:focus-visible,
+.choice:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.select {
+  padding-right: 36px;
+}
+
+.choiceLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.choiceLabel:has(:disabled) {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.choice {
+  appearance: auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--color-accent);
+}

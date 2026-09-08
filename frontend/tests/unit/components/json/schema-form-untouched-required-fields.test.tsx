@@ -1,6 +1,6 @@
 import SchemaForm from '@components/json/schema/schema-form.component';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
-import { render } from '@testing-library/react';
+import { render, within } from '@testing-library/react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -59,6 +59,6 @@ describe('SchemaForm required fields before validation starts', () => {
     const { container } = render(<UntouchedForm schemaId="untouched-invalid:1" />);
 
     expect(container.querySelector('[aria-invalid="true"]')).not.toBeInTheDocument();
-    expect(container.querySelector('.sk-form-error-message')).not.toBeInTheDocument();
+    expect(within(container).queryByRole('alert')).not.toBeInTheDocument();
   });
 });

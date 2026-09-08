@@ -43,6 +43,13 @@ test.describe('Message composer accessibility', () => {
         expect(bounds.x).toBeGreaterThanOrEqual(0);
         expect(bounds.right).toBeLessThanOrEqual(viewport.width);
       }
+      const messageFilter = page.getByRole('radiogroup', { name: 'Visa meddelanden' });
+      for (const radio of await messageFilter.getByRole('radio').all()) {
+        const bounds = await measure(radio);
+        expect(bounds.x).toBeGreaterThanOrEqual(0);
+        expect(bounds.right).toBeLessThanOrEqual(viewport.width);
+      }
+      await composer.getByRole('button', { name: 'Textformatering', exact: true }).click();
       const toolbar = composer.locator('.ql-toolbar');
       await expect(toolbar).toBeVisible();
       const toolbarButtons = toolbar.getByRole('button');
@@ -64,7 +71,7 @@ test.describe('Message composer accessibility', () => {
   test('Updates the description and announces a crossed character limit without moving focus', async ({ page }) => {
     const composer = page.getByTestId('message-composer');
     const editor = composer.getByRole('textbox', { name: /Skriv ett meddelande/ });
-    const status = composer.getByRole('status');
+    const status = composer.getByRole('status', { name: 'Meddelandestatus' });
 
     await page.locator('label[for="message-body"]').click();
     await expect(editor).toBeFocused();
@@ -92,5 +99,39 @@ test.describe('Message composer accessibility', () => {
     await expect(editor).toHaveAccessibleDescription('Max 10000 tecken. 10000 av 10000 tecken använda.');
     await expect(status).toBeEmpty();
     await expect(page.getByTestId('send-message-button')).toBeEnabled();
+  });
+
+  test('formats selected text and manages the link dialog entirely with accessible controls', async ({ page }) => {
+    const composer = page.getByTestId('message-composer');
+    const editor = composer.getByRole('textbox', { name: /Skriv ett meddelande/ });
+    await composer.getByRole('button', { name: 'Textformatering', exact: true }).click();
+    const toolbar = composer.getByRole('group', { name: 'Textformatering' });
+    await editor.fill('Text att formatera');
+    await editor.press('ControlOrMeta+A');
+    await toolbar.getByRole('button', { name: 'Fet', exact: true }).click();
+    await expect(editor.locator('strong')).toHaveText('Text att formatera');
+    await expect(toolbar.getByRole('button', { name: 'Fet', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await toolbar.getByRole('button', { name: 'Punktlista', exact: true }).click();
+    await expect(editor.locator('li[data-list="bullet"]')).toHaveText('Text att formatera');
+
+    const link = toolbar.getByRole('button', { name: 'Länk', exact: true });
+    await link.click();
+    const dialog = page.getByRole('dialog', { name: 'Redigera länk' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Redigera länk' })).toBeFocused();
+    await dialog.getByRole('textbox', { name: 'Länkadress' }).fill('https://example.com');
+    await dialog.getByRole('button', { name: 'Spara länk' }).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(link).toBeFocused();
+    await expect(editor.locator('a')).toHaveAttribute('href', 'https://example.com');
+
+    await link.click();
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await expect(link).toBeFocused();
+    await editor.focus();
+    await editor.press('Tab');
+    await expect(editor).not.toBeFocused();
   });
 });

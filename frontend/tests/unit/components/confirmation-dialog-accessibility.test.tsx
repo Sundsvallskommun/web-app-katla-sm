@@ -3,10 +3,10 @@ import { WizardBottomBar } from '@components/wizard/wizard-bottom-bar.component'
 import { FormValidationProvider } from '@contexts/form-validation-provider';
 import type { ErrandFormDTO } from '@interfaces/errand-form';
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createInstance } from 'i18next';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { I18nextProvider } from 'react-i18next';
 import { useWizardStore } from 'src/stores/wizard-store';
@@ -24,20 +24,7 @@ const services = vi.hoisted(() => ({
 
 vi.mock('@services/errand-service/errand-service', () => services);
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: services.push }) }));
-// jsdom saknar showModal/close. Dessa fall skyddar namn och åtgärder;
-// browserfallen verifierar den riktiga modaliteten, Escape och fokusåterställningen.
-vi.mock('@components/modal-layer/modal-layer.component', () => ({
-  ModalLayer: ({ show, label, children }: { show: boolean; label: string; children: ReactNode }) =>
-    show ?
-      <dialog open aria-label={label}>
-        {children}
-      </dialog>
-    : null,
-}));
-vi.mock('@sk-web-gui/react', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@sk-web-gui/react')>();
-  return { ...original, useSnackbar: () => services.snackbar };
-});
+vi.mock('@astryxdesign/core/Toast', () => ({ useToast: () => services.snackbar }));
 
 const i18n = createInstance();
 
@@ -65,7 +52,9 @@ beforeEach(async () => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  useWizardStore.getState().reset();
+  act(() => {
+    useWizardStore.getState().reset();
+  });
 });
 
 function CancelHarness() {
@@ -119,7 +108,7 @@ function SubmitHarness({ wizard }: { wizard: boolean }) {
 
 describe('confirmation dialog accessibility', () => {
   it.each(['sv', 'en'])(
-    'names cancellation from its one visible heading and returns without cancelling in %s',
+    'names cancellation from its one visible heading and closes with Escape in %s',
     async (locale) => {
       await i18n.changeLanguage(locale);
       const user = userEvent.setup();
@@ -134,11 +123,12 @@ describe('confirmation dialog accessibility', () => {
       const name = i18n.t('errand-information:cancel_confirm.title');
       const dialog = await screen.findByRole('dialog', { name });
       expect(within(dialog).getAllByRole('heading', { name })).toHaveLength(1);
-      await user.click(within(dialog).getByRole('button', { name: i18n.t('errand-information:cancel_confirm.back') }));
+      await user.keyboard('{Escape}');
 
       await waitFor(() => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       });
+      expect(trigger).toHaveFocus();
       expect(services.push).not.toHaveBeenCalled();
     }
   );
@@ -155,11 +145,12 @@ describe('confirmation dialog accessibility', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Skicka rapporten?' });
     expect(within(dialog).getAllByRole('heading', { name: 'Skicka rapporten?' })).toHaveLength(1);
-    await user.click(within(dialog).getByRole('button', { name: 'Avbryt' }));
+    await user.keyboard('{Escape}');
 
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
+    expect(trigger).toHaveFocus();
     expect(services.createErrand).not.toHaveBeenCalled();
     expect(services.updateErrand).not.toHaveBeenCalled();
     expect(services.push).not.toHaveBeenCalled();

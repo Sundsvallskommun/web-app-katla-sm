@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+import axe from 'axe-core';
 
 import { mockErrand } from '../fixtures/mockErrand';
 import { mockMetadata } from '../fixtures/mockMetadata';
@@ -55,7 +56,10 @@ const openReporterCard = async (page: Page, appUrl: (path: string) => string) =>
 };
 
 test.describe('Errand basic information page', () => {
-  test('Reporter card keeps long contact details inside its own bounds on mobile', async ({ appUrl, page }) => {
+  test('Reporter card keeps long contact details inside its own bounds on mobile', async ({
+    appUrl,
+    page,
+  }, testInfo) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     const card = await openReporterCard(page, appUrl);
 
@@ -67,14 +71,22 @@ test.describe('Errand basic information page', () => {
     expect(cardOverflow.scrollWidth).toBeLessThanOrEqual(cardOverflow.clientWidth);
     expect(emailBox.right).toBeLessThanOrEqual(cardBox.right);
     expect(departmentBox.right).toBeLessThanOrEqual(cardBox.right);
-    // app-base.scss klipper horisontell overflow på body, så texten scrollas inte
-    // fram — den försvinner utanför skärmkanten. Därför mäts synlighet mot viewporten
-    // i stället för mot documentElement.scrollWidth, som aldrig kan växa.
+    // Kontrollera både radens egen bredd och viewporten så att text inte kan
+    // hamna utanför en förälder som klipper horisontell overflow.
     expect(emailBox.right).toBeLessThanOrEqual(MOBILE_VIEWPORT.width);
     expect(cardBox.right).toBeLessThanOrEqual(MOBILE_VIEWPORT.width);
+    await card.getByRole('link', { name: longReporter.emails[0] }).click({ trial: true });
+    await page.addScriptTag({ content: axe.source });
+    const audit = await page.evaluate(() =>
+      window.axe.run('[data-cy="stakeholder-card"]', {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      })
+    );
+    expect(audit.violations).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('person-profile-431.png') });
   });
 
-  test('Reporter card keeps its two columns side by side on desktop', async ({ appUrl, page }) => {
+  test('Reporter groups identity and exposes contact links on desktop', async ({ appUrl, page }, testInfo) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const card = await openReporterCard(page, appUrl);
 
@@ -82,9 +94,34 @@ test.describe('Errand basic information page', () => {
     const emailBox = await measure(card.getByTestId('stakeholder-email'), 'stakeholder-email');
     const cardOverflow = await card.evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
 
-    // E-postkolumnen ska ligga till höger om avdelningskolumnen, inte under den.
-    expect(emailBox.x).toBeGreaterThanOrEqual(departmentBox.right);
+    const nameBox = await measure(card.getByTestId('stakeholder-name'), 'stakeholder-name');
+    const titleBox = await measure(card.getByTestId('stakeholder-title'), 'stakeholder-title');
+    expect(titleBox.x).toBe(nameBox.x);
+    expect(departmentBox.x).toBeGreaterThan(titleBox.x);
+    await expect(card.getByRole('link', { name: longReporter.emails[0] })).toHaveAttribute(
+      'href',
+      `mailto:${encodeURIComponent(longReporter.emails[0])}`
+    );
+    await card.getByRole('link', { name: longReporter.emails[0] }).click({ trial: true });
+    const phone = card.getByRole('link', { name: MOCK_COUNTRY_CODE_PHONE_NUMBER, exact: true });
+    await expect(phone).toHaveAttribute('href', `tel:${MOCK_COUNTRY_CODE_PHONE_NUMBER}`);
+    await expect(phone).toHaveAttribute('aria-disabled', 'false');
+    await phone.click({ trial: true });
+    await card.getByRole('link', { name: longReporter.emails[0] }).focus();
+    await page.keyboard.press('Tab');
+    await expect(phone).toBeFocused();
+    await expect(phone).toHaveCSS('outline-style', 'solid');
+    await expect(card).toHaveCSS('outline-width', '0px');
+    expect(emailBox.y).toBeGreaterThan(departmentBox.y);
     expect(cardOverflow.scrollWidth).toBeLessThanOrEqual(cardOverflow.clientWidth);
+    await page.addScriptTag({ content: axe.source });
+    const audit = await page.evaluate(() =>
+      window.axe.run('[data-cy="stakeholder-card"]', {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      })
+    );
+    expect(audit.violations).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('person-profile-1536.png') });
   });
 
   test('Submitted errand omits editing actions and says why', async ({ appUrl, page }) => {

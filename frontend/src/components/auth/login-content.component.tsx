@@ -1,9 +1,11 @@
 'use client';
 
+import { Button } from '@astryxdesign/core/Button';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { VStack } from '@astryxdesign/core/VStack';
 import LoaderFullScreen from '@components/loader/loader-fullscreen';
-import { Button } from '@sk-web-gui/button';
-import { Divider } from '@sk-web-gui/divider';
-import { FormErrorMessage } from '@sk-web-gui/react';
+import { ErrorAlert } from '@components/misc/error-alert.component';
 import { apiURL } from '@utils/api-url';
 import { appURL } from '@utils/app-url';
 import { capitalize } from 'lodash';
@@ -77,46 +79,27 @@ export const LoginContent: React.FC = () => {
   }
 
   return (
-    <>
-      {isLoggedOut ?
-        <div className="flex flex-col items-center gap-[4rem] w-full">
-          <h1 className="w-full break-words text-center text-[4rem] font-bold leading-[5.6rem] m-0">
-            {t('login:logged_out_title')}
-          </h1>
-          <Button
-            variant="primary"
-            color="vattjom"
-            size="lg"
-            className="max-w-full h-auto min-h-[5.6rem] whitespace-normal py-12"
-            onClick={() => {
-              router.push('/login');
-            }}
-          >
-            {t('login:login_again_button')}
-          </Button>
-        </div>
-      : <>
-          <h1 className="w-full break-words text-center text-h2-sm lg:text-h2-lg mb-0">
-            {t('login:choose_login_method')}
-          </h1>
-          <Divider className="w-full" />
-          <div className="flex flex-col gap-24 sm:gap-56 w-full sm:w-fit px-16 sm:px-80 pb-40 sm:pb-[10.4rem] pt-32 sm:pt-80 items-center text-center">
-            <span className="w-full break-words">{t('login:login_problem')}</span>
-            <Button
-              data-cy="login-button"
-              variant="primary"
-              size="lg"
-              className="max-w-full h-auto min-h-[5.6rem] whitespace-normal py-12"
-              onClick={() => {
-                onLogin();
-              }}
-            >
-              {capitalize(t('common:login'))}
-            </Button>
-          </div>
-          {errorMessage && <FormErrorMessage className="text-error mt-lg">{errorMessage}</FormErrorMessage>}
-        </>
-      }
-    </>
+    <VStack gap={5} align="center" padding={6}>
+      <Heading level={1} justify="center">
+        {t(isLoggedOut ? 'login:logged_out_title' : 'login:choose_login_method')}
+      </Heading>
+      {!isLoggedOut && (
+        <Text color="secondary" justify="center">
+          {t('login:login_problem')}
+        </Text>
+      )}
+      <Button
+        ref={initalFocus}
+        data-cy={isLoggedOut ? undefined : 'login-button'}
+        label={isLoggedOut ? t('login:login_again_button') : capitalize(t('common:login'))}
+        variant="primary"
+        size="lg"
+        onClick={() => {
+          if (isLoggedOut) router.push('/login');
+          else onLogin();
+        }}
+      />
+      {errorMessage && <ErrorAlert message={errorMessage} />}
+    </VStack>
   );
 };

@@ -8,7 +8,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const errandServiceMocks = vi.hoisted(() => ({
   getErrands: vi.fn(),
-  getErrandsCount: vi.fn(),
   getMetadata: vi.fn(),
 }));
 const i18nMocks = vi.hoisted(() => ({ t: (key: string) => key }));
@@ -69,4 +68,30 @@ describe('useOverviewErrands utan statusfilter', () => {
     });
     expect(getErrandsMock).toHaveBeenCalledWith(expect.objectContaining({ statuses: ['NEW', 'REVIEW'] }));
   });
+});
+
+it('returns from accumulated mobile rows to the selected desktop page when the viewport changes', async () => {
+  useFilterStore.setState({ activeStatus: 'OPEN', statuses: ['NEW'] });
+  const firstPage = { content: [{ errandNumber: 'FIRST' }], totalElements: 2, totalPages: 2 };
+  getErrandsMock
+    .mockResolvedValueOnce(firstPage)
+    .mockResolvedValueOnce({ ...firstPage, content: [{ errandNumber: 'SECOND' }] })
+    .mockResolvedValueOnce(firstPage);
+  const { result, rerender } = renderHook(({ mode }) => useOverviewErrands({ mode }), {
+    initialProps: { mode: 'mobile' as 'mobile' | 'desktop' },
+  });
+  await waitFor(() => {
+    expect(result.current.rows).toEqual(firstPage.content);
+  });
+  act(() => {
+    result.current.loadMore();
+  });
+  await waitFor(() => {
+    expect(result.current.rows).toHaveLength(2);
+  });
+  rerender({ mode: 'desktop' });
+  await waitFor(() => {
+    expect(result.current.rows).toEqual(firstPage.content);
+  });
+  expect(getErrandsMock).toHaveBeenLastCalledWith(expect.objectContaining({ page: 0, statuses: ['NEW'] }));
 });

@@ -1,0 +1,36 @@
+/* Native links and controls need a fallback. Composite Astryx fields own their
+   focus treatment, so their inner controls must be able to override this rule. */
+@layer reset {
+  :where(:focus-visible) {
+    outline: var(--focus-outline-width) solid var(--focus-outline-color);
+    outline-offset: var(--focus-outline-offset);
+  }
+}
+
+@layer katla {
+  body {
+    min-width: 0;
+    min-height: 100dvh;
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-base);
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    background: var(--color-background-body);
+  }
+
+  /* Action rows own their spacing; add only the device's home-indicator inset here. */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

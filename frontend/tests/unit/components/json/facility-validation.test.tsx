@@ -1,7 +1,7 @@
 import SchemaForm from '@components/json/schema/schema-form.component';
 import type { LabelDTO } from '@data-contracts/backend/data-contracts';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { focusInvalidField, INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { describe, expect, it, vi } from 'vitest';
@@ -82,10 +82,13 @@ describe('FacilitySearchWidget validation', () => {
    * Felet namnger den nästlade egenskapen, men widgeten renderar hela objektet som en enda
    * kontroll. Felsammanfattningens länk måste ändå hitta fram.
    */
-  it('is reachable from the nested property id the error carries', () => {
+  it('is reachable from the nested property id the error carries', async () => {
     renderForm();
 
-    expect(focusInvalidField('root_facilityInfo_orgName')).toBe(true);
-    expect(screen.getByRole('textbox', { name: /^facility_search.search_label/ })).toHaveFocus();
+    await act(async () => {
+      expect(focusInvalidField('root_facilityInfo_orgName')).toBe(true);
+      await Promise.resolve();
+    });
+    expect(screen.getByRole('combobox', { name: /^facility_search.search_label/ })).toHaveFocus();
   });
 });

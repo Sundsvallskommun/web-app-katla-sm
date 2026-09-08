@@ -1,9 +1,8 @@
+import { Banner } from '@astryxdesign/core/Banner';
+import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList';
 import { ErrandSection } from '@components/errand-sections/errand-section.component';
-import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
-import { Alert } from '@sk-web-gui/alert';
-import { FormControl, FormErrorMessage, RadioButton } from '@sk-web-gui/react';
 import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import {
@@ -14,20 +13,6 @@ import {
 } from '@utils/report-type';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-
-/**
- * Etiketten i designsystemet har fast höjd och centrerar innehållet lodrätt. Utan
- * dessa klasser klipps beskrivningen och radioknappen hamnar mitt i textblocket.
- */
-const RADIO_WITH_DESCRIPTION_CLASS = 'h-auto items-start';
-
-/** Alternativets namn med förklaringen under, så att båda typerna går att jämföra innan valet. */
-const RadioButtonLabelWithDescription: React.FC<{ label: string; description: string }> = ({ label, description }) => (
-  <span className="flex flex-col gap-8">
-    {label}
-    <span className="text-dark-secondary text-small">{description}</span>
-  </span>
-);
 
 export const AboutErrandContent: React.FC = () => {
   const { t } = useTranslation();
@@ -61,85 +46,75 @@ export const AboutErrandContent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-40">
-      <FormControl required id="event-type" {...(missingEventType ? { [INVALID_FIELD_ATTRIBUTE]: 'event-type' } : {})}>
-        <FormFieldLabel>{t('errand-information:about.event_type_label')}</FormFieldLabel>
-        <RadioButton.Group data-cy="event-type-group" className="gap-16">
-          <RadioButton
+    <div className="flex flex-col gap-8">
+      <div
+        id="event-type"
+        data-cy="event-type-group"
+        {...(missingEventType ? { [INVALID_FIELD_ATTRIBUTE]: 'event-type' } : {})}
+      >
+        <RadioList
+          label={t('errand-information:about.event_type_label')}
+          value={eventType}
+          onChange={(value) => {
+            setParameter(EVENT_TYPE_PARAMETER_KEY, value);
+          }}
+          isRequired
+          status={
+            missingEventType ? { type: 'error', message: t('errand-information:about.event_type_required') } : undefined
+          }
+        >
+          <RadioListItem
             data-cy="event-type-deviation"
-            className={RADIO_WITH_DESCRIPTION_CLASS}
-            checked={eventType === EVENT_TYPE_DEVIATION}
             value={EVENT_TYPE_DEVIATION}
-            onChange={() => {
-              setParameter(EVENT_TYPE_PARAMETER_KEY, EVENT_TYPE_DEVIATION);
-            }}
-          >
-            <RadioButtonLabelWithDescription
-              label={t('errand-information:about.event_type_deviation')}
-              description={t('errand-information:about.event_type_deviation_description')}
-            />
-          </RadioButton>
-          <RadioButton
+            label={t('errand-information:about.event_type_deviation')}
+            description={t('errand-information:about.event_type_deviation_description')}
+          />
+          <RadioListItem
             data-cy="event-type-misconduct"
-            className={RADIO_WITH_DESCRIPTION_CLASS}
-            checked={eventType === EVENT_TYPE_MISCONDUCT}
             value={EVENT_TYPE_MISCONDUCT}
-            onChange={() => {
-              setParameter(EVENT_TYPE_PARAMETER_KEY, EVENT_TYPE_MISCONDUCT);
-            }}
-          >
-            <RadioButtonLabelWithDescription
-              label={t('errand-information:about.event_type_misconduct')}
-              description={t('errand-information:about.event_type_misconduct_description')}
-            />
-          </RadioButton>
-        </RadioButton.Group>
-        {missingEventType && <FormErrorMessage>{t('errand-information:about.event_type_required')}</FormErrorMessage>}
+            label={t('errand-information:about.event_type_misconduct')}
+            description={t('errand-information:about.event_type_misconduct_description')}
+          />
+        </RadioList>
         {eventType === EVENT_TYPE_MISCONDUCT && (
-          <Alert type="info" data-cy="misconduct-alert">
-            <Alert.Icon />
-            <Alert.Content>
-              <Alert.Content.Title>{t('errand-information:about.misconduct_alert_title')}</Alert.Content.Title>
-              <Alert.Content.Description>
-                {t('errand-information:about.misconduct_alert_description')}
-              </Alert.Content.Description>
-            </Alert.Content>
-          </Alert>
+          <div className="mt-4">
+            <Banner
+              data-cy="misconduct-alert"
+              status="info"
+              title={t('errand-information:about.misconduct_alert_title')}
+              description={t('errand-information:about.misconduct_alert_description')}
+            />
+          </div>
         )}
-      </FormControl>
-
-      <FormControl
-        required
+      </div>
+      <div
         id="event-concerns"
+        data-cy="event-concerns-group"
         {...(missingEventConcerns ? { [INVALID_FIELD_ATTRIBUTE]: 'event-concerns' } : {})}
       >
-        <FormFieldLabel>{t('errand-information:about.event_concerns_label')}</FormFieldLabel>
-        <RadioButton.Group data-cy="event-concerns-group" className="gap-16">
-          <RadioButton
+        <RadioList
+          label={t('errand-information:about.event_concerns_label')}
+          value={eventConcerns}
+          onChange={setEventConcerns}
+          isRequired
+          status={
+            missingEventConcerns ?
+              { type: 'error', message: t('errand-information:about.event_concerns_required') }
+            : undefined
+          }
+        >
+          <RadioListItem
             data-cy="event-concerns-individual"
-            checked={eventConcerns === EVENT_CONCERNS_INDIVIDUAL}
             value={EVENT_CONCERNS_INDIVIDUAL}
-            onChange={() => {
-              setEventConcerns(EVENT_CONCERNS_INDIVIDUAL);
-            }}
-          >
-            {t('errand-information:about.event_concerns_individual')}
-          </RadioButton>
-          <RadioButton
+            label={t('errand-information:about.event_concerns_individual')}
+          />
+          <RadioListItem
             data-cy="event-concerns-group-activity"
-            checked={eventConcerns === 'GRUPP_VERKSAMHET'}
             value="GRUPP_VERKSAMHET"
-            onChange={() => {
-              setEventConcerns('GRUPP_VERKSAMHET');
-            }}
-          >
-            {t('errand-information:about.event_concerns_group')}
-          </RadioButton>
-        </RadioButton.Group>
-        {missingEventConcerns && (
-          <FormErrorMessage>{t('errand-information:about.event_concerns_required')}</FormErrorMessage>
-        )}
-      </FormControl>
+            label={t('errand-information:about.event_concerns_group')}
+          />
+        </RadioList>
+      </div>
     </div>
   );
 };

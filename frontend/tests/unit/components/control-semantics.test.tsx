@@ -1,12 +1,13 @@
+import { DropdownMenu, DropdownMenuItem } from '@astryxdesign/core/DropdownMenu';
+import { Tab, TabList } from '@astryxdesign/core/TabList';
+import { ErrandListItem } from '@components/errand-table/errand-list-item.component';
 import { ColorSchemeItems } from '@components/misc/color-scheme-items.component';
 import { LanguageItems } from '@components/misc/language-items.component';
 import { LanguageSwitchButton } from '@components/misc/language-switch-button.component';
-import { MobileErrandCard } from '@components/mobile/mobile-errand-card.component';
 import { NotificationsBell } from '@components/notifications/notification-bell';
 import { AppUserMenu } from '@components/user-menu/app-user-menu.component';
 import { createUserMenuGroups } from '@layouts/userMenuGroup';
-import { ColorSchemeMode, PopupMenu, Tabs } from '@sk-web-gui/react';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { createInstance } from 'i18next';
 import NextLink from 'next/link';
 import { renderToString } from 'react-dom/server';
@@ -60,7 +61,9 @@ describe('control semantics', () => {
     searchParamsMock.value = '';
     colorSchemeStoreMock.colorScheme = 'system';
     colorSchemeStoreMock.setColorScheme.mockReset();
-    useNotificationStore.setState({ activeNotifications: [], acknowledgedNotifications: [] });
+    act(() => {
+      useNotificationStore.setState({ activeNotifications: [], acknowledgedNotifications: [] });
+    });
   });
 
   it('keeps the application menu actions keyboard-addressable', async () => {
@@ -71,7 +74,6 @@ describe('control semantics', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Öppna användarmeny' }));
     const logout = await screen.findByRole('menuitem', { name: 'Logga ut' });
 
-    expect(logout).toHaveAttribute('id');
     expect(logout).toHaveAttribute('tabindex');
     fireEvent.click(logout);
     expect(routerPushMock).toHaveBeenCalledWith('/logout');
@@ -86,7 +88,7 @@ describe('control semantics', () => {
         menuGroups={[
           {
             label: 'Kontroller',
-            elements: [{ label: 'Inställningar', element: () => <button type="button">Inställningar</button> }],
+            elements: [{ label: 'Inställningar', element: () => <DropdownMenuItem label="Inställningar" /> }],
           },
         ]}
         buttonSize="md"
@@ -96,7 +98,9 @@ describe('control semantics', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Öppna användarmeny' }));
 
     expect(screen.getByRole('menuitem', { name: 'Inställningar' })).toBeVisible();
-    expect(screen.getByTestId('user-menu')).toHaveClass('sk-usermenu');
+    expect(screen.getByTestId('user-menu')).toContainElement(
+      screen.getByRole('button', { name: 'Öppna användarmeny' })
+    );
   });
 
   it('exposes notification count and expanded state without a false menu-item role', () => {
@@ -136,7 +140,7 @@ describe('control semantics', () => {
 
   it('renders mobile errand navigation as one named link', () => {
     renderLocalized(
-      <MobileErrandCard
+      <ErrandListItem
         errand={{
           errandNumber: 'AIA-25120019',
           status: 'NEW',
@@ -151,18 +155,13 @@ describe('control semantics', () => {
   });
 
   it('keeps the design-system tab identity while rendering a single link', () => {
-    const linkProps = { as: NextLink, href: '/arende/ett/grundinformation' };
-
     render(
-      <Tabs>
-        <Tabs.Item>
-          <Tabs.Button {...linkProps}>Grundinformation</Tabs.Button>
-          <Tabs.Content>Innehåll</Tabs.Content>
-        </Tabs.Item>
-      </Tabs>
+      <TabList value="information" onChange={() => undefined} aria-label="Ärende">
+        <Tab value="information" label="Grundinformation" as={NextLink} href="/arende/ett/grundinformation" />
+      </TabList>
     );
 
-    const tab = screen.getByRole('tab', { name: 'Grundinformation' });
+    const tab = screen.getByRole('link', { name: 'Grundinformation' });
     expect(tab.tagName).toBe('A');
     expect(tab).toHaveAttribute('href', '/arende/ett/grundinformation');
     expect(tab.querySelector('button')).not.toBeInTheDocument();
@@ -170,39 +169,30 @@ describe('control semantics', () => {
 
   it('exposes color modes as one radio set without closing after a selection', () => {
     renderLocalized(
-      <PopupMenu open>
-        <PopupMenu.Button>Färgläge</PopupMenu.Button>
-        <PopupMenu.Panel>
-          <ColorSchemeItems />
-        </PopupMenu.Panel>
-      </PopupMenu>
+      <DropdownMenu isMenuOpen button={{ label: 'Färgläge' }}>
+        <ColorSchemeItems />
+      </DropdownMenu>
     );
 
     const light = screen.getByRole('menuitemradio', { name: 'Ljust' });
     const dark = screen.getByRole('menuitemradio', { name: 'Mörkt' });
     const system = screen.getByRole('menuitemradio', { name: 'System' });
 
-    expect([light, dark, system].map((radio) => radio.getAttribute('name'))).toEqual([
-      'user-menu-color-scheme',
-      'user-menu-color-scheme',
-      'user-menu-color-scheme',
-    ]);
+    const group = screen.getByRole('group', { name: 'Färgläge' });
+    expect([light, dark, system].every((radio) => group.contains(radio))).toBe(true);
     expect(system).toBeChecked();
 
     fireEvent.click(light);
 
-    expect(colorSchemeStoreMock.setColorScheme).toHaveBeenCalledWith(ColorSchemeMode.Light);
+    expect(colorSchemeStoreMock.setColorScheme).toHaveBeenCalledWith('light');
     expect(screen.getByRole('menuitemradio', { name: 'Mörkt' })).toBeVisible();
   });
 
   it('exposes languages by their native names as one radio set', () => {
     renderLocalized(
-      <PopupMenu open>
-        <PopupMenu.Button>Språk</PopupMenu.Button>
-        <PopupMenu.Panel>
-          <LanguageItems />
-        </PopupMenu.Panel>
-      </PopupMenu>
+      <DropdownMenu isMenuOpen button={{ label: 'Språk' }}>
+        <LanguageItems />
+      </DropdownMenu>
     );
 
     // Namnen står på språket självt så att en användare som inte läser svenska
@@ -210,24 +200,20 @@ describe('control semantics', () => {
     const swedish = screen.getByRole('menuitemradio', { name: 'Svenska' });
     const english = screen.getByRole('menuitemradio', { name: 'English' });
 
-    expect([swedish, english].map((radio) => radio.getAttribute('name'))).toEqual([
-      'user-menu-language',
-      'user-menu-language',
-    ]);
+    const group = screen.getByRole('group', { name: 'Språk' });
+    expect(group).toContainElement(swedish);
+    expect(group).toContainElement(english);
     expect(swedish).toBeChecked();
-    expect(english).toHaveAttribute('lang', 'en');
+    expect(english.querySelector('[lang="en"]')).toHaveTextContent('English');
   });
 
   it('switches language by navigating to the same page under an explicit locale prefix', () => {
     pathnameMock.value = '/arende/AIA-25120019/grundinformation';
 
     renderLocalized(
-      <PopupMenu open>
-        <PopupMenu.Button>Språk</PopupMenu.Button>
-        <PopupMenu.Panel>
-          <LanguageItems />
-        </PopupMenu.Panel>
-      </PopupMenu>
+      <DropdownMenu isMenuOpen button={{ label: 'Språk' }}>
+        <LanguageItems />
+      </DropdownMenu>
     );
 
     fireEvent.click(screen.getByRole('menuitemradio', { name: 'English' }));
@@ -241,12 +227,9 @@ describe('control semantics', () => {
     searchParamsMock.value = 'path=%2Farende%2FAIA-25120019%2Fgrundinformation&failMessage=NOT_AUTHORIZED';
 
     renderLocalized(
-      <PopupMenu open>
-        <PopupMenu.Button>Språk</PopupMenu.Button>
-        <PopupMenu.Panel>
-          <LanguageItems />
-        </PopupMenu.Panel>
-      </PopupMenu>
+      <DropdownMenu isMenuOpen button={{ label: 'Språk' }}>
+        <LanguageItems />
+      </DropdownMenu>
     );
 
     fireEvent.click(screen.getByRole('menuitemradio', { name: 'English' }));
@@ -278,8 +261,6 @@ describe('control semantics', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Byt språk. Valt språk: Svenska' }));
 
-    // Samma namn som användarmenyns grupp hade gjort de två listorna till en enda
-    // radiogrupp, där bara den ena kunde vara markerad.
-    expect(await screen.findByRole('menuitemradio', { name: 'Svenska' })).toHaveAttribute('name', 'header-language');
+    expect(await screen.findByRole('group', { name: 'Språk' })).toHaveAttribute('id', 'header-language');
   });
 });

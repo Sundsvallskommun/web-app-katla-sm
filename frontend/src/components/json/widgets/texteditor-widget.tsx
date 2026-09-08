@@ -4,7 +4,7 @@ import type { WidgetProps } from '@rjsf/utils';
 
 import { getCommonProps, getWidgetOptions } from './types';
 
-const DEFAULT_CLASS = 'w-full h-[22rem]';
+const DEFAULT_CLASS = 'w-full';
 
 export function TexteditorWidget(props: WidgetProps) {
   const { id, value, disabled, readonly, required, invalid, describedBy, className, onChange, onBlur, onFocus } =
@@ -34,8 +34,8 @@ export function TexteditorWidget(props: WidgetProps) {
           onBlur();
         }
       }}
-      onChange={(event) => {
-        onChange(event.target.value.markup ?? '');
+      onChange={(value) => {
+        onChange(value.markup);
       }}
     />
   );

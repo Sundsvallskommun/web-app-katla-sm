@@ -2,7 +2,6 @@ import { FormValidationProvider } from '@contexts/form-validation-provider';
 import type { ErrandFormDTO } from '@interfaces/errand-form';
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -39,36 +38,7 @@ vi.mock('src/config/appconfig', () => ({
   appConfig: { features: { draftEnabled: true } },
 }));
 
-vi.mock('@sk-web-gui/react', () => {
-  const Button = ({ children, onClick }: ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button type="button" onClick={onClick}>
-      {children}
-    </button>
-  );
-  const Dialog = ({ children, show }: { children?: ReactNode; show?: boolean }) =>
-    show ? <div>{children}</div> : null;
-  function DialogContent({ children }: { children?: ReactNode }) {
-    return <div>{children}</div>;
-  }
-  function DialogButtons({ children }: { children?: ReactNode }) {
-    return <div>{children}</div>;
-  }
-  Dialog.Content = DialogContent;
-  Dialog.Buttons = DialogButtons;
-
-  const Link = ({ children, onClick }: ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button type="button" onClick={onClick}>
-      {children}
-    </button>
-  );
-
-  return {
-    Button,
-    Dialog,
-    Link,
-    useSnackbar: () => snackbarMock,
-  };
-});
+vi.mock('@astryxdesign/core/Toast', () => ({ useToast: () => snackbarMock }));
 
 function TestForm() {
   const methods = useForm<ErrandFormDTO>({
@@ -109,8 +79,8 @@ describe('ErrandButtonGroup JSON save contract', () => {
     await waitFor(() => {
       expect(snackbarMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          status: 'error',
-          message: 'invalid_form_data',
+          type: 'error',
+          body: 'invalid_form_data',
         })
       );
     });

@@ -36,10 +36,10 @@ describe('SchemaForm textarea height', () => {
     const description = renderTextareas(height);
 
     expect(description).toHaveStyle({ height: `${height}rem` });
-    expect(description).toHaveClass('min-h-[9.6rem]', 'max-h-[60rem]');
+    expect(description).toHaveClass('min-h-[6rem]', 'max-h-[37.5rem]');
     const actions = screen.getByRole('textbox', { name: /^Åtgärder/ });
     expect(actions).not.toHaveAttribute('style');
-    expect(actions).toHaveClass('h-[9.6rem]', 'min-h-[9.6rem]', 'max-h-[60rem]');
+    expect(actions).toHaveClass('h-[6rem]', 'min-h-[6rem]', 'max-h-[37.5rem]');
   });
 
   it.each([undefined, null, '24rem', -1, 0, Number.NaN, Number.POSITIVE_INFINITY])(
@@ -48,7 +48,7 @@ describe('SchemaForm textarea height', () => {
       const description = renderTextareas(height);
 
       expect(description).not.toHaveAttribute('style');
-      expect(description).toHaveClass('h-[9.6rem]', 'min-h-[9.6rem]', 'max-h-[60rem]');
+      expect(description).toHaveClass('h-[6rem]', 'min-h-[6rem]', 'max-h-[37.5rem]');
     }
   );
 });

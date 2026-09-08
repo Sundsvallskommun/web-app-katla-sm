@@ -17,5 +17,6 @@
   "reports_heading": "Rapporter",
   "showing_of": "Visar {{shown}} av {{total}}",
   "showing_count_one": "Visar {{count}} ärende",
-  "showing_count_other": "Visar {{count}} ärenden"
+  "showing_count_other": "Visar {{count}} ärenden",
+  "my_reports": "Mina rapporter"
 }

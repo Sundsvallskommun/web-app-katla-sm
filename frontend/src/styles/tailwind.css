@@ -1,0 +1,5 @@
+/* Astryx owns reset and component styling. Utilities are limited to app layout. */
+@layer reset, app-utilities, astryx-base, astryx-theme, katla;
+@layer app-utilities {
+  @tailwind utilities;
+}

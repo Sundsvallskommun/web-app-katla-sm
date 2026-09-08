@@ -48,6 +48,35 @@ globalThis.resizeWindow = (width: number, height: number) => {
   window.dispatchEvent(new Event('resize'));
 };
 
+// jsdom saknar dessa webbläsar-API:er. Modalitet, fokusfälla och Escape verifieras
+// separat i Playwright mot riktiga dialoger, inte genom dessa DOM-polyfills.
+if (!window.matchMedia) {
+  window.matchMedia = (media: string): MediaQueryList => ({
+    matches: false,
+    media,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: () => true,
+  });
+}
+
+window.scrollTo = vi.fn();
+// Real scroll geometry and focus clearance are covered by Playwright.
+HTMLElement.prototype.scrollIntoView = vi.fn();
+
+if (!HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.showModal = function () {
+    this.setAttribute('open', '');
+  };
+  HTMLDialogElement.prototype.close = function () {
+    this.removeAttribute('open');
+    this.dispatchEvent(new Event('close'));
+  };
+}
+
 // Mock av IntersectionObserver som saknas i jsdom
 class IntersectionObserverMock {
   observe = vi.fn();

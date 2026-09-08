@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@sk-web-gui/react';
+import { Button } from '@astryxdesign/core/Button';
 import { ArrowRight, CircleCheckBig } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -17,17 +17,18 @@ export const ReportSubmitted: React.FC = () => {
   const router = useRouter();
 
   return (
-    <div className="bg-background-color-mixin-1 rounded-utility flex min-h-[48rem] w-full flex-col items-center gap-80 px-32 py-48">
-      <div className="flex max-w-[69.6rem] flex-col items-center gap-24 text-center">
+    <div className="bg-canvas rounded-lg flex min-h-[30rem] w-full flex-col items-center gap-20 px-8 py-12">
+      <div className="flex max-w-[43.5rem] flex-col items-center gap-6 text-center">
         {/* Rubriken bär hela beskedet, så ikonen är dekor och döljs för uppläsning. */}
-        <CircleCheckBig size={48} aria-hidden="true" className="text-gronsta-surface-primary" />
-        <h2 className="text-h2-lg text-dark-primary">{t('errand-information:submitted.title')}</h2>
+        <CircleCheckBig size={48} aria-hidden="true" className="text-accent" />
+        <h2 className="text-2xl font-semibold text-foreground">{t('errand-information:submitted.title')}</h2>
       </div>
       <Button
+        label={t('errand-information:submitted.back_to_overview')}
         variant="primary"
-        color="vattjom"
+
         data-cy="back-to-overview"
-        rightIcon={<ArrowRight aria-hidden="true" />}
+        endContent={<ArrowRight aria-hidden="true" />}
         onClick={() => {
           router.push('/oversikt');
         }}

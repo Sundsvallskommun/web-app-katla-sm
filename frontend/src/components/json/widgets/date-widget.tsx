@@ -1,7 +1,9 @@
 'use client';
+import { inputStatusFocusStyles, inputWrapperStyles } from '@astryxdesign/core/Field';
 import type { WidgetProps } from '@rjsf/utils';
-import { DatePicker } from '@sk-web-gui/react';
+import * as stylex from '@stylexjs/stylex';
 
+import styles from './schema-widgets.module.css';
 import { getCommonProps, getWidgetOptions, requiredProps } from './types';
 
 const DEFAULT_CLASS = 'w-full';
@@ -12,14 +14,21 @@ export function DateWidget(props: WidgetProps) {
   const placeholder = (props.uiSchema?.['ui:placeholder'] ?? '') || getWidgetOptions(props.options).placeholder;
   const max = typeof props.schema.formatMaximum === 'string' ? props.schema.formatMaximum : undefined;
 
+  const appearance = stylex.props(
+    inputWrapperStyles.base,
+    disabled && inputWrapperStyles.disabled,
+    invalid && inputStatusFocusStyles.error
+  );
+
   return (
-    <DatePicker
-      className={className}
+    <input
+      {...appearance}
+      className={`${appearance.className} ${styles.control} ${className}`}
       id={id}
       type="date"
       placeholder={placeholder}
-      max={max}
-      value={(value as string) ?? ''}
+      max={max ?? '9999-12-31'}
+      value={typeof value === 'string' ? value : ''}
       disabled={disabled}
       readOnly={readonly}
       {...requiredProps(required)}

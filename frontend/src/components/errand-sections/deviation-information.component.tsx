@@ -60,18 +60,18 @@ function SchemaFormField({ schemaName, compact }: SchemaFormFieldProps) {
 
   if (formDataError) {
     return (
-      <div role="alert" className="text-error">
+      <div role="alert" className="text-danger">
         {formDataError}
       </div>
     );
   }
 
   if (loading) {
-    return <div className="text-gray-500">{t('errand-information:deviation_information.loading_form')}</div>;
+    return <div className="text-muted">{t('errand-information:deviation_information.loading_form')}</div>;
   }
 
   if (error || !schema || !schemaId) {
-    return <div className="text-error">Fel: {error ?? 'Kunde inte ladda schema'}</div>;
+    return <div className="text-danger">Fel: {error ?? 'Kunde inte ladda schema'}</div>;
   }
 
   return (
@@ -95,7 +95,7 @@ interface DeviationInformationProps {
 
 export const DeviationInformation: React.FC<DeviationInformationProps> = ({ compact }) => {
   return (
-    <div className="flex flex-col gap-48">
+    <div className="flex flex-col gap-6">
       {ERRAND_FORM_SCHEMA_NAMES.map((schemaName) => (
         <SchemaFormField key={schemaName} schemaName={schemaName} compact={compact} />
       ))}

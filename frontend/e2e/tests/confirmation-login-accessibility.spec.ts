@@ -62,6 +62,7 @@ const expectConfirmationModality = async (page: Page, dialog: Locator, first: Lo
 };
 
 const expectCenteredDialog = async (page: Page, dialog: Locator) => {
+  await dialog.evaluate((element) => Promise.all(element.getAnimations().map((animation) => animation.finished)));
   const viewport = page.viewportSize();
   const bounds = await dialog.boundingBox();
   if (!viewport || !bounds) throw new Error('The confirmation must be visible before checking its geometry.');
@@ -184,8 +185,8 @@ test.describe('Submission confirmation', () => {
       await expect(page.getByTestId('stakeholder-card').first()).toBeVisible();
       const next = page.getByRole('button', { name: 'Nästa', exact: true });
       if (width < 800) await next.click();
-      await page.getByTestId('event-type-deviation').check();
-      await page.getByTestId('event-concerns-individual').check();
+      await page.getByTestId('event-type-deviation').getByRole('radio').check();
+      await page.getByTestId('event-concerns-individual').getByRole('radio').check();
       if (width < 800) await next.click();
       // The wizard renders a single step in main; desktop wraps each section separately.
       const userSection = width < 800 ? page.getByRole('main') : sectionByTitle(page, 'Enskild brukare');

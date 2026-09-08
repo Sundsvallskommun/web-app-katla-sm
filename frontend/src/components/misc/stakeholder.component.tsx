@@ -1,22 +1,16 @@
-import { StakeholderCard } from '@components/card/stakeholder-card.component';
-import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
+import { Button } from '@astryxdesign/core/Button';
+import { Card } from '@astryxdesign/core/Card';
+import { FieldStatus } from '@astryxdesign/core/FieldStatus';
+import { List } from '@astryxdesign/core/List';
+import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList';
+import { Selector } from '@astryxdesign/core/Selector';
+import { TextInput } from '@astryxdesign/core/TextInput';
 import { useIsContentLocked } from '@contexts/errand-content-lock-context';
 import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandDTO, StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { getStakeholderUsingPersonNumber } from '@services/citizen/citizen-service';
 import { getEmployeeByPersonNumber, getEmployeeStakeholderFromApi } from '@services/employee-service/employee-service';
-import {
-  Button,
-  cx,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
-  RadioButton,
-  SearchField,
-  Select,
-} from '@sk-web-gui/react';
 import { INVALID_FIELD_ATTRIBUTE } from '@utils/focus-first-error';
 import {
   createStakeholderSchema,
@@ -24,13 +18,15 @@ import {
   phoneNumberFormatter,
   shouldShowContactDetails,
 } from '@utils/stakeholder';
-import { Pen, Plus } from 'lucide-react';
+import clsx from 'clsx';
+import { Pen, Plus, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { FormProvider, Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import { Controller, FormProvider, Resolver, useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useMetadataStore } from 'src/stores/metadata-store';
 
 import { StakeholderFormModal } from './stakeholder-modal.component';
+import { StakeholderRow } from './stakeholder-row.component';
 
 export const StakeholderList: React.FC<{
   roles: string[];
@@ -38,27 +34,21 @@ export const StakeholderList: React.FC<{
   autoDetectSearch?: boolean;
   maxCount?: number;
   hideRoleSelect?: boolean;
-  /**
-   * Korten ritas som rapportörens: utan rollrad och i avsnittets fulla bredd. Används där
-   * avsnittet bara rymmer en roll, så att rollraden bara skulle upprepa rubriken ovanför.
-   */
-  sectionCards?: boolean;
+  /** Dölj roll som redan framgår av avsnittets rubrik. */
+  hideRole?: boolean;
   /**
    * Listans id i valideringen. Med det visar listan sitt eget fel och märker ut sig, så att
    * felsammanfattningen kan länka hit — samma sätt som fälten i schemaformuläret.
    */
   fieldId?: string;
-  /** Innehåll att visa inuti varje parts kort, till exempel val som hör till just den parten. */
-  renderCardExtra?: (index: number) => React.ReactNode;
 }> = ({
   roles,
   employeeSearch = false,
   autoDetectSearch = false,
   maxCount,
   hideRoleSelect = false,
-  sectionCards = false,
+  hideRole = false,
   fieldId,
-  renderCardExtra,
 }) => {
   const [searchMode, setSearchMode] = useState<string>('PERSON');
   const [query, setQuery] = useState<string>('');
@@ -88,7 +78,7 @@ export const StakeholderList: React.FC<{
     resolver: yupResolver(stakeholderSchema) as unknown as Resolver<StakeholderDTO>,
   });
 
-  const { handleSubmit, register, watch, reset, trigger, setValue, formState } = method;
+  const { handleSubmit, control, watch, reset, trigger, setValue, clearErrors, formState } = method;
   const { firstName, lastName, personNumber, address, city, title, department } = watch();
 
   //Used for resetting form when adding multiple stakeholders
@@ -167,193 +157,220 @@ export const StakeholderList: React.FC<{
     clearStakeholderForm();
   };
 
+  const roleOptions =
+    metadata?.roles
+      ?.filter((role) => roles.includes(role.name))
+      .map((role) => ({ value: role.name, label: role.displayName })) ?? [];
+  const searchError =
+    formState.errors.personNumber?.message ??
+    (emptyResult ? t('errand-information:stakeholder.no_person_found') : undefined);
+
   return (
-    <div {...(fieldError ? { [INVALID_FIELD_ATTRIBUTE]: fieldId } : {})}>
+    <div className="flex min-w-0 flex-col gap-4" {...(fieldError ? { [INVALID_FIELD_ATTRIBUTE]: fieldId } : {})}>
       {fieldError && (
-        <FormErrorMessage className="text-error mb-16" data-cy={`${fieldId ?? 'stakeholder'}-error`}>
-          {fieldError.message}
-        </FormErrorMessage>
+        <div data-cy={`${fieldId ?? 'stakeholder'}-error`}>
+          <FieldStatus type="error" message={fieldError.message} variant="detached" />
+        </div>
       )}
       <FormProvider {...method}>
         {showAddButton && (
-          <FormControl className="w-full">
+          <div className="flex flex-col gap-4">
             {employeeSearch && !autoDetectSearch && (
-              <RadioButton.Group className="mb-18" inline>
-                <RadioButton
+              <RadioList
+                label={t('errand-information:stakeholder.search_mode')}
+                value={searchMode}
+                orientation="horizontal"
+                onChange={(value) => {
+                  setSearchMode(value);
+                  clearStakeholderForm();
+                }}
+              >
+                <RadioListItem
                   data-cy="radiobutton-person"
-                  checked={searchMode === 'PERSON'}
-                  value={'PERSON'}
-                  onChange={(e) => {
-                    setSearchMode(e.target.value);
-                    clearStakeholderForm();
-                  }}
-                >
-                  {t('errand-information:stakeholder.person')}
-                </RadioButton>
-                <RadioButton
+                  label={t('errand-information:stakeholder.person')}
+                  value="PERSON"
+                />
+                <RadioListItem
                   data-cy="radiobutton-employee"
-                  checked={searchMode === 'EMPLOYEE'}
-                  value={'EMPLOYEE'}
-                  onChange={(e) => {
-                    setSearchMode(e.target.value);
-                    clearStakeholderForm();
+                  label={t('errand-information:stakeholder.employee')}
+                  value="EMPLOYEE"
+                />
+              </RadioList>
+            )}
+            <div className="flex max-w-2xl flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1">
+                <TextInput
+                  data-cy="person-number-input"
+                  label={t(`errand-information:search.${autoDetectSearch ? 'AUTODETECT' : searchMode}`)}
+                  value={query}
+                  onChange={(value) => {
+                    setQuery(value);
+                    setEmptyResult(false);
+                    clearErrors('personNumber');
                   }}
-                >
-                  {t('errand-information:stakeholder.employee')}
-                </RadioButton>
-              </RadioButton.Group>
-            )}
-            <FormLabel>{t(`errand-information:search.${autoDetectSearch ? 'AUTODETECT' : searchMode}`)}</FormLabel>
-            <SearchField
-              data-cy="person-number-input"
-              size="md"
-              className="max-w-[52.5rem]"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-              }}
-              onSearch={(value: string) => {
-                void onSearchHandler(value);
-              }}
-              onReset={() => {
-                clearStakeholderForm();
-              }}
-              readOnly={searchResult}
-            />
-            {formState.errors.personNumber && (
-              <FormErrorMessage data-cy="person-number-error">
-                {formState.errors.personNumber?.message}
-              </FormErrorMessage>
-            )}
-            {emptyResult && (
-              <FormErrorMessage data-cy="empty-person-error">
-                {t('errand-information:stakeholder.no_person_found')}
-              </FormErrorMessage>
-            )}
-          </FormControl>
-        )}
-
-        {searchResult && (
-          <div data-cy="search-result" className="border-1 rounded-12 bg-background-content w-max-[52.5rem] my-15">
-            <div className="px-16 py-8">
-              <span className="text-[1.6rem] font-semibold py-10">
-                {firstName} {lastName}
-              </span>
-
-              <div className="flex text-md mb-10">
-                <div className="flex flex-col">
-                  {title ?
-                    <span>{title}</span>
-                  : <span className={cx(!personNumber && 'italic text-text-secondary')}>
-                      {(personNumber ?? '') || t('errand-information:stakeholder.missing_person_number')}
-                    </span>
-                  }
-                  {department ?
-                    <span>{department}</span>
-                  : <span className={cx((!address || !city) && 'italic text-text-secondary')}>
-                      {/* Bugfix: template literal var alltid truthy — visa fallback när adress eller ort saknas */}
-                      {address && city ? `${address}, ${city}` : t('errand-information:stakeholder.missing_address')}
-                    </span>
-                  }
-                </div>
+                  onEnter={() => {
+                    if (!searchResult) void onSearchHandler(query);
+                  }}
+                  isReadOnly={searchResult}
+                  width="100%"
+                  status={searchError ? { type: 'error', message: searchError } : undefined}
+                  statusVariant="detached"
+                />
               </div>
-              {shouldShowContactDetails(roles) && (
-                <div className="flex flex-col sm:flex-row py-10 gap-10 w-full">
-                  <FormControl className="w-full">
-                    <FormFieldLabel>{t('errand-information:stakeholder.email')}</FormFieldLabel>
-                    <Input
-                      {...register('emails.0')}
-                      data-cy="stakeholder-email-input"
-                      placeholder={t('errand-information:stakeholder.email_placeholder')}
-                    />
-                    {formState.errors.emails?.[0]?.message && (
-                      <FormErrorMessage data-cy="email-input-error">
-                        {formState.errors.emails[0].message}
-                      </FormErrorMessage>
-                    )}
-                  </FormControl>
-                  <FormControl className="w-full">
-                    <FormFieldLabel>{t('errand-information:stakeholder.phone')}</FormFieldLabel>
-                    <Input
-                      {...register('phoneNumbers.0')}
-                      data-cy="stakeholder-mobilephone-input"
-                      placeholder={t('errand-information:stakeholder.phone_placeholder')}
-                    />
-                    {formState.errors.phoneNumbers?.[0]?.message && (
-                      <FormErrorMessage data-cy="phone-number-input-error">
-                        {formState.errors.phoneNumbers[0].message}
-                      </FormErrorMessage>
-                    )}
-                  </FormControl>
-                </div>
-              )}
-
-              {!hideRoleSelect && (
-                <FormControl required className="w-full sm:w-[calc(50%-10px)]">
-                  <FormFieldLabel>{t('errand-information:stakeholder.person_role')}</FormFieldLabel>
-                  <Select data-cy="stakeholder-role-select" className="w-full" {...register('role')}>
-                    {metadata?.roles?.map(
-                      (role) =>
-                        roles?.includes(role.name) && (
-                          <Select.Option key={role.name} value={role.name}>
-                            {role.displayName}
-                          </Select.Option>
-                        )
-                    )}
-                  </Select>
-                </FormControl>
-              )}
-              <div className="py-10">
+              <div className="flex gap-2 self-start pt-6">
                 <Button
-                  data-cy="add-stakeholder-button"
-                  leftIcon={<Plus size={16} />}
-                  variant="primary"
-                  onClick={(e) => {
-                    void handleSubmit(addStakeholderToErrand)(e);
+                  label={searchResult ? t('errand-information:stakeholder.clear_search') : t('filtering:search')}
+                  icon={searchResult ? <X size={16} aria-hidden="true" /> : <Search size={16} aria-hidden="true" />}
+                  variant="secondary"
+                  onClick={() => {
+                    if (searchResult) clearStakeholderForm();
+                    else void onSearchHandler(query);
                   }}
-                  className="w-full lg:w-auto"
-                >
-                  {t('errand-information:stakeholder.add_person')}
-                </Button>
+                />
               </div>
             </div>
           </div>
         )}
+        {searchResult && (
+          <Card data-cy="search-result" padding={5}>
+            <div className="flex min-w-0 flex-col gap-4">
+              <div className="break-words">
+                <p className="font-semibold">
+                  {firstName} {lastName}
+                </p>
+                <div className="mt-1 text-sm text-muted">
+                  {title ?
+                    <p>{title}</p>
+                  : <p className={clsx(!personNumber && 'italic')}>
+                      {(personNumber ?? '') || t('errand-information:stakeholder.missing_person_number')}
+                    </p>
+                  }
+                  {department ?
+                    <p>{department}</p>
+                  : <p className={clsx((!address || !city) && 'italic')}>
+                      {address && city ? `${address}, ${city}` : t('errand-information:stakeholder.missing_address')}
+                    </p>
+                  }
+                </div>
+              </div>
+              {shouldShowContactDetails(roles) && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Controller
+                    control={control}
+                    name="emails.0"
+                    render={({ field, fieldState }) => (
+                      <TextInput
+                        ref={field.ref}
+                        htmlName={field.name}
+                        data-cy="stakeholder-email-input"
+                        label={t('errand-information:stakeholder.email')}
+                        value={field.value ?? ''}
+                        onChange={(value) => {
+                          field.onChange(value);
+                        }}
+                        onBlur={field.onBlur}
+                        placeholder={t('errand-information:stakeholder.email_placeholder')}
+                        isOptional
+                        width="100%"
+                        status={fieldState.error ? { type: 'error', message: fieldState.error.message } : undefined}
+                        statusVariant="detached"
+                      />
+                    )}
+                  />
+                  <Controller
+                    control={control}
+                    name="phoneNumbers.0"
+                    render={({ field, fieldState }) => (
+                      <TextInput
+                        ref={field.ref}
+                        htmlName={field.name}
+                        data-cy="stakeholder-mobilephone-input"
+                        label={t('errand-information:stakeholder.phone')}
+                        value={field.value ?? ''}
+                        onChange={(value) => {
+                          field.onChange(value);
+                        }}
+                        onBlur={field.onBlur}
+                        placeholder={t('errand-information:stakeholder.phone_placeholder')}
+                        isOptional
+                        width="100%"
+                        status={fieldState.error ? { type: 'error', message: fieldState.error.message } : undefined}
+                        statusVariant="detached"
+                      />
+                    )}
+                  />
+                </div>
+              )}
+              {!hideRoleSelect && (
+                <Controller
+                  control={control}
+                  name="role"
+                  defaultValue={roleOptions[0]?.value ?? ''}
+                  render={({ field, fieldState }) => (
+                    <Selector
+                      data-cy="stakeholder-role-select"
+                      label={t('errand-information:stakeholder.person_role')}
+                      value={field.value ?? ''}
+                      onChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      onBlur={field.onBlur}
+                      options={roleOptions}
+                      isRequired
+                      width="100%"
+                      status={fieldState.error ? { type: 'error', message: fieldState.error.message } : undefined}
+                      statusVariant="detached"
+                    />
+                  )}
+                />
+              )}
+              <div>
+                <Button
+                  data-cy="add-stakeholder-button"
+                  label={t('errand-information:stakeholder.add_person')}
+                  icon={<Plus size={16} aria-hidden="true" />}
+                  variant="primary"
+                  onClick={(event) => {
+                    void handleSubmit(addStakeholderToErrand)(event);
+                  }}
+                />
+              </div>
+            </div>
+          </Card>
+        )}
       </FormProvider>
 
-      {stakeholders?.map((stakeholder, index) => {
-        if (!roles.includes(stakeholder.role ?? '')) return null;
-        return (
-          <StakeholderCard
-            key={index}
-            stakeholder={stakeholder}
-            hideRole={sectionCards}
-            wide={sectionCards}
-            roles={roles}
-            onRemove={() => {
-              remove(index);
-            }}
-          >
-            {renderCardExtra?.(index)}
-          </StakeholderCard>
-        );
-      })}
+      {matchingCount > 0 && (
+        <List hasDividers className="rounded-lg border border-default bg-subtle">
+          {stakeholders?.map((stakeholder, index) => {
+            if (!roles.includes(stakeholder.role ?? '')) return null;
+            return (
+              <StakeholderRow
+                key={index}
+                stakeholder={stakeholder}
+                hideRole={hideRole}
+                roles={roles}
+                onRemove={() => {
+                  remove(index);
+                }}
+              />
+            );
+          })}
+        </List>
+      )}
 
       {showAddButton && (
-        <Button
-          data-cy="add-manual-person-button"
-          variant="primary"
-          size="sm"
-          color="vattjom"
-          inverted={true}
-          className="mt-6 w-fit"
-          leftIcon={<Pen />}
-          onClick={() => {
-            setManualEntryOpen(true);
-          }}
-        >
-          {t('errand-information:stakeholder.add_manually')}
-        </Button>
+        <div>
+          <Button
+            data-cy="add-manual-person-button"
+            label={t('errand-information:stakeholder.add_manually')}
+            variant="secondary"
+            icon={<Pen size={16} aria-hidden="true" />}
+            onClick={() => {
+              setManualEntryOpen(true);
+            }}
+          />
+        </div>
       )}
 
       <StakeholderFormModal
