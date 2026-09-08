@@ -81,7 +81,7 @@ export const LoginContent: React.FC = () => {
 
   return (
     <VStack gap={5} align="center" padding={6}>
-      <Heading level={1} justify="center">
+      <Heading level={1} justify="center" className="max-w-full break-words">
         {t(isLoggedOut ? 'login:logged_out_title' : 'login:choose_login_method')}
       </Heading>
       {!isLoggedOut && (
