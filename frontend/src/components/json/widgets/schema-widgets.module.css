@@ -1,6 +1,9 @@
 /* RJSF owns control IDs and descriptions. Astryx supplies the shared field
    appearance while native controls keep the schema's form and focus contract. */
 .control {
+  /* These are native controls, not flex wrappers. Flex changes the browser's
+     date/time shadow layout and pulls the picker indicator away from the end. */
+  display: block;
   font: inherit;
   color: var(--color-text-primary);
 }
@@ -20,7 +23,6 @@
 }
 
 .textarea {
-  display: block;
   resize: vertical;
 }
 

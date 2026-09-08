@@ -106,18 +106,17 @@ test.describe('Language switching', () => {
       const panel = page.getByRole('menu').filter({ visible: true }).first();
       await expect(panel).toBeVisible();
 
-      const buttonBox = await button.boundingBox();
-      const panelBox = await panel.boundingBox();
-      const viewport = page.viewportSize();
-      if (!buttonBox || !panelBox || !viewport) throw new Error('Saknar mått för knapp, panel eller viewport');
+      // The popover animates a parent of the menu. Await its final visible placement.
+      await expect(async () => {
+        const buttonBox = await button.boundingBox();
+        const panelBox = await panel.boundingBox();
+        const viewport = page.viewportSize();
+        if (!buttonBox || !panelBox || !viewport) throw new Error('Saknar mått för knapp, panel eller viewport');
 
-      // Designsystemet ger panelen bara `right: 0`; den vertikala placeringen kommer från
-      // dess statiska position i normalflödet. Ligger kontrollen i en flex-container med
-      // items-center centreras panelen på knappen i stället och lägger sig över sidhuvudet,
-      // delvis utanför skärmen. Måtten är därför det som fångar en sådan regression.
-      expect(panelBox.y).toBeGreaterThanOrEqual(buttonBox.y + buttonBox.height);
-      expect(panelBox.x).toBeGreaterThanOrEqual(0);
-      expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
+        expect(panelBox.y).toBeGreaterThanOrEqual(buttonBox.y + buttonBox.height);
+        expect(panelBox.x).toBeGreaterThanOrEqual(0);
+        expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
+      }).toPass();
     });
   });
 });

@@ -1,12 +1,16 @@
 'use client';
 
+import { Badge } from '@astryxdesign/core/Badge';
 import { Button } from '@astryxdesign/core/Button';
 import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
 import { useFocusTrap, useMediaQuery } from '@astryxdesign/core/hooks';
-import { Spinner } from '@astryxdesign/core/Spinner';
+import { Layout, LayoutContent, Stack } from '@astryxdesign/core/Layout';
+import { List } from '@astryxdesign/core/List';
+import { Skeleton } from '@astryxdesign/core/Skeleton';
+import { Text } from '@astryxdesign/core/Text';
 import { ErrorAlert } from '@components/misc/error-alert.component';
 import { getNotifications } from '@services/errand-service/errand-service';
-import { Mail, X } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
@@ -22,7 +26,7 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
   const { activeNotifications, acknowledgedNotifications, setNotifications } = useNotificationStore();
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const { containerRef } = useFocusTrap<HTMLDialogElement>({ isActive: show });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
@@ -48,44 +52,62 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
   const hasNotifications = activeNotifications.length > 0 || acknowledgedNotifications.length > 0;
 
   const notificationContent = (
-    <div className="flex flex-col gap-6 overflow-auto p-5">
+    <Stack gap={5}>
+      <Text role="status" className="sr-only">
+        {isLoading ? t('layout:notifications.loading') : ''}
+      </Text>
       {error && <ErrorAlert message={error} />}
       {isLoading && !hasNotifications && !error ?
-        <div className="flex justify-center p-6">
-          <Spinner label={t('layout:notifications.loading')} />
-        </div>
+        <Stack gap={5} aria-hidden="true" data-cy="notification-skeleton">
+          {[0, 1, 2].map((index) => (
+            <Stack gap={2} key={index}>
+              <Skeleton width="70%" height="1.25em" index={index} />
+              <Skeleton width="35%" height="1em" index={index} />
+              <Skeleton width="85%" height="1em" index={index} />
+            </Stack>
+          ))}
+        </Stack>
       : <>
-          <div className="flex flex-col gap-1">
-            <h2 className="border-b border-default pb-3 font-semibold">{t('layout:notifications.new')}</h2>
-            {activeNotifications.length > 0 ?
-              <ul>
-                {activeNotifications.map((notification) => (
-                  <li key={notification.id}>
-                    <NotificationItem notification={notification} />
-                  </li>
-                ))}
-              </ul>
-            : !error && !isLoading ?
-              <div className="my-4">{t('layout:notifications.none_new')}</div>
-            : null}
-          </div>
-          <div>
-            <h2 className="border-b border-default pb-3 font-semibold">{t('layout:notifications.previous')}</h2>
-            {acknowledgedNotifications.length > 0 ?
-              <ul>
-                {acknowledgedNotifications.map((notification) => (
-                  <li key={notification.id}>
-                    <NotificationItem notification={notification} />
-                  </li>
-                ))}
-              </ul>
-            : !error && !isLoading ?
-              <div className="my-4">{t('layout:notifications.none_previous')}</div>
-            : null}
-          </div>
+          {activeNotifications.length > 0 ?
+            <List
+              hasDividers
+              header={
+                <Stack direction="horizontal" align="center" gap={2}>
+                  <Text as="h2" weight="semibold">
+                    {t('layout:notifications.new')}
+                  </Text>
+                  <Badge label={activeNotifications.length} />
+                </Stack>
+              }
+            >
+              {activeNotifications.map((notification) => (
+                <NotificationItem key={notification.id} notification={notification} />
+              ))}
+            </List>
+          : !error &&
+            !isLoading && (
+              <Text as="p" color="secondary">
+                {t('layout:notifications.none_new')}
+              </Text>
+            )
+          }
+          {acknowledgedNotifications.length > 0 && (
+            <List
+              hasDividers
+              header={
+                <Text as="h2" weight="semibold">
+                  {t('layout:notifications.previous')}
+                </Text>
+              }
+            >
+              {acknowledgedNotifications.map((notification) => (
+                <NotificationItem key={notification.id} notification={notification} />
+              ))}
+            </List>
+          )}
         </>
       }
-    </div>
+    </Stack>
   );
 
   const closeButton = (
@@ -111,16 +133,20 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
       aria-label={t('layout:notifications.panel')}
       purpose="form"
       variant={isMobile ? 'fullscreen' : 'standard'}
-      width="min(560px, 100vw)"
-      maxHeight="100dvh"
-      padding={0}
+      width={480}
+      maxHeight={isMobile ? '100dvh' : '80dvh'}
     >
-      <DialogHeader
-        title={t('layout:notifications.panel')}
-        startContent={<Mail aria-hidden="true" />}
-        endContent={closeButton}
-      />
-      {notificationContent}
+      <Layout
+        header={
+          <DialogHeader
+            title={t('layout:notifications.panel')}
+            startContent={<Bell size={20} aria-hidden="true" />}
+            endContent={closeButton}
+          />
+        }
+      >
+        <LayoutContent data-cy="notification-content">{notificationContent}</LayoutContent>
+      </Layout>
     </Dialog>
   );
 };

@@ -38,11 +38,11 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
 
   return (
     <>
-      <Stack direction="horizontal" align="center" gap={4} wrap="wrap">
+      <Stack direction="horizontal" wrap="wrap" align="center" justify="end" gap={3} paddingInline={6} paddingBlock={2}>
         {isNewErrand && (
           <Button
             label={t('errand-information:cancel')}
-            variant="ghost"
+            variant="secondary"
             onClick={() => {
               setIsCancelOpen(true);
             }}
@@ -53,7 +53,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
             label={t('errand-information:save_draft')}
             data-cy="save-draft-errand"
             isDisabled={isSaving}
-            variant="primary"
+            variant="secondary"
             onClick={() => {
               void onSaveDraft();
             }}

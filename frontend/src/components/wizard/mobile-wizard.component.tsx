@@ -45,12 +45,12 @@ export const MobileWizard: React.FC = () => {
         </LayoutHeader>
       }
       footer={
-        <LayoutFooter className="pb-safe">
+        <LayoutFooter padding={0} className="pb-safe" data-cy="report-actions">
           <WizardBottomBar />
         </LayoutFooter>
       }
     >
-      <LayoutContent ref={contentRef} tabIndex={-1}>
+      <LayoutContent ref={contentRef} tabIndex={-1} className="scroll-py-2" data-cy="wizard-content">
         <WizardStepContent />
       </LayoutContent>
     </Layout>

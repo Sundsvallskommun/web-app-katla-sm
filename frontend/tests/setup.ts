@@ -64,6 +64,8 @@ if (!window.matchMedia) {
 }
 
 window.scrollTo = vi.fn();
+// Real scroll geometry and focus clearance are covered by Playwright.
+HTMLElement.prototype.scrollIntoView = vi.fn();
 
 if (!HTMLDialogElement.prototype.showModal) {
   HTMLDialogElement.prototype.showModal = function () {

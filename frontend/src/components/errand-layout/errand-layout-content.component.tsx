@@ -4,7 +4,7 @@ import { pathWithoutLocale } from '@app/locale-path';
 import { Button } from '@astryxdesign/core/Button';
 import { Heading } from '@astryxdesign/core/Heading';
 import { useMediaQuery } from '@astryxdesign/core/hooks';
-import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
+import { Layout, LayoutContent, LayoutFooter } from '@astryxdesign/core/Layout';
 import { Stack } from '@astryxdesign/core/Stack';
 import { Tab, TabList } from '@astryxdesign/core/TabList';
 import { Text } from '@astryxdesign/core/Text';
@@ -177,6 +177,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   // Utan det här villkoret bytte ett återupptaget utkast till flikvyn på mobil.
   // Utkastets standardstatus är DRAFT, så kvittot måste undantas explicit — annars
   // öppnas wizarden ovanpå beskedet på mobil.
+  const showReportActions = !submittedView && (registerNewErrand || isDraft);
   const showMobileWizard = isMobile && !submittedView && (registerNewErrand || isDraft);
 
   const getHeaderTitle = () => {
@@ -225,8 +226,19 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
               </Layout>
             : showMobileWizard ?
               <MobileWizard />
-            : <Layout height="auto" contentWidth={960} padding={isMobile ? 4 : 6}>
-                <LayoutContent isScrollable={false}>
+            : <Layout
+                height={showReportActions ? 'fill' : 'auto'}
+                contentWidth={960}
+                padding={isMobile ? 4 : 6}
+                footer={
+                  showReportActions && (
+                    <LayoutFooter hasDivider padding={0} className="pb-safe" data-cy="report-actions">
+                      <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                    </LayoutFooter>
+                  )
+                }
+              >
+                <LayoutContent isScrollable={showReportActions} className="scroll-py-2">
                   <Stack gap={6}>
                     {!submittedView && (
                       <Stack gap={4}>
@@ -239,12 +251,26 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
                             label={t('filtering:my_reports')}
                           />
                         )}
-                        <Stack direction="horizontal" align="center" justify="between" wrap="wrap" gap={3}>
-                          <Stack gap={2} align="start">
-                            <Heading level={1}>{getHeaderTitle()}</Heading>
-                            {!registerNewErrand && <StatusLabel status={errandStatus} />}
-                          </Stack>
-                          <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                        <Stack
+                          data-cy="errand-identity"
+                          direction={isMobile ? 'horizontal' : 'vertical'}
+                          align={isMobile ? 'center' : 'start'}
+                          justify={isMobile ? 'between' : 'start'}
+                          wrap="wrap"
+                          gap={2}
+                        >
+                          {isMobile ?
+                            <Text
+                              as="h1"
+                              type="large"
+                              weight="semibold"
+                              aria-label={getHeaderTitle()}
+                              className="min-w-0 break-words"
+                            >
+                              {errandNumber ?? getHeaderTitle()}
+                            </Text>
+                          : <Heading level={1}>{getHeaderTitle()}</Heading>}
+                          {!registerNewErrand && <StatusLabel status={errandStatus} />}
                         </Stack>
                       </Stack>
                     )}

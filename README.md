@@ -84,3 +84,7 @@ Bygg-/testkontroller är separata från verksamhetsacceptans. Riktig SSO, grupp�
 ## API-anslutningar
 
 Aktuella tjänstenamn och versioner ägs av `backend/src/config/api-config.ts`. Katla-läge använder SupportManagement, JSON Schema, Citizen och Employee där flödet behöver dem; prenumerationerna måste motsvara denna konfiguration. SupportManagement har för närvarande en uttrycklig sprintalias i kod. Katalogläge använder endast SAML och katalogpolicyn.
+
+## Komponenter och tema
+
+Katlas tema finns i `frontend/src/theme/katla.ts`. Efter ändringar, kör `yarn workspace katla-web-app theme:build` och `yarn workspace katla-web-app theme:check`. Filerna i `frontend/src/theme/generated/` versionshanteras och genereras med kommandot; ändra dem inte för hand. Använd Astryx komponentprops och tematokens. Vid biblioteksuppgradering verifieras formulär, språk, routing och tillgänglighet.

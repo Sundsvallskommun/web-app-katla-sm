@@ -78,13 +78,13 @@ export const WizardBottomBar: React.FC = () => {
 
   return (
     <>
-      <Stack direction="horizontal" align="center" gap={3} wrap="wrap">
+      <Stack direction="horizontal" align="center" gap={3} wrap="wrap" paddingInline={4} paddingBlock={2}>
         {!isFirstStep && (
           <Button
             label={t('errand-information:wizard.back')}
             size="lg"
             isDisabled={isSaving}
-            variant="ghost"
+            variant="secondary"
             icon={<ChevronLeft size={18} />}
             onClick={() => {
               setShowValidation(false);
@@ -97,7 +97,7 @@ export const WizardBottomBar: React.FC = () => {
           label={t('errand-information:wizard.cancel')}
           size="lg"
           isDisabled={isSaving}
-          variant="ghost"
+          variant="secondary"
           onClick={() => {
             setIsCancelOpen(true);
           }}

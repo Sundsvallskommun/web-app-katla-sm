@@ -67,6 +67,8 @@ Byt aldrig Katla-id för en instans som har sparade uppgifter. Nya formulär hä
 
 ## Mina Katlor och åtkomst
 
+Länken tillbaka till Mina Katlor finns i sidhuvudets användarmeny i varje Katla. Den använder instansens konfigurerade katalogadress.
+
 Den gemensamma policyfilen innehåller `revision`, `catalogueUrl`, `sessionMaxAgeSeconds` och `applications`. En applikationspost anger `id`, `url`, `published` och `allowedGroups`. [Produktionsmallen](../deploy/catalogue.example.json) nekar åtkomst tills grupper har fyllts i och är opublicerad som utgångsläge.
 
 Samma policyfil levereras till kataloginstansen och alla Katlor genom `KATLA_CATALOGUE_FILE`. `AUTHORIZED_GROUPS` är ersatt och får inte ligga kvar. `published` styr synlighet i Mina Katlor; `allowedGroups` styr appåtkomst också via direktlänk och API. En opublicerad app kan alltså provas via direktlänk av en tillåten grupp. Tom grupplista nekar alla. Katalogen skickar bara tillåtna publicerade poster till webbläsaren.

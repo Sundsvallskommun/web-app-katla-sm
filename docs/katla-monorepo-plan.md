@@ -1,6 +1,6 @@
 # Plan: en gemensam bas för flera Katlor
 
-Status: Implementation i separat worktree enligt denna målbild. Se [introduktionsguiden](adding-a-katla.md) för de faktiska kommandona och [driftguiden](katla-operations.md) för images, övergång och kvarstående extern acceptans. Planens illustrativa kod och absoluta länkar beskriver ursprungligt underlag; guiderna och den aktuella koden är implementationsreferens.
+Status: Implementation i separat worktree enligt denna målbild. Se [introduktionsguiden](adding-a-katla.md) för de faktiska kommandona och [driftguiden](katla-operations.md) för images, övergång och kvarstående extern acceptans. Planens nulägesbeskrivning och illustrativa kod beskriver ursprungligt underlag; guiderna och den aktuella koden är implementationsreferens.
 
 Datum: 2026-09-07.
 
@@ -43,7 +43,7 @@ Det mesta av gränssnittet kan återanvändas, men avvikelseregler är utspridda
 | Åtkomst och drift | Backend använder kommun-id, namespace och tillåtna grupper från miljön. Sessionens namn och sökväg konfigureras. | Backend och driftskonfiguration äger åtkomst och mål. Klienten kan aldrig välja ett annat namespace genom formulärdata. |
 | Lokal lagring | Bland annat wizard och sortering använder generella lagringsnycklar. | Befintliga lagringsägare avgränsar nycklar med Katla-id. Ärendebunden wizardposition behöver också bindas till aktuellt ärende. |
 
-Konkreta utgångspunkter: [appConfig](/Users/maxeriksson/Desktop/Repo/web-app-katla-sm/frontend/src/config/appconfig.tsx), [SchemaForm](/Users/maxeriksson/Desktop/Repo/web-app-katla-sm/frontend/src/components/json/schema/schema-form.component.tsx), [ärendemappning](/Users/maxeriksson/Desktop/Repo/web-app-katla-sm/frontend/src/hooks/use-prepare-errand.ts), [desktopens inskickning](/Users/maxeriksson/Desktop/Repo/web-app-katla-sm/frontend/src/layouts/errand-button-group.component.tsx) och [mobilens inskickning](/Users/maxeriksson/Desktop/Repo/web-app-katla-sm/frontend/src/components/wizard/wizard-bottom-bar.component.tsx).
+Konkreta utgångspunkter: [appConfig](../frontend/src/config/appconfig.tsx), [SchemaForm](../frontend/src/components/json/schema/schema-form.component.tsx), [ärendemappning](../frontend/src/hooks/use-prepare-errand.ts), [desktopens inskickning](../frontend/src/layouts/errand-button-group.component.tsx) och [mobilens inskickning](../frontend/src/components/wizard/wizard-bottom-bar.component.tsx).
 
 ## 3. Struktur
 

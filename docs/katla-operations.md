@@ -57,3 +57,7 @@ Inventera driftens faktiska produktflaggor innan övergång. Avvikelsedefinition
 Återställ ett helt verifierat frontend-/backendpar tillsammans med dess instanskonfiguration och policyrevision. Behåll äldre publicerade scheman. Byte av sessionshemlighet eller instansidentitet gör tidigare sessioner ogiltiga och kräver ny inloggning; detta är inte en datamigrering. Verifiera återställning med testutkast innan en ny verksamhet går i produktion.
 
 Åtkomstpolicy kan behöva återställas separat från kod vid ett driftfel. Kontrollera då att ingen avsiktlig återkallelse återställs av misstag. Policyuppdatering och releaseaktivering ska vara granskade, spårbara driftåtgärder.
+
+## Interna och externa Katlor
+
+Detta införande omfattar interna Katlor med den befintliga SAML-identiteten och gruppbaserad appåtkomst. En framtida extern Katla kan dela repo, design, schemaformulär och transportkod, men behöver en egen verifierad inloggnings- och behörighetsmodell, exempelvis för medborgare och ombud. Separata interna och externa instanser ska ha egna sessioner, anslutningsbehörigheter och driftvärden. Olika inloggningsflöden kräver inte i sig separata repon; eventuell uppdelning avgörs av förvaltnings- och säkerhetskrav. Extern autentisering ingår inte i denna implementation.

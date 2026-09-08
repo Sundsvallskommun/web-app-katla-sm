@@ -114,3 +114,44 @@ test.describe('Modal overlay accessibility', () => {
     await expect(page.getByRole('radiogroup', { name: 'Ärendefilter' })).toBeVisible();
   });
 });
+
+for (const width of [1536, 390]) {
+  test(`notification history scrolls below its visible header at ${width}px`, async ({ page, appUrl }, testInfo) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/supportmanagement/errands?*', jsonRoute(mockErrands));
+    await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadata));
+    const history: NotificationDTO[] = Array.from({ length: 12 }, (_, index) => ({
+      id: `notification-${index}`,
+      errandNumber: `VOF-26090${String(index).padStart(3, '0')}`,
+      description: 'Ärendet har uppdaterats.',
+      subtype: 'ERRAND',
+      createdByFullName: 'Alexandra Andersson',
+      created: `2026-09-04T${String(20 - index).padStart(2, '0')}:15:00Z`,
+      acknowledged: index > 1,
+    }));
+    await page.route('**/supportmanagement/notifications', jsonRoute(history));
+    await page.goto(appUrl('/oversikt'));
+    await page.getByRole('button', { name: /Öppna notifieringar/ }).click();
+    const dialog = page.getByRole('dialog', { name: 'Notifieringar', exact: true });
+    const close = dialog.getByRole('button', { name: 'Stäng notifieringar' });
+    await expect(dialog.getByTestId('notification-item')).toHaveCount(12);
+    const initial = await close.boundingBox();
+    await page.screenshot({ path: testInfo.outputPath(`notifications-${width}.png`) });
+    const last = dialog.getByRole('link', { name: history[11].errandNumber, exact: true });
+    // Establish keyboard modality before programmatically moving to the last link.
+    await close.press('Tab');
+    await last.focus();
+    await expect(last).toBeInViewport();
+    await expect(close).toBeInViewport();
+    expect((await close.boundingBox())?.y).toBe(initial?.y);
+    // The row owns the enlarged link's keyboard focus ring, without a second inner rectangle.
+    await expect(last).toBeFocused();
+    await expect(last).toHaveCSS('outline-width', '0px');
+    await expect(dialog.getByTestId('notification-item').last()).toHaveCSS('outline-style', 'solid');
+    expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath(`notifications-scrolled-${width}.png`) });
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+  });
+}

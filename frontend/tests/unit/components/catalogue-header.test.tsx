@@ -1,6 +1,7 @@
 import { AppHeader } from '@layouts/app-header.component';
 import { getNotifications } from '@services/errand-service/errand-service';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { appConfig } from 'src/config/appconfig';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -42,7 +43,8 @@ describe('catalogue navigation', () => {
     appConfig.applicationName = 'Avvikelse';
     appConfig.catalogueUrl = 'https://katla.example/portal';
     render(<AppHeader logoHref="/oversikt" />);
-    expect(screen.getByRole('link', { name: 'catalogue:title' })).toHaveAttribute(
+    await userEvent.click(screen.getByRole('button', { name: 'layout:controls.open_user_menu' }));
+    expect(screen.getByRole('menuitem', { name: 'catalogue:title' })).toHaveAttribute(
       'href',
       'https://katla.example/portal'
     );

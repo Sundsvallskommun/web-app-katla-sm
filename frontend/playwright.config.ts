@@ -68,6 +68,7 @@ export default defineConfig({
         APP_MODE: 'katla',
         KATLA_ID: 'avvikelse-test',
         NEXT_PUBLIC_API_URL: `http://localhost:${apiPort}/api`,
+        NEXT_PUBLIC_CATALOGUE_URL: 'http://localhost:3100/portal',
         NEXT_PUBLIC_SESSION_COOKIE_NAME: sessionCookieName,
       },
       url: `http://localhost:${PORT}${BASE_PATH}/login`,

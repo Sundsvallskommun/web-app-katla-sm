@@ -12,6 +12,8 @@ import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
 
+import { MunicipalityLogo } from './municipality-logo.component';
+
 interface AppHeaderProps {
   as?: 'header' | 'div';
   logoHref?: string;
@@ -24,7 +26,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
   const { t } = useTranslation();
   const user = useUserStore((state) => state.user);
   const [showNotifications, setShowNotifications] = useState(false);
-  const userMenuGroups = createUserMenuGroups(t, { onBeforeLanguageSwitch });
+  const userMenuGroups = createUserMenuGroups(t, {
+    onBeforeLanguageSwitch,
+    catalogueUrl: appConfig.mode === 'katla' ? appConfig.catalogueUrl : undefined,
+  });
   if (actions)
     userMenuGroups.unshift({
       label: t('filtering:reports_heading'),
@@ -38,10 +43,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
           label={appConfig.applicationName}
           heading={
             <TopNavHeading
+              logo={<MunicipalityLogo variant="symbol" />}
               heading={appConfig.applicationName}
               headingHref={logoHref}
-              superheading={appConfig.mode === 'katla' && appConfig.catalogueUrl ? t('catalogue:title') : undefined}
-              superheadingHref={appConfig.mode === 'katla' ? appConfig.catalogueUrl : undefined}
             />
           }
           endContent={
