@@ -45,7 +45,7 @@ describe('errand status filter', () => {
 
     await request(app).get('/api/supportmanagement/errands').query({ status: 'SOLVED' }).expect(200);
 
-    expect(requestedFilter(getSpy)).toBe("status:'SOLVED'");
+    expect(requestedFilter(getSpy)).toBe("status:'SOLVED' and reporterUserId:'test-user'");
   });
 
   it('joins several statuses with or', async () => {
@@ -53,7 +53,7 @@ describe('errand status filter', () => {
 
     await request(app).get('/api/supportmanagement/errands').query({ status: 'NEW,ONGOING,PENDING' }).expect(200);
 
-    expect(requestedFilter(getSpy)).toBe("(status:'NEW' or status:'ONGOING' or status:'PENDING')");
+    expect(requestedFilter(getSpy)).toBe("(status:'NEW' or status:'ONGOING' or status:'PENDING') and reporterUserId:'test-user'");
   });
 
   it('counts the same set of statuses as the list', async () => {
@@ -61,7 +61,7 @@ describe('errand status filter', () => {
 
     await request(app).get('/api/supportmanagement/count').query({ status: 'NEW,ONGOING' }).expect(200);
 
-    expect(requestedFilter(getSpy)).toBe("(status:'NEW' or status:'ONGOING')");
+    expect(requestedFilter(getSpy)).toBe("(status:'NEW' or status:'ONGOING') and reporterUserId:'test-user'");
   });
 
   it('keeps paging and sorting out of the filter expression', async () => {
@@ -71,18 +71,18 @@ describe('errand status filter', () => {
 
     const url = requestedUrl(getSpy);
 
-    expect(requestedFilter(getSpy)).toBe("status:'NEW'");
+    expect(requestedFilter(getSpy)).toBe("status:'NEW' and reporterUserId:'test-user'");
     expect(url).toContain('page=2');
     expect(url).toContain('size=12');
     expect(url).toContain('sort=created,desc');
   });
 
-  it('sends no filter at all when no status is given', async () => {
+  it('always limits results to the authenticated reporter when no status is given', async () => {
     const getSpy = vi.spyOn(ApiService.prototype, 'get').mockResolvedValue({ data: { content: [] }, message: 'success' });
 
     await request(app).get('/api/supportmanagement/errands').expect(200);
 
-    expect(requestedFilter(getSpy)).toBeUndefined();
+    expect(requestedFilter(getSpy)).toBe("reporterUserId:'test-user'");
   });
 
   it('rejects a status value that would break out of the filter literal', async () => {

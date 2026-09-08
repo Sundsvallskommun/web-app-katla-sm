@@ -1,0 +1,8 @@
+{
+  "revision": "test-policy-v1",
+  "catalogueUrl": "https://katla.example.test",
+  "sessionMaxAgeSeconds": 3600,
+  "applications": [
+    { "id": "avvikelse", "url": "https://katla.example.test/avvikelse", "published": true, "allowedGroups": ["katla-avvikelse"] }
+  ]
+}

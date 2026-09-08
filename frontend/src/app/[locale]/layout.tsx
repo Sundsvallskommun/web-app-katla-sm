@@ -28,6 +28,8 @@ const namespaces = [
   'forms',
   'messages',
   'editor',
+  'catalogue',
+  'application',
 ];
 
 const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {

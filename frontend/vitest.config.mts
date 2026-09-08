@@ -1,6 +1,8 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import { getKatlaDefinition } from '@katla/definitions';
+import { definitionRevision } from '@katla/definitions/server';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,6 +37,10 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     env: {
       NEXT_PUBLIC_API_URL: 'http://localhost:3001/api',
+      NEXT_PUBLIC_APP_MODE: 'katla',
+      NEXT_PUBLIC_KATLA_ID: 'avvikelse-test',
+      NEXT_PUBLIC_ALLOW_TEST_DEFINITIONS: 'true',
+      NEXT_PUBLIC_DEFINITION_REVISION: definitionRevision(getKatlaDefinition('avvikelse-test', { allowTestDefinitions: true })),
     },
     coverage: {
       provider: 'v8',

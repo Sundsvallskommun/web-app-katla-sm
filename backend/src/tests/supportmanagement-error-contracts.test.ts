@@ -24,6 +24,20 @@ vi.mock('@/middlewares/auth.middleware', () => ({
 }));
 
 const createApp = () => new App([SupportManagementController]).getServer();
+vi.mock('@/services/errand-submission.service', () => ({
+  prepareErrandWrite: (_req: unknown, input: object) => Promise.resolve(input),
+}));
+vi.mock('@/services/errand-access.service', () => ({
+  assertReporterOwnsErrand: () => undefined,
+  requireReporterErrand: () => Promise.resolve({ id: 'errand-id', status: 'DRAFT', reporterUserId: 'test-user' }),
+  prepareNotificationAcknowledgement: (_req: unknown, notifications: object[]) => Promise.resolve(notifications),
+  readReporterNotifications: async (req: Parameters<ApiService['get']>[1]) => {
+    const response = await new ApiService().get({ url: 'notifications' }, req);
+    if (!response.data) throw new HttpException(502, 'Invalid response when reading notifications');
+    return response.data;
+  },
+}));
+
 const app = createApp();
 
 afterEach(() => {
@@ -207,7 +221,7 @@ describe('SupportManagement HTTP error contracts', () => {
 
     await request(app).get('/api/supportmanagement/errand/AIA-25120019').expect(200);
 
-    const requestUrls = getSpy.mock.calls.map(([requestConfig]) => (requestConfig as { url?: string }).url ?? '');
+    const requestUrls = getSpy.mock.calls.map(([requestConfig]) => decodeURIComponent((requestConfig as { url?: string }).url ?? ''));
     expect(requestUrls.some(url => url.includes("filter=errandNumber:'AIA-25120019'"))).toBe(true);
   });
 

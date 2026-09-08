@@ -1,7 +1,8 @@
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { ErrandFormDTO } from '@interfaces/errand-form';
-import { isMisconduct } from '@utils/report-type';
+import { isMisconduct } from '@katla/definitions/avvikelse';
 import type { TFunction } from 'i18next';
+import { appConfig } from 'src/config/appconfig';
 
 /** Värdet på parametern eventConcerns när händelsen berör en enskild brukare. */
 export const EVENT_CONCERNS_INDIVIDUAL = 'ENSKILD_BRUKARE';
@@ -47,7 +48,11 @@ export const hasReportContent = (values: ErrandFormDTO): boolean => {
   return hasParameters || hasFormData || hasAddedStakeholders;
 };
 
-export const getTypeDisplayName = (errand: ErrandDTO, t: TFunction) =>
-  isMisconduct(errand) ?
-    t('errand-information:about.event_type_misconduct')
-  : t('errand-information:about.event_type_deviation');
+export const getTypeDisplayName = (errand: ErrandDTO, t: TFunction) => {
+  if (appConfig.katla?.flow !== 'avvikelse') return errand.title ?? appConfig.applicationName;
+  return t(
+    isMisconduct(errand) ?
+      'errand-information:about.event_type_misconduct'
+    : 'errand-information:about.event_type_deviation'
+  );
+};

@@ -1,5 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 
+import { getKatlaDefinition } from '@katla/definitions';
 import type { Locator } from '@playwright/test';
 
 import { getMe } from '../fixtures/getMe';
@@ -9,6 +10,8 @@ import { mockMetadata } from '../fixtures/mockMetadata';
 import { mockReporterStakeholder } from '../fixtures/mockStakeholder';
 import { jsonRoute } from '../utils/routes';
 import { expect, test } from '../utils/test';
+
+const applicationName = getKatlaDefinition('avvikelse-test', { allowTestDefinitions: true }).applicationName;
 
 const measure = async (locator: Locator) => {
   const bounds = await locator.boundingBox();
@@ -100,7 +103,7 @@ test.describe('Shared errand header accessibility', () => {
         await page.evaluate(() => document.fonts.ready);
 
         const header = page.getByRole('banner');
-        await expect(header.getByText('Katla', { exact: true })).toBeVisible();
+        await expect(header.getByText(applicationName, { exact: true })).toBeVisible();
         const logo = header.getByRole('img', { name: 'Sundsvalls kommun', exact: true });
         await expect(logo).toBeVisible();
         // An external SVG reference can have a visible box before its artwork has loaded.
@@ -111,7 +114,7 @@ test.describe('Shared errand header accessibility', () => {
               .evaluate((element) => (element instanceof SVGGraphicsElement ? element.getBBox().height : 0))
           )
           .toBeGreaterThan(0);
-        await expect(page).toHaveTitle(/^Katla - /);
+        await expect(page).toHaveTitle(new RegExp(`^${applicationName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} - `));
         const headerBounds = await measure(header);
         expect(headerBounds.height).toBeLessThanOrEqual(72);
         await header.screenshot({ path: testInfo.outputPath(`header-${locale}-${width}.png`) });
@@ -179,7 +182,11 @@ test.describe('Shared errand header accessibility', () => {
         await page.setViewportSize({ width, height: 960 });
         for (const path of ['/oversikt', `/arende/${mockErrand.errandNumber}/meddelanden`]) {
           await page.goto(appUrl(path));
-          const identity = page.getByRole('banner').getByText('Katla', { exact: true });
+          const identity = page
+            .getByRole('banner')
+            .getByText(getKatlaDefinition('avvikelse-test', { allowTestDefinitions: true }).applicationName, {
+              exact: true,
+            });
           await expect(identity).toBeVisible();
           await expect.poll(() => textContrast(identity)).toBeGreaterThanOrEqual(4.5);
           const logo = page.getByRole('banner').getByRole('img', { name: 'Sundsvalls kommun', exact: true });
@@ -254,3 +261,25 @@ test('keeps long user names and all header controls reachable at a narrow deskto
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(800);
 });
+
+for (const width of [320, 1536]) {
+  test(`opens the configured catalogue from the keyboard-accessible app menu at ${width}px`, async ({
+    appUrl,
+    page,
+  }) => {
+    await page.route('**/supportmanagement/errands?*', jsonRoute(mockErrands));
+    await page.route('**/supportmanagement/notifications', jsonRoute([]));
+    await page.setViewportSize({ width, height: 960 });
+    await page.goto(appUrl('/oversikt'));
+    const menu = page.getByRole('button', { name: 'Öppna användarmeny', exact: true });
+    await menu.focus();
+    await menu.press('Enter');
+    const catalogue = page.getByRole('menuitem', { name: 'Mina Katlor', exact: true });
+    await expect(catalogue).toHaveAttribute('href', 'http://localhost:3100/portal');
+    await catalogue.focus();
+    await expect(catalogue).toBeFocused();
+    const bounds = await measure(catalogue);
+    expect(bounds.height).toBeGreaterThanOrEqual(24);
+    await expect.poll(() => isUnobscured(catalogue)).toBe(true);
+  });
+}

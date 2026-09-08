@@ -1,3 +1,4 @@
+import { ErrandSubmissionProvider } from '@contexts/errand-submission-provider';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
 import type { ErrandFormDTO } from '@interfaces/errand-form';
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
@@ -34,10 +35,6 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { resolvedLanguage: 'sv' } }),
 }));
 
-vi.mock('src/config/appconfig', () => ({
-  appConfig: { features: { draftEnabled: true } },
-}));
-
 vi.mock('@astryxdesign/core/Toast', () => ({ useToast: () => snackbarMock }));
 
 function TestForm() {
@@ -57,7 +54,9 @@ function TestForm() {
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        <ErrandButtonGroup isNewErrand />
+        <ErrandSubmissionProvider>
+          <ErrandButtonGroup isNewErrand />
+        </ErrandSubmissionProvider>
       </FormValidationProvider>
     </FormProvider>
   );

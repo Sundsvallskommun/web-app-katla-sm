@@ -1,3 +1,4 @@
+import { Button } from '@astryxdesign/core/Button';
 import { DropdownMenuSubMenu } from '@astryxdesign/core/DropdownMenu';
 import { LogoutButton } from '@components/buttons/logout-button.component';
 import { ColorSchemeItems } from '@components/misc/color-scheme-items.component';
@@ -7,6 +8,8 @@ import { Languages, Monitor } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface UserMenuOptions {
+  /** Return to the server-filtered catalogue when this is a case application. */
+  catalogueUrl?: string;
   /** Both language controls preserve the same form state before navigating. */
   onBeforeLanguageSwitch?: () => void;
 }
@@ -17,6 +20,29 @@ export interface UserMenuGroup {
 }
 
 export const createUserMenuGroups = (t: TFunction, options: UserMenuOptions = {}): UserMenuGroup[] => [
+  ...(options.catalogueUrl ?
+    [
+      {
+        label: t('catalogue:title'),
+        elements: [
+          {
+            label: t('catalogue:title'),
+            element: () => (
+              <Button
+                href={options.catalogueUrl}
+                role="menuitem"
+                label={t('catalogue:title')}
+                variant="ghost"
+                width="100%"
+                className="justify-start"
+                data-cy="open-catalogue"
+              />
+            ),
+          },
+        ],
+      },
+    ]
+  : []),
   {
     label: t('layout:controls.open_user_menu'),
     elements: [

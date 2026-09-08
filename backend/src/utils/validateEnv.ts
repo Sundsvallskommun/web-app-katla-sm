@@ -1,5 +1,7 @@
 import { cleanEnv, EnvError, makeValidator, port, str, url } from 'envalid';
 
+import { loadRuntimeConfiguration, readCataloguePolicy } from '@/config/katla-config';
+
 const sessionSecret = makeValidator<string>(value => {
   if (value.length < 32 || /\s/.test(value) || /^<.*>$/.test(value) || /^(?:change[-_]?me|replace[-_]?me|placeholder)+$/i.test(value)) {
     throw new EnvError('Generera en unik SECRET_KEY med openssl rand -hex 32; exempelvärden är inte tillåtna.');
@@ -13,9 +15,6 @@ const validateEnv = () => {
   cleanEnv(process.env, {
     NODE_ENV: str(),
     SECRET_KEY: sessionSecret(),
-    API_BASE_URL: str(),
-    CLIENT_KEY: str(),
-    CLIENT_SECRET: str(),
     PORT: port(),
     BASE_URL_PREFIX: str(),
     ORIGIN: str(),
@@ -29,6 +28,7 @@ const validateEnv = () => {
     SAML_PRIVATE_KEY: str(),
     SAML_PUBLIC_KEY: str(),
   });
+  readCataloguePolicy(loadRuntimeConfiguration());
 };
 
 export default validateEnv;

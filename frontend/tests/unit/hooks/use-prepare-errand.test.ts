@@ -145,14 +145,18 @@ describe('usePrepareErrand', () => {
   });
 
   it('behandlar en plats med underenheter som ofullständig', () => {
-    const { getFacilityStatus } = renderPrepareErrand();
+    const { getClassification } = renderPrepareErrand();
+    const getFacilityStatus = (errandFormData: ErrandFormDataItem[]) =>
+      getClassification({ errandFormData }).facilityStatus;
 
     expect(getFacilityStatus(facilityFormData({ orgName: 'VOF ÄB Skottsundsbacken geme.' }))).toBe('INCOMPLETE');
     expect(getFacilityStatus(facilityFormData({ orgName: 'Okänd enhet' }))).toBe('INCOMPLETE');
   });
 
   it('godkänner en plats som är vald hela vägen ner', () => {
-    const { getFacilityStatus } = renderPrepareErrand();
+    const { getClassification } = renderPrepareErrand();
+    const getFacilityStatus = (errandFormData: ErrandFormDataItem[]) =>
+      getClassification({ errandFormData }).facilityStatus;
 
     expect(
       getFacilityStatus(facilityFormData({ orgName: 'Gul', parentOrgName: 'VOF ÄB Skottsundsbacken geme.' }))
@@ -160,7 +164,9 @@ describe('usePrepareErrand', () => {
   });
 
   it('rapporterar ingen plats när formulärdatat saknas eller är trasigt', () => {
-    const { getFacilityStatus } = renderPrepareErrand();
+    const { getClassification } = renderPrepareErrand();
+    const getFacilityStatus = (errandFormData: ErrandFormDataItem[]) =>
+      getClassification({ errandFormData }).facilityStatus;
 
     expect(getFacilityStatus(facilityFormData(undefined))).toBe('NONE');
     expect(

@@ -15,7 +15,7 @@ import {
   placeSearchText,
   qualifiedPlaceName,
   toErrandLabels,
-} from '@utils/label-structure';
+} from '@katla/definitions/avvikelse';
 import { describe, expect, it } from 'vitest';
 
 const label = (name: string, resourcePath: string, labels: LabelDTO[] = []): LabelDTO => ({

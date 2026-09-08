@@ -1,4 +1,4 @@
-import { DeviationInformation } from '@components/errand-sections/deviation-information.component';
+import { ErrandInformation } from '@components/errand-sections/errand-information.component';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
 import type { ErrandFormDataItem, ErrandFormDTO } from '@interfaces/errand-form';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -57,14 +57,14 @@ function TestForm({ errandFormData }: { errandFormData: ErrandFormDataItem[] }) 
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        <DeviationInformation />
+        <ErrandInformation />
         <FormState />
       </FormValidationProvider>
     </FormProvider>
   );
 }
 
-describe('DeviationInformation', () => {
+describe('ErrandInformation', () => {
   beforeEach(() => {
     useFormSchemaMock.mockClear();
   });

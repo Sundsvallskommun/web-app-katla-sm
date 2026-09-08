@@ -1,0 +1,13 @@
+{
+  "revision": "local-example-1",
+  "catalogueUrl": "http://localhost:3100/portal",
+  "sessionMaxAgeSeconds": 3600,
+  "applications": [
+    {
+      "id": "avvikelse",
+      "url": "http://localhost:3000",
+      "published": true,
+      "allowedGroups": ["group1"]
+    }
+  ]
+}

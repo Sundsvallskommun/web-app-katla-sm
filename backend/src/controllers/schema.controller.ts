@@ -4,11 +4,11 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { JsonSchema, UiSchema } from '@/data-contracts/jsonschema/data-contracts';
+import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import { SchemaResponseDTO } from '@/responses/schema.response';
 import ApiService from '@/services/api.service';
-import { findLocalSchemaById, findLocalSchemaByName, LocalSchemaOverride } from '@/utils/local-schemas';
 import { logger } from '@/utils/logger';
 import { applyUiSchemaTitleToSchema, localeFromAcceptLanguage, localizeUiSchema } from '@/utils/schema-localization';
 import { mapSchemaResponse, mapUiSchema } from '@/utils/schema-response-mapping';
@@ -20,17 +20,6 @@ export class SchemaController {
   private apiBase = getApiBase('jsonschema');
 
   /**
-   * Lokalt hållna scheman går genom samma mappning och lokalisering som API-svaren, så att
-   * svaret till frontend ser likadant ut oavsett var schemat kom ifrån.
-   */
-  private buildLocalResponse(override: LocalSchemaOverride, locale: string): SchemaResponseDTO {
-    const result = mapSchemaResponse(override.schema);
-    const uiSchema = localizeUiSchema(mapUiSchema(override.uiSchema), locale);
-
-    return { schema: applyUiSchemaTitleToSchema(result.schema, uiSchema), schemaId: result.schemaId, uiSchema };
-  }
-
-  /**
    * Ui-schemat lagrar sina översättningar i x-i18n-block. De löses upp här, så att frontend
    * får färdig text för det begärda språket och aldrig ser de andra språken.
    */
@@ -39,13 +28,14 @@ export class SchemaController {
       const uiRes = await this.apiService.get<UiSchema>(
         {
           baseURL: apiURL(this.apiBase),
-          url: `${MUNICIPALITY_ID}/schemas/${schemaId}/ui-schema`,
+          url: `${MUNICIPALITY_ID}/schemas/${encodeURIComponent(schemaId)}/ui-schema`,
         },
         req,
       );
       return localizeUiSchema(mapUiSchema(uiRes.data), locale);
-    } catch {
-      logger.info(`No UI schema found for ${schemaId}, using empty object`);
+    } catch (error) {
+      if (!(error instanceof HttpException) || error.status !== 404) throw error;
+      logger.info(`No UI schema found for ${encodeURIComponent(schemaId)}, using empty object`);
       return {};
     }
   }
@@ -57,15 +47,10 @@ export class SchemaController {
   async getSchemaById(@Param('schemaId') schemaId: string, @Req() req: RequestWithUser): Promise<SchemaResponseDTO> {
     const locale = localeFromAcceptLanguage(req.headers['accept-language']);
 
-    const local = findLocalSchemaById(schemaId);
-    if (local) {
-      return this.buildLocalResponse(local, locale);
-    }
-
     const schemaRes = await this.apiService.get<JsonSchema>(
       {
         baseURL: apiURL(this.apiBase),
-        url: `${MUNICIPALITY_ID}/schemas/${schemaId}`,
+        url: `${MUNICIPALITY_ID}/schemas/${encodeURIComponent(schemaId)}`,
       },
       req,
     );
@@ -83,15 +68,10 @@ export class SchemaController {
   async getLatestSchema(@Param('schemaName') schemaName: string, @Req() req: RequestWithUser): Promise<SchemaResponseDTO> {
     const locale = localeFromAcceptLanguage(req.headers['accept-language']);
 
-    const local = findLocalSchemaByName(schemaName);
-    if (local) {
-      return this.buildLocalResponse(local, locale);
-    }
-
     const latestRes = await this.apiService.get<JsonSchema>(
       {
         baseURL: apiURL(this.apiBase),
-        url: `${MUNICIPALITY_ID}/schemas/${schemaName}/versions/latest`,
+        url: `${MUNICIPALITY_ID}/schemas/${encodeURIComponent(schemaName)}/versions/latest`,
       },
       req,
     );

@@ -1,13 +1,48 @@
-// import { AUTHORIZED_GROUPS } from '@/config';
 import { ADRole, InternalRole, Permissions } from '@interfaces/auth.interface';
 
-import { AUTHORIZED_GROUPS } from '@/config';
+import { canAccessApplication, CataloguePolicy, normalizeGroups } from '@/config/catalogue-policy';
+import { loadRuntimeConfiguration, readCataloguePolicy, RuntimeConfiguration } from '@/config/katla-config';
+import { HttpException } from '@/exceptions/HttpException';
 
-export function authorizeGroups(groups: string) {
-  const authorizedGroupsList = (AUTHORIZED_GROUPS ?? '').split(',');
-  const groupsList = groups.split(',').map((g: string) => g.toLowerCase());
-  return authorizedGroupsList.some(authorizedGroup => groupsList.includes(authorizedGroup.toLowerCase()));
+export { validateCataloguePolicy } from '@/config/catalogue-policy';
+
+/** SAML-strategin är ensam om att skapa dessa claims efter verifierad inloggning. */
+export interface VerifiedSessionClaims {
+  groups: string[];
+  groupsVerifiedAt: number;
+  sessionInstanceId: string;
 }
+
+export const createVerifiedSessionClaims = (groups: string[], configuration: RuntimeConfiguration, now = Date.now()): VerifiedSessionClaims => ({
+  groups: normalizeGroups(groups),
+  groupsVerifiedAt: now,
+  sessionInstanceId: configuration.sessionInstanceId,
+});
+
+export function authorizeGroups(groups: string): boolean {
+  const configuration = loadRuntimeConfiguration();
+  const policy = readCataloguePolicy(configuration);
+  return configuration.mode === 'catalogue' || canAccessApplication(policy, configuration.katlaId, groups.split(','));
+}
+
+/** Även direktanrop kontrolleras. Äldre gruppclaims kräver ny SAML-inloggning. */
+export const assertSessionAccess = (user: unknown, configuration: RuntimeConfiguration, policy: CataloguePolicy, now = Date.now()): void => {
+  if (!user || typeof user !== 'object') throw new HttpException(401, 'NOT_AUTHORIZED');
+  const claims = user as Partial<VerifiedSessionClaims>;
+  if (claims.sessionInstanceId !== configuration.sessionInstanceId) throw new HttpException(401, 'SESSION_INSTANCE_MISMATCH');
+  if (
+    typeof claims.groupsVerifiedAt !== 'number' ||
+    !Number.isFinite(claims.groupsVerifiedAt) ||
+    claims.groupsVerifiedAt > now ||
+    now - claims.groupsVerifiedAt >= policy.sessionMaxAgeSeconds * 1000
+  ) {
+    throw new HttpException(401, 'SESSION_CLAIMS_EXPIRED');
+  }
+  if (!Array.isArray(claims.groups) || !claims.groups.every(group => typeof group === 'string'))
+    throw new HttpException(401, 'SESSION_INVALID_GROUPS');
+  if (configuration.mode === 'katla' && !canAccessApplication(policy, configuration.katlaId, claims.groups))
+    throw new HttpException(403, 'KATLA_ACCESS_DENIED');
+};
 
 export const defaultPermissions: () => Permissions = () => ({
   canEditSystemMessages: false,

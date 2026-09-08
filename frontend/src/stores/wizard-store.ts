@@ -1,3 +1,4 @@
+import { applicationStorageScope } from 'src/config/appconfig';
 import { create } from 'zustand';
 import { persist, StorageValue } from 'zustand/middleware';
 
@@ -29,7 +30,7 @@ export const useWizardStore = create<WizardState>()(
       reset: () => set({ currentStep: 0, stepErrors: {} }),
     }),
     {
-      name: 'wizard-storage',
+      name: `${applicationStorageScope}:wizard`,
       storage: {
         getItem: (name) => {
           const str = sessionStorage.getItem(name);

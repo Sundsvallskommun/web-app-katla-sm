@@ -1,0 +1,58 @@
+{
+  "name": "@katla/definitions",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./avvikelse": {
+      "types": "./dist/avvikelse-rules.d.ts",
+      "default": "./dist/avvikelse-rules.js"
+    },
+    "./schema-validation": {
+      "types": "./dist/schema-validation.d.ts",
+      "default": "./dist/schema-validation.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "server": [
+        "dist/server.d.ts"
+      ],
+      "avvikelse": [
+        "dist/avvikelse-rules.d.ts"
+      ],
+      "schema-validation": [
+        "dist/schema-validation.d.ts"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=22.18.0 <=24"
+  },
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "test": "yarn build && node --test tests/*.test.cjs"
+  },
+  "dependencies": {
+    "ajv-formats": "^3.0.1",
+    "ajv": "^8.18.0",
+    "htmlparser2": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "typescript": "5.9.3"
+  }
+}

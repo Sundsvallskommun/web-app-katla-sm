@@ -13,12 +13,19 @@ import { ErrandStatusFilter } from '@components/errand-table/errand-status-filte
 import { ErrandTable } from '@components/errand-table/errand-table.component';
 import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { Files, Plus } from 'lucide-react';
+import { redirect } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import { appConfig } from 'src/config/appconfig';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
 import { useOverviewErrands } from 'src/hooks/use-overview-errands';
 import { useActiveStatusLabel } from 'src/hooks/use-status-buttons';
 
 export default function Oversikt() {
+  if (appConfig.mode === 'catalogue') redirect('/katlor');
+  return <ErrandOverview />;
+}
+
+function ErrandOverview() {
   const { t } = useTranslation();
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const activeStatusLabel = useActiveStatusLabel();
@@ -56,21 +63,35 @@ export default function Oversikt() {
               {initialLoading ? t('common:errand-table.loading') : ''}
             </Text>
             <Stack aria-busy={initialLoading} aria-label={activeStatusLabel} role="region">
-              {initialLoading ?
-                isMobile ?
-                  <ErrandListSkeleton />
-                : <ErrandTable {...data} />
-              : rows.length > 0 ?
-                isMobile ?
-                  <ErrandList {...data} />
-                : <ErrandTable {...data} />
-              : errors.length === 0 && !isLoading ?
-                <EmptyState title={t('errand-information:no_errands')} icon={<Files aria-hidden="true" />} />
-              : null}
+              <ErrandOverviewResults
+                data={data}
+                isMobile={isMobile}
+                initialLoading={initialLoading}
+                hasErrors={errors.length > 0}
+              />
             </Stack>
           </Stack>
         </Stack>
       </LayoutContent>
     </Layout>
   );
+}
+
+/** Loading, populated and empty results share one presentation decision. */
+function ErrandOverviewResults({
+  data,
+  isMobile,
+  initialLoading,
+  hasErrors,
+}: Readonly<{
+  data: ReturnType<typeof useOverviewErrands>;
+  isMobile: boolean;
+  initialLoading: boolean;
+  hasErrors: boolean;
+}>) {
+  const { t } = useTranslation();
+  if (initialLoading) return isMobile ? <ErrandListSkeleton /> : <ErrandTable {...data} />;
+  if (data.rows.length > 0) return isMobile ? <ErrandList {...data} /> : <ErrandTable {...data} />;
+  if (hasErrors || data.isLoading) return null;
+  return <EmptyState title={t('errand-information:no_errands')} icon={<Files aria-hidden="true" />} />;
 }

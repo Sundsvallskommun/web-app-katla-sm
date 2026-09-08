@@ -1,0 +1,11 @@
+{
+  "title": "Mina Katlor",
+  "description": "Välj den applikation du vill använda för att registrera eller följa dina ärenden.",
+  "available": "Tillgängliga applikationer",
+  "loading": "Hämtar dina Katlor",
+  "error": "Dina Katlor kunde inte hämtas. Försök igen.",
+  "retry": "Försök igen",
+  "open": "Öppna",
+  "empty_title": "Du har inga tillgängliga Katlor",
+  "empty_description": "Kontakta din chef eller organisationens IT-support om du behöver tillgång till en applikation."
+}

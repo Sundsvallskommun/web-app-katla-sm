@@ -6,17 +6,14 @@
     "node": ">=22.18.0 <=24"
   },
   "scripts": {
-    "predev": "yarn generate:middleware-envs",
     "dev": "cross-env TEST=true next dev --webpack",
-    "prebuild": "yarn theme:check && yarn generate:middleware-envs",
+    "prebuild": "yarn theme:check",
     "build": "next build --webpack",
     "build:webpack": "yarn build",
-    "prebuild:test": "yarn theme:check && yarn generate:middleware-envs",
+    "prebuild:test": "yarn theme:check",
     "build:test": "cross-env TEST=true next build --webpack",
     "start": "next start",
-    "generate:middleware-envs": "node middleware-envs-generator.mjs",
     "generate:contracts": "cross-env NODE_ENV=development tsx ./src/generate-contracts.ts",
-    "prelint": "yarn generate:middleware-envs",
     "lint": "eslint src/ e2e/ tests/",
     "analyze": "cross-env ANALYZE=true next build --webpack",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build --webpack",
@@ -26,19 +23,17 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
-    "pretype-check": "yarn generate:middleware-envs",
     "type-check": "tsc --pretty --noEmit && tsc --project tests/tsconfig.json --pretty --noEmit && tsc --project e2e/tsconfig.json --pretty --noEmit",
-    "prelint:fix": "yarn generate:middleware-envs",
     "lint:fix": "eslint src/ e2e/ tests/ --fix",
-    "prelint:strict": "yarn generate:middleware-envs",
     "lint:strict": "eslint src/ e2e/ tests/ --max-warnings=0 --cache --cache-location node_modules/.cache/eslint/",
     "format": "prettier --write \"{src,e2e,tests}/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"{src,e2e,tests}/**/*.{ts,tsx}\"",
-    "astryx": "node node_modules/@astryxdesign/cli/clients/cli/bin/astryx.mjs",
+    "astryx": "astryx",
     "theme:build": "yarn astryx theme build src/theme/katla.ts --out src/theme/generated/katla.css",
     "theme:check": "yarn astryx theme build src/theme/katla.ts --out src/theme/generated/katla.css --check"
   },
   "dependencies": {
+    "@katla/definitions": "1.0.0",
     "@astryxdesign/core": "0.5.2",
     "@astryxdesign/theme-neutral": "0.5.2",
     "@hookform/resolvers": "^5.2.2",
@@ -66,14 +61,6 @@
     "sharp": "^0.35.4",
     "yup": "^1.7.1",
     "zustand": "^5.0.11"
-  },
-  "resolutions": {
-    "form-data": "^4.0.4",
-    "@rjsf/validator-ajv8/ajv": "8.20.0",
-    "typescript-eslint": "8.67.0",
-    "vitest/vite": "8.2.1",
-    "next/postcss": "^8.5.26",
-    "next/sharp": "^0.35.4"
   },
   "devDependencies": {
     "@astryxdesign/cli": "0.5.2",

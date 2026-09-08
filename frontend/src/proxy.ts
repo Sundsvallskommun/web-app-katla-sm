@@ -1,9 +1,8 @@
 import i18nConfig from '@app/i18nConfig';
 import { pathWithoutLocale } from '@app/locale-path';
+import { isProtectedPath } from '@utils/protected-routes';
 import { NextRequest, NextResponse } from 'next/server';
 import { i18nRouter } from 'next-i18n-router';
-
-import { envs } from '../middleware-envs';
 
 export async function proxy(req: NextRequest) {
   const { pathname, origin } = req.nextUrl;
@@ -13,25 +12,34 @@ export async function proxy(req: NextRequest) {
   const unprefixedPathname = pathWithoutLocale(pathname);
 
   if (unprefixedPathname === '/admin') {
-    return NextResponse.redirect(new URL(envs.adminUrl));
+    const adminUrl = process.env.ADMIN_URL;
+    if (!adminUrl) return new NextResponse(null, { status: 404 });
+    return NextResponse.redirect(new URL(adminUrl));
   }
 
-  if (envs.protectedRoutes.includes(unprefixedPathname)) {
-    const cookieName = envs.sessionCookieName;
+  if (isProtectedPath(pathname, { additionalRoutes: (process.env.NEXT_PUBLIC_PROTECTED_ROUTES ?? '').split(',') })) {
+    const cookieName = process.env.NEXT_PUBLIC_SESSION_COOKIE_NAME ?? '';
     const token = req.cookies.get(cookieName)?.value ?? '';
 
-    const response = await fetch(`${envs.apiUrl}/me`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me`, {
       cache: 'no-cache',
+      signal: AbortSignal.timeout(10_000),
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Cookie: `${cookieName}=${encodeURIComponent(token)}`,
       },
-    });
+    }).catch(() => null);
 
-    if (response.status === 401) {
-      const loginUrl = new URL(`${envs.basePath}/login`, origin);
-      loginUrl.searchParams.set('path', pathname);
+    if (!response?.ok) {
+      const loginUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/login`, origin);
+      loginUrl.searchParams.set('path', `${pathname}${req.nextUrl.search}`);
+      if (response?.status !== 401) {
+        loginUrl.searchParams.set(
+          'failMessage',
+          response?.status === 403 ? 'MISSING_PERMISSIONS' : 'ACCESS_POLICY_UNAVAILABLE'
+        );
+      }
       return NextResponse.redirect(loginUrl);
     }
   }

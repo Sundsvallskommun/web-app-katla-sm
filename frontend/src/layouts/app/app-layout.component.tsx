@@ -6,6 +6,7 @@ import '@utils/dayjs-locale';
 
 import { LinkProvider } from '@astryxdesign/core/Link';
 import { Theme } from '@astryxdesign/core/theme';
+import { AppContextBoundary } from '@components/auth/app-context-boundary.component';
 import { useUserStore } from '@services/user-service/user-service';
 import { useLocalStorage } from '@utils/use-localstorage.hook';
 import NextLink from 'next/link';
@@ -20,19 +21,24 @@ interface ClientApplicationProps {
 
 const AppLayout = ({ children }: ClientApplicationProps) => {
   const colorScheme = useLocalStorage(useShallow((state) => state.colorScheme));
-  const getMe = useUserStore((state) => state.getMe);
-
-  useEffect(() => {
-    void getMe();
-  }, [getMe]);
 
   return (
     <LinkProvider component={NextLink}>
       <Theme theme={katlaTheme} mode={colorScheme}>
-        {children}
+        <AppContextBoundary>
+          <UserBootstrap>{children}</UserBootstrap>
+        </AppContextBoundary>
       </Theme>
     </LinkProvider>
   );
+};
+
+const UserBootstrap = ({ children }: ClientApplicationProps) => {
+  const getMe = useUserStore((state) => state.getMe);
+  useEffect(() => {
+    void getMe();
+  }, [getMe]);
+  return children;
 };
 
 export default AppLayout;

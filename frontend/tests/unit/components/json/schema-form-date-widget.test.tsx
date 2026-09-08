@@ -1,5 +1,5 @@
-import { applyDateBounds } from '@components/json/schema/date-bounds';
 import SchemaForm from '@components/json/schema/schema-form.component';
+import { applyDateBounds } from '@katla/definitions/schema-validation';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
 import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

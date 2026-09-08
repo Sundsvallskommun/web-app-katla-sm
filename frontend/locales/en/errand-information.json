@@ -42,7 +42,9 @@
     "event_type_required": "Select an event type",
     "event_concerns_required": "Select what the event concerns",
     "event_concerns_group_facility_required": "Select a location where the deviation occurred when the event concerns a group/the entire operation",
-    "facility_incomplete": "Complete the location selection by choosing a unit – the location controls who can see the case"
+    "facility_incomplete": "Complete the location selection by choosing a unit – the location controls who can see the case",
+    "report_type_unavailable": "The report type is missing from the recipient configuration. Contact IT support.",
+    "facility_required": "Choose a unit or department before submitting the report."
   },
   "reporter": {
     "title": "Reporter",
@@ -134,5 +136,8 @@
     "title_one": "You need to fix {{count}} thing",
     "title_other": "You need to fix {{count}} things",
     "go_to_error": "Go to the field: {{message}}"
+  },
+  "details": {
+    "title": "Case details"
   }
 }

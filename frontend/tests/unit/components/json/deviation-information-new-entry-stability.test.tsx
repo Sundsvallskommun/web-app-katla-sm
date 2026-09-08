@@ -1,4 +1,4 @@
-import { DeviationInformation } from '@components/errand-sections/deviation-information.component';
+import { ErrandInformation } from '@components/errand-sections/errand-information.component';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
 import type { ErrandFormDTO } from '@interfaces/errand-form';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
@@ -62,14 +62,14 @@ function TestForm() {
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        <DeviationInformation />
+        <ErrandInformation />
         <FormState />
       </FormValidationProvider>
     </FormProvider>
   );
 }
 
-describe('DeviationInformation new entry schema stability', () => {
+describe('ErrandInformation new entry schema stability', () => {
   beforeEach(() => {
     loadFormSchemaMock.mockReset().mockResolvedValue({ schema, uiSchema, schemaId: 'schema-v1' });
     loadFormSchemaForEntryMock.mockReset().mockResolvedValue({ schema, uiSchema, schemaId: 'schema-v1' });

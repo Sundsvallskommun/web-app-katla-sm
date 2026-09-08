@@ -26,7 +26,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
   const { t } = useTranslation();
   const user = useUserStore((state) => state.user);
   const [showNotifications, setShowNotifications] = useState(false);
-  const userMenuGroups = createUserMenuGroups(t, { onBeforeLanguageSwitch });
+  const userMenuGroups = createUserMenuGroups(t, {
+    onBeforeLanguageSwitch,
+    catalogueUrl: appConfig.mode === 'katla' ? appConfig.catalogueUrl : undefined,
+  });
   if (actions)
     userMenuGroups.unshift({
       label: t('filtering:reports_heading'),
@@ -47,12 +50,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
           }
           endContent={
             <Stack direction="horizontal" align="center" gap={1}>
-              <NotificationsBell
-                expanded={showNotifications}
-                toggleShow={() => {
-                  setShowNotifications((shown) => !shown);
-                }}
-              />
+              {appConfig.mode === 'katla' && (
+                <NotificationsBell
+                  expanded={showNotifications}
+                  toggleShow={() => {
+                    setShowNotifications((shown) => !shown);
+                  }}
+                />
+              )}
               <LanguageSwitchButton onBeforeSwitch={onBeforeLanguageSwitch} />
               <AppUserMenu
                 data-cy="usermenu"
@@ -65,7 +70,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ as = 'header', logoHref, a
           }
         />
       </Stack>
-      <NotificationsWrapper show={showNotifications} setShow={setShowNotifications} />
+      {appConfig.mode === 'katla' && <NotificationsWrapper show={showNotifications} setShow={setShowNotifications} />}
     </>
   );
 };

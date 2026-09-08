@@ -13,6 +13,7 @@ import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { StatusLabel } from '@components/misc/status-label.component';
 import { getVisibleTabs } from '@components/tabs/tabs';
 import { MobileWizard } from '@components/wizard/mobile-wizard.component';
+import { ErrandSubmissionProvider } from '@contexts/errand-submission-provider';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ErrandFormDTO } from '@interfaces/errand-form';
@@ -21,10 +22,11 @@ import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
 import { getErrandUsingErrandNumber } from '@services/errand-service/errand-service';
 import { ErrandFormHandover, takeErrandFormHandover } from '@utils/errand-form-handover';
 import { ArrowLeft } from 'lucide-react';
-import { useParams, usePathname } from 'next/navigation';
+import { redirect, useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { FormProvider, Resolver, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { appConfig } from 'src/config/appconfig';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
 import { useAutoInitReporter } from 'src/hooks/use-auto-init-reporter';
 import { useLoadMetadata } from 'src/hooks/use-load-metadata';
@@ -68,12 +70,8 @@ const matchesRequestedErrand = (errandNumber: string | undefined, requestedErran
   errandNumber?.trim().toLocaleUpperCase('sv-SE') === requestedErrandNumber.trim().toLocaleUpperCase('sv-SE');
 
 const createDefaultErrand = (): ErrandFormDTO => ({
-  title: 'Empty errand',
-  priority: 'MEDIUM',
+  ...appConfig.katla?.errandDefaults,
   status: 'DRAFT',
-  //TODO: Change channel to ESERVICE_KATLA?
-  channel: 'ESERVICE',
-  resolution: 'INFORMED',
 });
 
 interface ErrandRouteContentProps {
@@ -157,6 +155,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
           reset(handover.values);
           wizardGoToStep(handover.wizardStep);
         } else {
+          wizardReset();
           reset({ ...errand, errandFormData });
         }
         setLoadState('ready');
@@ -203,96 +202,98 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        {isReady && registerNewErrand && <ReporterInit />}
-        {/* Bara registreringen: där är allt innehåll osparat. Ett laddat utkast bär redan
+        <ErrandSubmissionProvider>
+          {isReady && registerNewErrand && <ReporterInit />}
+          {/* Bara registreringen: där är allt innehåll osparat. Ett laddat utkast bär redan
             sparade värden, så "har innehåll" skulle varna för att lämna en orörd sida. */}
-        {isReady && registerNewErrand && <UnsavedReportWarning />}
-        <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
-          {!isReady ?
-            <Layout height="auto" contentWidth={960} padding={4}>
-              <LayoutContent isScrollable={false}>
-                <Stack gap={6}>
-                  <Text role="status" className="sr-only">
-                    {loadErrors.length === 0 ? t('forms:loading') : ''}
-                  </Text>
-                  {loadErrors.length > 0 ?
-                    <ErrorAlertList messages={loadErrors} />
-                  : <Stack role="region" aria-label={t('forms:loading')} aria-busy="true">
-                      <ErrandContentSkeleton />
-                    </Stack>
-                  }
-                </Stack>
-              </LayoutContent>
-            </Layout>
-          : showMobileWizard ?
-            <MobileWizard />
-          : <Layout
-              height={showReportActions ? 'fill' : 'auto'}
-              contentWidth={960}
-              padding={isMobile ? 4 : 6}
-              footer={
-                showReportActions && (
-                  <LayoutFooter hasDivider padding={0} className="pb-safe" data-cy="report-actions">
-                    <ErrandButtonGroup isNewErrand={registerNewErrand} />
-                  </LayoutFooter>
-                )
-              }
-            >
-              <LayoutContent isScrollable={showReportActions} className="scroll-py-2">
-                <Stack gap={6}>
-                  {!submittedView && (
-                    <Stack gap={4}>
-                      {!registerNewErrand && (
-                        <Button
-                          href="/oversikt"
-                          variant="ghost"
-                          className="self-start"
-                          icon={<ArrowLeft aria-hidden="true" />}
-                          label={t('filtering:my_reports')}
-                        />
-                      )}
-                      <Stack
-                        data-cy="errand-identity"
-                        direction={isMobile ? 'horizontal' : 'vertical'}
-                        align={isMobile ? 'center' : 'start'}
-                        justify={isMobile ? 'between' : 'start'}
-                        wrap="wrap"
-                        gap={2}
-                      >
-                        {isMobile ?
-                          <Text
-                            as="h1"
-                            type="large"
-                            weight="semibold"
-                            aria-label={getHeaderTitle()}
-                            className="min-w-0 break-words"
-                          >
-                            {errandNumber ?? getHeaderTitle()}
-                          </Text>
-                        : <Heading level={1}>{getHeaderTitle()}</Heading>}
-                        {!registerNewErrand && <StatusLabel status={errandStatus} />}
+          {isReady && registerNewErrand && <UnsavedReportWarning />}
+          <BaseErrandLayout registerNewErrand={registerNewErrand || submittedView}>
+            {!isReady ?
+              <Layout height="auto" contentWidth={960} padding={4}>
+                <LayoutContent isScrollable={false}>
+                  <Stack gap={6}>
+                    <Text role="status" className="sr-only">
+                      {loadErrors.length === 0 ? t('forms:loading') : ''}
+                    </Text>
+                    {loadErrors.length > 0 ?
+                      <ErrorAlertList messages={loadErrors} />
+                    : <Stack role="region" aria-label={t('forms:loading')} aria-busy="true">
+                        <ErrandContentSkeleton />
                       </Stack>
-                    </Stack>
-                  )}
-                  {!registerNewErrand && !submittedView && (
-                    <TabList
-                      value={tabs[activeTabIndex]?.path ?? ''}
-                      onChange={() => undefined}
-                      aria-label={getHeaderTitle()}
-                      hasDivider
-                      size="lg"
-                    >
-                      {tabs.map((tab) => (
-                        <Tab key={tab.path} value={tab.path} label={t(tab.labelKey)} href={tab.path} />
-                      ))}
-                    </TabList>
-                  )}
-                  {children}
-                </Stack>
-              </LayoutContent>
-            </Layout>
-          }
-        </BaseErrandLayout>
+                    }
+                  </Stack>
+                </LayoutContent>
+              </Layout>
+            : showMobileWizard ?
+              <MobileWizard />
+            : <Layout
+                height={showReportActions ? 'fill' : 'auto'}
+                contentWidth={960}
+                padding={isMobile ? 4 : 6}
+                footer={
+                  showReportActions && (
+                    <LayoutFooter hasDivider padding={0} className="pb-safe" data-cy="report-actions">
+                      <ErrandButtonGroup isNewErrand={registerNewErrand} />
+                    </LayoutFooter>
+                  )
+                }
+              >
+                <LayoutContent isScrollable={showReportActions} className="scroll-py-2">
+                  <Stack gap={6}>
+                    {!submittedView && (
+                      <Stack gap={4}>
+                        {!registerNewErrand && (
+                          <Button
+                            href="/oversikt"
+                            variant="ghost"
+                            className="self-start"
+                            icon={<ArrowLeft aria-hidden="true" />}
+                            label={t('filtering:my_reports')}
+                          />
+                        )}
+                        <Stack
+                          data-cy="errand-identity"
+                          direction={isMobile ? 'horizontal' : 'vertical'}
+                          align={isMobile ? 'center' : 'start'}
+                          justify={isMobile ? 'between' : 'start'}
+                          wrap="wrap"
+                          gap={2}
+                        >
+                          {isMobile ?
+                            <Text
+                              as="h1"
+                              type="large"
+                              weight="semibold"
+                              aria-label={getHeaderTitle()}
+                              className="min-w-0 break-words"
+                            >
+                              {errandNumber ?? getHeaderTitle()}
+                            </Text>
+                          : <Heading level={1}>{getHeaderTitle()}</Heading>}
+                          {!registerNewErrand && <StatusLabel status={errandStatus} />}
+                        </Stack>
+                      </Stack>
+                    )}
+                    {!registerNewErrand && !submittedView && (
+                      <TabList
+                        value={tabs[activeTabIndex]?.path ?? ''}
+                        onChange={() => undefined}
+                        aria-label={getHeaderTitle()}
+                        hasDivider
+                        size="lg"
+                      >
+                        {tabs.map((tab) => (
+                          <Tab key={tab.path} value={tab.path} label={t(tab.labelKey)} href={tab.path} />
+                        ))}
+                      </TabList>
+                    )}
+                    {children}
+                  </Stack>
+                </LayoutContent>
+              </Layout>
+            }
+          </BaseErrandLayout>
+        </ErrandSubmissionProvider>
       </FormValidationProvider>
     </FormProvider>
   );
@@ -301,6 +302,7 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
 export const ErrandLayoutContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathName = usePathname();
   const { errandnumber } = useParams<{ errandnumber?: string }>();
+  if (appConfig.mode === 'catalogue') redirect('/katlor');
 
   let route: ErrandRoute;
   if (REGISTER_ROUTE_PATTERN.test(pathName)) {

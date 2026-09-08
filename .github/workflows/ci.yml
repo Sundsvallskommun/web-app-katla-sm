@@ -7,152 +7,149 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches:
-      - develop
-      - main
+    branches: [develop, main]
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  frontend:
-    name: Frontend – lint, type-check & unit tests
+  platform:
+    name: Definitions and developer commands
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
           cache: yarn
-          cache-dependency-path: frontend/yarn.lock
+          cache-dependency-path: yarn.lock
+      - run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
+      - run: node .github/scripts/verify-node-runtime-contract.mjs
+      - run: yarn test:platform
+      - run: yarn format:platform:check
+      - run: yarn katla:check avvikelse --policy deploy/catalogue.example.json
+      - run: yarn katla:check schema-test --test --policy deploy/catalogue.test.example.json
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
-
-      # src/proxy.ts importerar genererade middleware-envs.js, som behövs för typmedveten lint
-      - name: Generate middleware envs
-        run: yarn generate:middleware-envs
-
-      - name: Lint (strict)
-        run: yarn lint:strict
-
-      - name: Format check
-        run: yarn format:check
-
-      - name: Type-check
-        run: yarn type-check
-
-      - name: Unit tests (Vitest)
-        run: yarn test:coverage
-
-  backend:
-    name: Backend – lint, type-check & unit tests
+  checks:
+    name: ${{ matrix.workspace }} – lint, format, types and unit tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace: [backend, katla-web-app]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
           cache: yarn
-          cache-dependency-path: backend/yarn.lock
-
-      - name: Verify Node runtime contract
-        working-directory: .
-        run: node .github/scripts/verify-node-runtime-contract.mjs
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
-
-      - name: Lint (strict)
-        run: yarn lint:strict
-
-      - name: Format check
-        run: yarn format:check
-
-      - name: Type-check
-        run: yarn type-check
-
-      - name: Unit tests (Vitest)
-        run: yarn test
+          cache-dependency-path: yarn.lock
+      - run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
+      - run: yarn definitions:build
+      - run: yarn workspace ${{ matrix.workspace }} lint:strict
+      - run: yarn workspace ${{ matrix.workspace }} format:check
+      - run: yarn workspace ${{ matrix.workspace }} type-check
+      - run: yarn workspace ${{ matrix.workspace }} test
 
   frontend-e2e:
-    name: Frontend – e2e tests (Playwright)
+    name: ${{ matrix.target }} – build, isolated artifact and browser tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: avvikelse-test
+            mode: katla
+            katlaId: avvikelse-test
+            port: 3000
+            apiPort: 3001
+            basePath: ''
+            config: playwright.config.ts
+          - target: schema-test
+            mode: katla
+            katlaId: schema-test
+            port: 3200
+            apiPort: 3201
+            basePath: ''
+            config: playwright.schema.config.ts
+          - target: catalogue
+            mode: catalogue
+            katlaId: ''
+            port: 3100
+            apiPort: 3101
+            basePath: /portal
+            config: playwright.catalogue.config.ts
     env:
-      # The UI must show its product name even when the technical app id differs.
-      NEXT_PUBLIC_APP_NAME: 'katla-sm'
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      APP_MODE: ${{ matrix.mode }}
+      KATLA_ID: ${{ matrix.katlaId }}
+      TEST: 'true'
+      PORT: ${{ matrix.port }}
+      NEXT_PUBLIC_API_URL: http://localhost:${{ matrix.apiPort }}/api
+      NEXT_PUBLIC_SESSION_COOKIE_NAME: katla.${{ matrix.target }}.sid
+      NEXT_PUBLIC_CATALOGUE_URL: http://localhost:3100/portal
       DOMAIN_NAME: localhost
-      BASE_PATH: ''
-      NEXT_PUBLIC_BASE_PATH: ''
+      NEXT_PUBLIC_BASE_PATH: ${{ matrix.basePath }}
       NEXT_PUBLIC_PROTECTED_ROUTES: ''
-      HEALTH_AUTH: false
+      HEALTH_AUTH: 'false'
       HEALTH_USERNAME: ''
       HEALTH_PASSWORD: ''
-      NEXT_PUBLIC_ERRAND_FILTER: true
-      NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO: false
-      NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE: true
+      NEXT_TELEMETRY_DISABLED: '1'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
           cache: yarn
-          cache-dependency-path: frontend/yarn.lock
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
-
-      - name: Install Playwright browsers
-        run: yarn playwright install --with-deps chromium
-
-      - name: Build
-        run: yarn build
-
-      - name: Prepare standalone server assets
-        run: |
-          cp -R public .next/standalone/
-          cp -R .next/static .next/standalone/.next/
-
-      - name: Run Playwright tests
-        run: yarn e2e
+          cache-dependency-path: yarn.lock
+      - run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
+      - run: yarn definitions:build
+      - run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+      - run: yarn workspace katla-web-app build
+      - run: yarn standalone:prepare
+      - run: yarn standalone:check
+      - run: yarn workspace katla-web-app playwright test --config ${{ matrix.config }}
         env:
           DEBUG: pw:webserver
-
-      - name: Upload Playwright report
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-report
-          path: frontend/playwright-report
+          name: playwright-${{ matrix.target }}
+          path: |
+            frontend/playwright-report
+            frontend/test-results*
           retention-days: 14
 
-      - name: Upload Astryx visual evidence
-        uses: actions/upload-artifact@v7
-        if: always()
+  backend-artifact:
+    name: Standalone backend with production dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          name: astryx-ui-evidence
-          path: |
-            frontend/test-results/**/*.png
-            frontend/test-results/**/audit.json
-            frontend/test-results/**/header-dimensions.json
-          retention-days: 7
+          node-version-file: .nvmrc
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 1000000
+      - run: yarn definitions:build && yarn workspace backend build
+      - run: node scripts/backend-artifact.mjs
+      - run: yarn --cwd /tmp/katla-backend-artifact install --frozen-lockfile --production --ignore-scripts
+      - run: node scripts/backend-smoke.mjs
+
+  images:
+    name: Shared Dockerfiles build without publishing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -f backend/Dockerfile -t katla-api:ci .
+      - run: >-
+          docker build -f frontend/Dockerfile -t katla-web:avvikelse-ci
+          --build-arg APP_MODE=katla --build-arg KATLA_ID=avvikelse
+          --build-arg NEXT_PUBLIC_API_URL=https://avvikelse.example.invalid/api
+          --build-arg NEXT_PUBLIC_SESSION_COOKIE_NAME=katla.avvikelse.sid
+          --build-arg NEXT_PUBLIC_CATALOGUE_URL=https://katla.example.invalid .
+      - run: >-
+          docker build -f frontend/Dockerfile -t katla-web:catalogue-ci
+          --build-arg APP_MODE=catalogue
+          --build-arg NEXT_PUBLIC_API_URL=https://katla.example.invalid/api
+          --build-arg NEXT_PUBLIC_SESSION_COOKIE_NAME=katla.catalogue.sid .

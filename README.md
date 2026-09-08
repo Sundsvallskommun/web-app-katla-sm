@@ -1,141 +1,90 @@
-# Sundsvalls Kommun Katla supportmanagement
+# Katla – gemensam bas för interna ärendeappar
 
-## APIer som används
+Katlor delar frontend, backend, Astryx och ärendehantering. Varje Katla har en liten typad definition och egna driftvärden. Mina Katlor är den gemensamma inloggade startsidan och visar de publicerade appar användaren har rätt till.
 
-Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumerera på dessa.
-
-| API               | Version |
-| ----------------- | ------: |
-| SupportManagement |    10.7 |
-| Citizen           |     3.0 |
-| Employee          |     2.0 |
-| SimulatorServer   |     2.0 |
-
+**[Skapa en ny Katla](docs/adding-a-katla.md)** · [Drift, images och återställning](docs/katla-operations.md) · [Granskningsunderlag och verifiering](docs/katla-implementation-review.md) · [Bakgrund och införandeplan](docs/katla-monorepo-plan.md)
 
 ## Utveckling
 
-### Krav
+Använd Node 22.18.0 enligt `.nvmrc` och Yarn Classic 1.22.22. Paketens `engines` anger stödda Node-versioner. Installera från roten; `frontend/`, `backend/` och `katlor/` är workspaces med en gemensam låsfil.
 
-- Node 22.18.0 (använd den pinnade versionen i `.nvmrc`; `package.json` anger det stödda intervallet)
-- Yarn
-
-### Steg för steg
-
-1. Klona ner repot.
-
-```
-git clone git@github.com:Sundsvallskommun/web-app-katla-sm.git
+```sh
+nvm use
+yarn install --frozen-lockfile
+cp frontend/.env-example frontend/.env
+cp backend/.env.example.local backend/.env.development.local
 ```
 
-2. Installera dependencies för både `backend` och `frontend`
+Installationen bygger definitionspaketet. Om du använder `--ignore-scripts`, kör också `yarn definitions:build`. Frontend och backend deklarerar fortfarande sina egna beroenden. TypeScript 5.9.3 är uttryckligt pinnad också i roten så direktkörda verktyg inte väljer en generators interna kompilator.
 
-```
-cd frontend
-yarn install
+Fyll i backendens anslutnings- och SAML-inställningar och lokala katalogpolicy. `SECRET_KEY` är avsiktligt tom: generera med `openssl rand -hex 32`. Använd organisationens godkända API-klient och certifikat. Backendmallen innehåller ett avsiktligt incheckat lokalt exempelnyckelpar, inte drifthemligheter. Egna `.env`-filer, `cert/` och sessionsexporter ingår inte i Git eller Dockerkontexten.
 
-cd backend
-yarn install
-```
-
-3. Skapa .env-fil för `frontend`
-
-```
-cd frontend
-cp .env-example .env
+```sh
+yarn katla:check avvikelse
+yarn katla:dev avvikelse
 ```
 
-Redigera `.env` vid behov.
+Startkommandot kör gemensam frontend och backend. Vid separata instanser används `--env-file <fil>`; guiden visar hela arbetsgången inklusive namespace, scheman, policy, sessioner och anslutningskontroll. Ange egna publicerade schema- och driftvärden innan du provar verklig ärendehantering. Browserproven nedan använder avgränsade fixtures och kräver ingen verklig IdP.
 
-4. Skapa .env-fil för `backend`
+## Hitta rätt ägare
 
+| Jag arbetar med | Börja här |
+| --- | --- |
+| Ny Katla, appnamn, schemareferenser, produktval | `katlor/src/<id>/definition.ts` och [introduktionsguiden](docs/adding-a-katla.md) |
+| Typer och standardvärden | `katlor/src/definition.ts` |
+| Formulärfält och UI-schema | JSON Schema-tjänsten; lokala filer är enbart testunderlag |
+| Formulärmedlemskap och validering / avvikelsens specialregler | `frontend/src/flows/errand-forms.ts`, `validate-errand.ts` / `frontend/src/flows/avvikelse` |
+| Gemensam sparning och inskickning på mobil och desktop | `frontend/src/contexts/errand-submission-provider.tsx` |
+| Delade schema- eller avvikelseregler | Definitionspaketets uttryckliga delmoduler; inga React- eller serverhemligheter |
+| Design | Befintligt Katla-tema och Astryx |
+| Behörighet och katalog | `backend/src/config/catalogue-policy.ts`, `katla-config.ts` och `KATLA_CATALOGUE_FILE` |
+| HTTP/API och ärendegränser | Befintliga backendcontrollers och `errand-submission.service.ts` |
+
+Appåtkomst och ärendetillgång kontrolleras separat på servern. Katalogläge registrerar endast identitet, katalog och hälsoendpoints. Det kräver inga ärende-API-hemligheter.
+
+## Kommandon
+
+```sh
+yarn katla:new it-bestallning --name "IT-beställning"
+yarn katla:check it-bestallning
+yarn katla:dev it-bestallning --env-file .katla/it-bestallning.env
+yarn katla:build it-bestallning --env-file .katla/it-bestallning.env
+yarn katla:check --help
 ```
-cd backend
-cp .env.example.local .env.development.local
+
+`katla:check --connected` gör endast läsande anrop med en uttryckligt vald testbackend och sessionfil. Det jämför definitioner och hämtar scheman/metadata; mottagningen i Draken verifieras separat. Se guiden för säkert sessionsexportexempel.
+
+Frontendens dev-, build- och analyskommandon använder uttryckligen Webpack för Next 16.2.11. Behåll `--webpack` också vid direkta Next-kommandon; det befintliga valet minskar risken att återinföra den tidigare incidenten med många byggprocesser. Ett frontendbygge väljer en Katla eller katalogen och en målmiljö. Backendimagen kan återanvändas mellan instanser.
+
+## Tester och kvalitet
+
+```sh
+yarn test:platform
+yarn type-check
+yarn lint:strict
+yarn format:platform:check
+yarn workspace backend format:check
+yarn workspace katla-web-app format:check
+yarn test
 ```
 
-redigera `.env.development.local` för behov. URLer, nycklar och cert behöver fyllas i korrekt.
+Backendtester sätter sin miljö deterministiskt i testsetup. Frontendtester väljer explicit testdefinition; produktion har inga runtime-flaggor som ändrar produktval.
 
-- `SECRET_KEY` lämnas avsiktligt tom i mallen. Kör `openssl rand -hex 32` lokalt och kopiera det genererade värdet till `SECRET_KEY` i din `.env.development.local`. Återanvänd inte någon annans sessionshemlighet. Servern avvisar tomma värden, värden kortare än 32 tecken, blanksteg och vanliga platshållare.
-- `CLIENT_KEY` och `CLIENT_SECRET` måste fyllas i för att APIerna ska fungera, du måste ha en applikation från WSO2-portalen som abonnerar på de microtjänster du anropar
-- `SAML_ENTRY_SSO` behöver pekas till en SAML IDP
-- `SAML_IDP_PUBLIC_CERT` ska stämma överens med IDPens cert
-- `SAML_PRIVATE_KEY` och `SAML_PUBLIC_KEY` innehåller avsiktligt ett exempelnyckelpar för lokal utveckling, med ett självsignerat localhost-certifikat. Det behålls som lokal testdata och är ingen drifthemlighet. Använd egna nycklar och certifikat för en riktig IDP-anslutning. `cert/` och `.env.development.local` är git-ignorerade och uteslutna från Docker-byggets filer.
+```sh
+yarn workspace katla-web-app playwright install chromium
+yarn workspace katla-web-app playwright test
+yarn workspace katla-web-app playwright test --config playwright.schema.config.ts
+yarn workspace katla-web-app playwright test --config playwright.catalogue.config.ts
+```
 
-Vid uppgradering: kontrollera driftmiljöns `SECRET_KEY` före deployment. Värden kortare än 32 tecken måste ersättas för att servern ska starta; byte av sessionshemlighet loggar ut befintliga sessioner. Om någon miljö har återanvänt den tidigare exempelhemligheten behöver den ersättas där. Enbart ändringen av exempelfilen roterar inga driftvärden.
+De tre browserkonfigurationerna provar avvikelse, ett standardformulär utan avvikelsebegrepp och Mina Katlor. Lokal testserver startas av Playwright. CI kör färdiga standalone-byggen, vars assets kopieras med `yarn standalone:prepare`; `yarn standalone:check` verifierar paketet utanför källrepot. CI behåller även bygg- och artefaktkontroller i RHEL 8.10/UBI.
 
-## Byggverktyg
+Bygg-/testkontroller är separata från verksamhetsacceptans. Riktig SSO, gruppändringar, namespace-/rollkontrakt, historiska utkast, mottagning i Draken och introduktion med en annan utvecklare ska verifieras i testmiljön enligt [driftguiden](docs/katla-operations.md).
 
-Frontendens `yarn dev`, `yarn build`, `yarn build:test` och analyskommandon använder uttryckligen Webpack. `yarn build:webpack` är ett alias till `yarn build` och kör därmed samma förberedelser. Playwright och CI använder dessa gemensamma skript.
+## API-anslutningar
 
-Detta är en tillfällig åtgärd efter en lokal incident med ett skenande antal Node-processer. Turbopacks hjälpprocesser är det främsta spåret, men exakt orsak är inte fastställd. Undvik direkta `next dev`/`next build` utan `--webpack`, eftersom Next 16 annars väljer Turbopack. Den uttryckliga projektroten i `next.config.js` behålls. Beroendeversioner, applikationsflöden och API-kontrakt påverkas inte av valet av byggverktyg.
+Aktuella tjänstenamn och versioner ägs av `backend/src/config/api-config.ts`. Katla-läge använder SupportManagement, JSON Schema, Citizen och Employee där flödet behöver dem; prenumerationerna måste motsvara denna konfiguration. SupportManagement har för närvarande en uttrycklig sprintalias i kod. Katalogläge använder endast SAML och katalogpolicyn.
 
 ## Komponenter och tema
 
-Frontend använder Astryx. Katlas tema definieras i `frontend/src/theme/katla.ts`.
-Efter ändringar i temat eller uppgradering av Astryx, kör från `frontend/`:
-
-```sh
-yarn theme:build
-yarn theme:check
-```
-
-Filerna i `frontend/src/theme/generated/` används av appen och versionshanteras,
-men ska genereras med kommandot ovan. Ändra dem inte för hand.
-Använd bibliotekets komponentprops och tematokens för färger, avstånd och typografi.
-Vid biblioteksuppgradering behöver även appens formulär-, språk-, routing- och
-tillgänglighetstester köras.
-
-## Tester
-
-### Frontend (`cd frontend`)
-
-Enhetstester körs med [Vitest](https://vitest.dev):
-
-```
-yarn test              # kör en gång
-yarn test:watch        # watch-läge
-yarn test:coverage     # med kodtäckning
-```
-
-E2e-tester körs med [Playwright](https://playwright.dev). Första gången behöver webbläsaren installeras:
-
-```
-yarn playwright install chromium
-```
-
-Lokalt startar Playwright en dev-server via `yarn dev`, alternativt återanvänder en redan startad lokal dev-server. I GitHub CI körs testerna mot det färdiga produktionsbyggets standalone-server; arbetsflödet kopierar dess `public` och `.next/static` före start. Därmed görs ingen ny kompilering under browserkörningen.
-
-```
-yarn e2e                  # kör headless lokalt
-yarn e2e:ui                # interaktivt UI-läge
-```
-
-Obs: e2e-testerna förutsätter att `NEXT_PUBLIC_OTHER_PARTIES_DISCLOSURE=true` och `NEXT_PUBLIC_REDUCED_STAKEHOLDER_INFO=false` är satta i `.env` lokalt och vid byggtillfället i CI (se `.github/workflows/ci.yml`).
-
-### Backend (`cd backend`)
-
-Tester körs med Vitest. Testmiljön sätts deterministiskt i `src/tests/setup.ts`; ingen lokal test-envfil krävs:
-
-```
-yarn test              # kör en gång
-yarn test:watch        # watch-läge
-```
-
-## Lint och formatering
-
-Båda paketen använder en strikt, typmedveten ESLint-uppsättning enligt [web-app-starter](https://github.com/Sundsvallskommun/web-app-starter) (typescript-eslint `strictTypeChecked` + `stylisticTypeChecked`, `simple-import-sort`, `unused-imports`, `no-console`). Inline `eslint-disable`-kommentarer är avstängda — åtgärda koden i stället.
-
-```
-yarn lint              # lint
-yarn lint:fix          # lint med autofix
-yarn lint:strict       # som CI: 0 varningar tillåtna
-yarn format            # prettier --write
-yarn format:check      # som CI: verifiera formatering
-```
-
-## CI
-
-GitHub Actions-flödet i `.github/workflows/ci.yml` kör strikt lint, formatkontroll, type-check och enhetstester för både frontend och backend samt Playwright e2e-tester vid pull requests och push till `main`/`develop`.
-
-Skärmbilder och axe-resultat sparas som tillfälliga CI-artifacts under körningen.
-De ska inte kopieras in i repot. Playwrights HTML-rapport laddas upp när tester misslyckas.
+Katlas tema finns i `frontend/src/theme/katla.ts`. Efter ändringar, kör `yarn workspace katla-web-app theme:build` och `yarn workspace katla-web-app theme:check`. Filerna i `frontend/src/theme/generated/` versionshanteras och genereras med kommandot; ändra dem inte för hand. Använd Astryx komponentprops och tematokens. Vid biblioteksuppgradering verifieras formulär, språk, routing och tillgänglighet.

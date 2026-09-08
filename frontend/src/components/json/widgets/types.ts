@@ -104,25 +104,5 @@ export function getCommonProps(props: WidgetProps, defaultClassName: string): Co
   };
 }
 
-/**
- * Tar bort HTML-taggar ur en sträng för att få ren text.
- * Används för att validera textlängd utan att räkna med HTML-uppmärkning.
- */
-export function stripHtml(html: string): string {
-  if (typeof DOMParser !== 'undefined') {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return (doc.body.textContent || '').trim();
-  }
-  // Reserv för SSR: iterativ parser i stället för regex för att undvika ReDoS
-  let result = '';
-  let inTag = false;
-  for (const char of html) {
-    if (char === '<') inTag = true;
-    else if (char === '>') inTag = false;
-    else if (!inTag) result += char;
-  }
-  return result.trim();
-}
-
 /** Schemat äger valideringen; ARIA märker obligatoriet utan webbläsarens tidiga :invalid. */
 export const requiredProps = (required: boolean) => ({ required: false, 'aria-required': required });

@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 
+import { facilitySchema } from '../fixtures/avvikelseClassification';
 import { mockErrand } from '../fixtures/mockErrand';
 import { mockMetadata } from '../fixtures/mockMetadata';
 import { mockReporterStakeholder, mockStakeholder } from '../fixtures/mockStakeholder';
@@ -18,6 +19,7 @@ const mockFormSchemaResponse = {
     type: 'object',
     additionalProperties: false,
     properties: {
+      facilityInfo: facilitySchema,
       incidentDescription: {
         type: 'string',
         title: 'Beskriv händelsen',
@@ -64,7 +66,7 @@ const registerErrandAndExpectDraft = async (page: Page, expectedStakeholderCount
   expect(body.jsonParameters).toEqual([
     {
       key: MOCK_FORM_SCHEMA_NAME,
-      value: { incidentDescription: MOCK_INCIDENT_DESCRIPTION },
+      value: { facilityInfo: { orgName: 'Testenhet' }, incidentDescription: MOCK_INCIDENT_DESCRIPTION },
       schemaId: MOCK_FORM_SCHEMA_ID,
     },
   ]);
@@ -314,16 +316,16 @@ test.describe('Register new errand page', () => {
     // underrubriker (h3) och ingår därför inte i listan.
     await expect(page.locator('section h2').filter({ visible: true })).toHaveText([
       'Rapportör',
-      'Om rapporten',
       'Övriga parter',
+      'Om rapporten',
     ]);
 
     await page.getByTestId('event-concerns-individual').getByRole('radio').check();
     await expect(page.locator('section h2').filter({ visible: true })).toHaveText([
       'Rapportör',
+      'Övriga parter',
       'Om rapporten',
       'Enskild brukare',
-      'Övriga parter',
     ]);
 
     await page.getByTestId('event-concerns-group-activity').getByRole('radio').check();

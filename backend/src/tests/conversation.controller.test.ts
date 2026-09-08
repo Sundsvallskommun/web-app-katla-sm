@@ -17,6 +17,10 @@ vi.mock('@/middlewares/auth.middleware', () => ({
   },
 }));
 
+vi.mock('@/services/errand-access.service', () => ({
+  requireReporterErrand: () => Promise.resolve({ id: 'errand-1', status: 'NEW', reporterUserId: 'rapportor' }),
+}));
+
 const app = new App([SupportManagementConversationController]).getServer();
 
 const REPORTER_CONVERSATION = { id: 'conv-1', topic: 'Ärende: #VOF-1', type: 'INTERNAL', relationIds: [] };

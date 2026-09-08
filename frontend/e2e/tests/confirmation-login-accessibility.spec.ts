@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 
+import { facilitySchema } from '../fixtures/avvikelseClassification';
 import { mockMetadata } from '../fixtures/mockMetadata';
 import { mockReporterStakeholder } from '../fixtures/mockStakeholder';
 import { jsonRoute } from '../utils/routes';
@@ -9,7 +10,9 @@ import { expect, test } from '../utils/test';
 const mockRegistration = async (page: Page) => {
   // Unknown API traffic is blocked. The shared test fixture remains the owner of /api/me.
   await page.route('**/api/**', (route) =>
-    new URL(route.request().url()).pathname.endsWith('/api/me') ? route.fallback() : route.abort()
+    ['/api/me', '/api/app-context'].some((endpoint) => new URL(route.request().url()).pathname.endsWith(endpoint)) ?
+      route.fallback()
+    : route.abort()
   );
   await page.route('**/employee/personal/*', jsonRoute(mockReporterStakeholder));
   await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadata));
@@ -24,7 +27,10 @@ const mockRegistration = async (page: Page) => {
       schemaId: 'confirmation-accessibility:1',
       schema: {
         type: 'object',
-        properties: { incidentDescription: { type: 'string', title: 'Beskriv händelsen', minLength: 1 } },
+        properties: {
+          facilityInfo: facilitySchema,
+          incidentDescription: { type: 'string', title: 'Beskriv händelsen', minLength: 1 },
+        },
         required: ['incidentDescription'],
       },
       uiSchema: {},

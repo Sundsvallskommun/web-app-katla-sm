@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, QueryParams, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { MUNICIPALITY_ID, NAMESPACE, NODE_ENV } from '@/config';
+import { MUNICIPALITY_ID, NAMESPACE } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { Errand, MetadataResponse, Notification, PageErrand } from '@/data-contracts/supportmanagement/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
@@ -12,6 +12,13 @@ import { NotificationAcknowledgementResponse, NotificationDTO } from '@/response
 import { ErrandCountDTO, ErrandDTO, ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
 import { MetadataResponseDTO } from '@/responses/supportmanagement-metadata.response';
 import ApiService from '@/services/api.service';
+import {
+  assertReporterOwnsErrand,
+  prepareNotificationAcknowledgement,
+  readReporterNotifications,
+  requireReporterErrand,
+} from '@/services/errand-access.service';
+import { prepareErrandWrite } from '@/services/errand-submission.service';
 import { logger } from '@/utils/logger';
 import { mapStakeholderDTOToStakeholder, mapStakeholderToStakeholderDTO } from '@/utils/stakeholder-mapping';
 import { apiURL } from '@/utils/util';
@@ -36,9 +43,6 @@ const toFilterTerm = (key: string, value: string): string => {
 
   return `${key}:'${value}'`;
 };
-
-/** Sidnavigering och sortering är egna parametrar uppströms och hör inte hemma i filtret. */
-const ERRAND_QUERY_NON_FILTER_KEYS = ['page', 'size', 'sort'];
 
 /**
  * Ett värde kan bära flera alternativ, kommaseparerade. Delningen sker före valideringen, så att
@@ -66,21 +70,11 @@ const toQueryString = (params: URLSearchParams): string => params.toString().rep
  * av oss. Flera värden på samma nyckel blir en or-grupp, så att t.ex. alla statusar utom de
  * avslutade kan hämtas som en och samma sida. Olika nycklar måste alla stämma.
  */
-const buildErrandFilter = (query: ErrandsQueryDTO): string | undefined => {
-  const queryEntries = query as unknown as Record<string, unknown>;
-  const filterParts: string[] = [];
-
-  for (const key of Object.keys(queryEntries)) {
-    if (ERRAND_QUERY_NON_FILTER_KEYS.includes(key)) continue;
-
-    const terms = toFilterValues(queryEntries[key]).map(value => toFilterTerm(key, value));
-    const [firstTerm, ...remainingTerms] = terms;
-    if (firstTerm === undefined) continue;
-
-    filterParts.push(remainingTerms.length === 0 ? firstTerm : `(${terms.join(' or ')})`);
-  }
-
-  return filterParts.length > 0 ? filterParts.join(' and ') : undefined;
+const buildErrandFilter = (query: ErrandsQueryDTO, username: string): string => {
+  const terms = toFilterValues(query.status).map(value => toFilterTerm('status', value));
+  const statusFilter = terms.length > 1 ? `(${terms.join(' or ')})` : terms[0];
+  const ownerFilter = toFilterTerm('reporterUserId', username);
+  return statusFilter ? `${statusFilter} and ${ownerFilter}` : ownerFilter;
 };
 
 @Controller()
@@ -97,32 +91,13 @@ export class SupportManagementController {
     const baseURL = apiURL(this.apiBase);
 
     const errandInformation = {
-      ...(errand as Errand),
+      ...(await prepareErrandWrite(req, errand)),
       reporterUserId: req.user.username,
       stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
     };
 
-    // Felsökning: exakt den JSON som går till SupportManagement. Bara i utvecklingsläge, och bara
-    // till stdout — payloaden bär personuppgifter och ska inte hamna i de roterande loggfilerna.
-    if (NODE_ENV === 'development') {
-      console.warn(`[createErrand] POST ${baseURL}/${url}\n${JSON.stringify(errandInformation, null, 2)}`);
-    }
-
     const res = await this.apiService.post<Partial<Errand>>({ baseURL, url, data: errandInformation, propagateClientError: true }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when creating errand');
-
-    // Felsökning: vad API:t faktiskt sparade. Bara strukturen — antal och labelnamn — så att
-    // svaret går att jämföra med utskriften ovan utan att personuppgifter loggas.
-    if (NODE_ENV === 'development') {
-      const created = res.data;
-      console.warn(
-        `[createErrand] svar ${created.errandNumber ?? '?'}: labels=${created.labels?.length ?? 0} [${
-          created.labels?.map(label => label.resourceName).join(', ') ?? ''
-        }] stakeholders=${created.stakeholders?.length ?? 0} parameters=${created.parameters?.length ?? 0} jsonParameters=${
-          created.jsonParameters?.length ?? 0
-        }`,
-      );
-    }
 
     // Ärendet är skapat när vi kommer hit — svaret kommer från uppföljningen av Location.
     // Saknas parterna där är det inget skäl att rapportera inskickningen som misslyckad: den som
@@ -150,20 +125,20 @@ export class SupportManagementController {
       throw new HttpException(400, 'Errand id is required when saving an errand');
     }
 
-    const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${errand.id}`;
-
-    delete errand.activeNotifications;
-    delete errand.created;
-    delete errand.errandNumber;
-    delete errand.id;
-    delete errand.reporterUserId;
-    delete errand.touched;
-    delete errand.modified;
-
-    const errandInformation = {
-      ...errand,
-      stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
-    };
+    const previous = await requireReporterErrand(req, errand.id);
+    const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${encodeURIComponent(errand.id)}`;
+    const {
+      id: _id,
+      activeNotifications: _notifications,
+      created: _created,
+      errandNumber: _number,
+      reporterUserId: _reporter,
+      touched: _touched,
+      modified: _modified,
+      ...editable
+    } = errand;
+    const prepared = await prepareErrandWrite(req, editable, previous);
+    const errandInformation = { ...prepared, stakeholders: prepared.stakeholders?.map(mapStakeholderDTOToStakeholder) };
 
     const baseURL = apiURL(this.apiBase);
 
@@ -183,7 +158,7 @@ export class SupportManagementController {
   @UseBefore(authMiddleware)
   @ResponseSchema(ErrandDTO)
   async updateErrand(@Req() req: RequestWithUser, @Param('id') id: string, @Body() errand: Partial<Errand>): Promise<Partial<Errand>> {
-    const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${id}`;
+    const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands/${encodeURIComponent(id)}`;
     const baseURL = apiURL(this.apiBase);
     // Strip read-only fields that the API does not accept on update
     const {
@@ -199,7 +174,9 @@ export class SupportManagementController {
 
     if (!id.trim()) throw new HttpException(400, 'Errand id is required when updating an errand');
 
-    const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errandData, propagateClientError: true }, req);
+    const previous = await requireReporterErrand(req, id);
+    const prepared = await prepareErrandWrite(req, errandData, previous);
+    const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: prepared, propagateClientError: true }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when updating errand');
 
     return res.data;
@@ -210,13 +187,15 @@ export class SupportManagementController {
   @UseBefore(authMiddleware)
   @ResponseSchema(ErrandDTO)
   async getErrand(@Req() req: RequestWithUser, @Param('errandNumber') errandNumber: string): Promise<ErrandDTO> {
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands?filter=${toFilterTerm('errandNumber', errandNumber)}`;
+    const filter = `${toFilterTerm('errandNumber', errandNumber)} and ${toFilterTerm('reporterUserId', req.user.username)}`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands?filter=${encodeURIComponent(filter)}`;
 
     const res = await this.apiService.get<PageErrand>({ url }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when reading errand');
 
     const matchedErrand = res.data.content?.[0];
     if (!matchedErrand) throw new HttpException(404, 'Errand not found');
+    assertReporterOwnsErrand(matchedErrand, req.user.username);
 
     const stakeholders = await Promise.all(matchedErrand.stakeholders?.map(stakeholder => mapStakeholderToStakeholderDTO(stakeholder, req)) ?? []);
 
@@ -238,7 +217,7 @@ export class SupportManagementController {
     if (query.size !== undefined) params.append('size', String(query.size));
     if (query.sort !== undefined) params.append('sort', query.sort);
 
-    const filter = buildErrandFilter(query);
+    const filter = buildErrandFilter(query, req.user.username);
     if (filter) params.append('filter', filter);
 
     const queryString = toQueryString(params);
@@ -246,6 +225,7 @@ export class SupportManagementController {
 
     const res = await this.apiService.get<PageErrand>({ url: finalUrl }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when reading errands');
+    for (const errand of res.data.content ?? []) assertReporterOwnsErrand(errand, req.user.username);
 
     return res.data;
   }
@@ -258,7 +238,7 @@ export class SupportManagementController {
     const baseUrl = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/errands/count`;
     const params = new URLSearchParams();
 
-    const filter = buildErrandFilter(query);
+    const filter = buildErrandFilter(query, req.user.username);
     if (filter) params.append('filter', filter);
 
     const queryString = toQueryString(params);
@@ -288,12 +268,7 @@ export class SupportManagementController {
   @UseBefore(authMiddleware)
   @ResponseSchema(NotificationDTO, { isArray: true })
   async getNotifications(@Req() req: RequestWithUser): Promise<Notification[]> {
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${NAMESPACE}/notifications?ownerId=${req.user.username}`;
-
-    const res = await this.apiService.get<Notification[]>({ url }, req);
-    if (!res.data) throw new HttpException(502, 'Invalid response when reading notifications');
-
-    return res.data;
+    return readReporterNotifications(req);
   }
 
   @Patch('/supportmanagement/notifications')
@@ -327,7 +302,8 @@ export class SupportManagementController {
     // SupportManagement acknowledges with 204 No Content. A resolved request is
     // therefore the success signal; the gateway keeps its existing boolean body
     // for Katla clients.
-    await this.apiService.patch<undefined>({ url, data: notifications, propagateClientError: true }, req);
+    const ownedNotifications = await prepareNotificationAcknowledgement(req, notifications);
+    await this.apiService.patch<undefined>({ url, data: ownedNotifications, propagateClientError: true }, req);
 
     return { data: true, message: 'Success' };
   }

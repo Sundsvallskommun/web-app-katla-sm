@@ -1,5 +1,7 @@
 import { MetadataResponseDTO } from '@data-contracts/backend/data-contracts';
 
+import { classificationLabels } from './avvikelseClassification';
+
 export const mockMetadata: MetadataResponseDTO = {
   categories: [
     {
@@ -18,6 +20,7 @@ export const mockMetadata: MetadataResponseDTO = {
   ],
   labels: {
     labelStructure: [
+      ...classificationLabels,
       {
         id: '33d3d9e7-1ae2-4f58-a2cc-49c9a903fe12',
         classification: 'CATEGORY',

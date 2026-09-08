@@ -1,40 +1,24 @@
-import { stripHtml } from '@components/json/widgets/types';
+import { installHtmlLengthKeywords, schemaAjvClass } from '@katla/definitions/schema-validation';
 import { customizeValidator } from '@rjsf/validator-ajv8';
-import Ajv2020 from 'ajv/dist/2020';
+import type { Options } from 'ajv';
 
-class HtmlAwareAjv2020 extends Ajv2020 {
-  constructor(options?: ConstructorParameters<typeof Ajv2020>[0]) {
-    super(options);
-    this.addHtmlAwareLengthKeyword('minLength', (length, limit) => length >= limit);
-    this.addHtmlAwareLengthKeyword('maxLength', (length, limit) => length <= limit);
+function validatorOptions(dialect?: string) {
+  const Base = schemaAjvClass(dialect);
+  class HtmlAwareAjv extends Base {
+    constructor(options?: Options) {
+      super(options);
+      installHtmlLengthKeywords(this);
+    }
   }
-
-  private addHtmlAwareLengthKeyword(
-    keyword: 'minLength' | 'maxLength',
-    comparator: (length: number, limit: number) => boolean
-  ) {
-    this.removeKeyword(keyword);
-    this.addKeyword({
-      keyword,
-      type: 'string',
-      schemaType: 'number',
-      validate: (schema: number, data: string) => comparator(stripHtml(data || '').length, schema),
-    });
-  }
+  return {
+    ajvOptionsOverrides: { allErrors: true, strict: false },
+    ajvFormatOptions: { keywords: true },
+    AjvClass: HtmlAwareAjv,
+  };
 }
-
-const validatorOptions = {
-  ajvOptionsOverrides: {
-    allErrors: true,
-  },
-  ajvFormatOptions: {
-    keywords: true,
-  },
-  AjvClass: HtmlAwareAjv2020,
-};
-
-const createFormSchemaValidator = () => customizeValidator<Record<string, unknown>>(validatorOptions);
-const createJsonValueSchemaValidator = () => customizeValidator<unknown>(validatorOptions);
+const createFormSchemaValidator = (dialect?: string) =>
+  customizeValidator<Record<string, unknown>>(validatorOptions(dialect));
+const createJsonValueSchemaValidator = (dialect?: string) => customizeValidator<unknown>(validatorOptions(dialect));
 
 type FormSchemaValidator = ReturnType<typeof createFormSchemaValidator>;
 type JsonValueSchemaValidator = ReturnType<typeof createJsonValueSchemaValidator>;
@@ -64,11 +48,11 @@ function getOrCreateValidator<T>(schemaId: string, validators: Map<string, T>, c
  * den oföränderliga versionsidentiteten, så varje exakt Katla-ID äger sin egen
  * AJV-instans även när flera versioner avsiktligt delar samma `$id`.
  */
-export function getFormSchemaValidator(schemaId: string): FormSchemaValidator {
-  return getOrCreateValidator(schemaId, formSchemaValidators, createFormSchemaValidator);
+export function getFormSchemaValidator(schemaId: string, dialect?: string): FormSchemaValidator {
+  return getOrCreateValidator(schemaId, formSchemaValidators, () => createFormSchemaValidator(dialect));
 }
 
 // Persisterade JSON-parametrar kan ha vilken JSON-rottyp som helst, även om det interaktiva formuläret i dag äger objektrötter.
-export function getJsonValueSchemaValidator(schemaId: string): JsonValueSchemaValidator {
-  return getOrCreateValidator(schemaId, jsonValueSchemaValidators, createJsonValueSchemaValidator);
+export function getJsonValueSchemaValidator(schemaId: string, dialect?: string): JsonValueSchemaValidator {
+  return getOrCreateValidator(schemaId, jsonValueSchemaValidators, () => createJsonValueSchemaValidator(dialect));
 }

@@ -1,0 +1,8 @@
+{
+  "loading": "Ansluter till applikationen",
+  "title": "Applikationen kan inte öppnas",
+  "mismatch": "Applikationens delar har olika konfiguration. Inga ärendeuppgifter har hämtats.",
+  "unavailable": "Det går inte att ansluta till applikationen just nu.",
+  "next_step": "Försök igen. Kontakta organisationens IT-support om problemet kvarstår.",
+  "retry": "Försök igen"
+}

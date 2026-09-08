@@ -6,5 +6,9 @@
   "/example": {
     "title": "Exempelsida",
     "description": "Beskrivning utav exempelsidan"
+  },
+  "/katlor": {
+    "title": "Mina Katlor",
+    "description": "Applikationerna du har tillgång till."
   }
 }

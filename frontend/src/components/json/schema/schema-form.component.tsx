@@ -5,7 +5,6 @@ import { SubmitButtonFieldTemplate } from '@components/json/fields/submit-button
 import { CheckboxWidget } from '@components/json/widgets/checkbox-widget';
 import { ComboboxWidget } from '@components/json/widgets/combobox-widget';
 import { DateWidget } from '@components/json/widgets/date-widget';
-import { FacilitySearchWidget } from '@components/json/widgets/facility-search-widget';
 import { RadiobuttonWidget } from '@components/json/widgets/radio-widget';
 import { RADIO_WIDGET_NAMES } from '@components/json/widgets/radio-widget-names';
 import { SelectWidget } from '@components/json/widgets/select-widget';
@@ -13,13 +12,13 @@ import { TextWidget } from '@components/json/widgets/text-widget';
 import { TextareaWidget } from '@components/json/widgets/textarea-widget';
 import { TexteditorWidget } from '@components/json/widgets/texteditor-widget';
 import { TimeWidget } from '@components/json/widgets/time-widget';
+import { applyDateBounds } from '@katla/definitions/schema-validation';
 import Form, { IChangeEvent } from '@rjsf/core';
 import type { RegistryFieldsType, RegistryWidgetsType, RJSFSchema, UiSchema } from '@rjsf/utils';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import createJsonErrorTransformer from '../utils/schema-form-error-handling';
-import { applyDateBounds } from './date-bounds';
 import { getFormSchemaValidator } from './form-schema-validator';
 
 const widgets: RegistryWidgetsType = {
@@ -43,13 +42,10 @@ const widgets: RegistryWidgetsType = {
   texteditor: TexteditorWidget,
 };
 
-// Egna fält för objekttyper
-const fields: RegistryFieldsType = {
-  FacilitySearchWidget,
-};
-
 interface SchemaFormProps {
   schemaId: string;
+  fields?: RegistryFieldsType;
+  idPrefix?: string;
   schema: RJSFSchema;
   uiSchema?: UiSchema<Record<string, unknown>>;
   formData?: Record<string, unknown>;
@@ -63,6 +59,8 @@ interface SchemaFormProps {
 
 export default function SchemaForm({
   schemaId,
+  fields,
+  idPrefix = 'root',
   schema,
   uiSchema = {},
   formData,
@@ -79,7 +77,7 @@ export default function SchemaForm({
 
   const data = formData ?? localData;
   const shouldValidate = showValidation ?? hasSubmitted;
-  const validator = useMemo(() => getFormSchemaValidator(schemaId), [schemaId]);
+  const validator = useMemo(() => getFormSchemaValidator(schemaId, schema.$schema), [schemaId, schema.$schema]);
   const boundedSchema = useMemo(() => applyDateBounds(schema, uiSchema), [schema, uiSchema]);
 
   const handleChange = useCallback(
@@ -112,6 +110,7 @@ export default function SchemaForm({
 
   return (
     <Form
+      idPrefix={idPrefix}
       schema={boundedSchema}
       uiSchema={uiSchema}
       formData={data}
