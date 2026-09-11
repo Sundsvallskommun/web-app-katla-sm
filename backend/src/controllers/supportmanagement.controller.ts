@@ -13,6 +13,7 @@ import { ErrandCountDTO, ErrandDTO, ErrandsQueryDTO, PageErrandDTO } from '@/res
 import { MetadataResponseDTO } from '@/responses/supportmanagement-metadata.response';
 import ApiService from '@/services/api.service';
 import { validateErrandLabels } from '@/utils/errand-labels';
+import { resolveActivePhaseId } from '@/utils/errand-phase';
 import { logger } from '@/utils/logger';
 import { mapStakeholderDTOToStakeholder, mapStakeholderToStakeholderDTO } from '@/utils/stakeholder-mapping';
 import { apiURL } from '@/utils/util';
@@ -37,6 +38,12 @@ const toFilterTerm = (key: string, value: string): string => {
 
   return `${key}:'${value}'`;
 };
+
+interface MetadataOwnedErrandFields {
+  labels: ErrandLabel[];
+  /** Odefinierad när metadatan inte pekar ut någon fas för statusen — då lämnas fasen orörd. */
+  activePhaseId: string | undefined;
+}
 
 /** Sidnavigering och sortering är egna parametrar uppströms och hör inte hemma i filtret. */
 const ERRAND_QUERY_NON_FILTER_KEYS = ['page', 'size', 'sort'];
@@ -89,9 +96,18 @@ export class SupportManagementController {
   private apiService = new ApiService();
   private apiBase = getApiBase('supportmanagement');
 
-  private async validatedLabels(labels: unknown, req: RequestWithUser): Promise<ErrandLabel[]> {
+  /**
+   * Fälten som metadatan äger, inte klienten: labels avgör behörigheten till ärendet och fasen
+   * avgör var i processen det hamnar. Båda läses ur samma metadatahämtning, och ett värde
+   * klienten skickat skrivs alltid över.
+   */
+  private async metadataOwnedFields(labels: unknown, status: string | undefined, req: RequestWithUser): Promise<MetadataOwnedErrandFields> {
     const metadata = await this.getMetadata(req);
-    return validateErrandLabels(labels, metadata.labels?.labelStructure);
+
+    return {
+      labels: validateErrandLabels(labels, metadata.labels?.labelStructure),
+      activePhaseId: resolveActivePhaseId(status, metadata.phases),
+    };
   }
 
   @Post('/supportmanagement/errand/create')
@@ -102,9 +118,12 @@ export class SupportManagementController {
     const url = `${MUNICIPALITY_ID}/${NAMESPACE}/errands`;
     const baseURL = apiURL(this.apiBase);
 
+    // Fashistoriken skrivs av Draken när fasen byts, och den aktiva fasen sätts via activePhaseId.
+    const { phases: _phases, ...errandFields } = errand as Errand;
+
     const errandInformation = {
-      ...(errand as Errand),
-      labels: await this.validatedLabels(errand.labels, req),
+      ...errandFields,
+      ...(await this.metadataOwnedFields(errand.labels, errand.status, req)),
       reporterUserId: req.user.username,
       stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
     };
@@ -166,10 +185,12 @@ export class SupportManagementController {
     delete errand.reporterUserId;
     delete errand.touched;
     delete errand.modified;
+    // Fashistoriken skrivs av Draken när fasen byts, och den aktiva fasen sätts via activePhaseId.
+    delete errand.phases;
 
     const errandInformation = {
       ...errand,
-      labels: await this.validatedLabels(errand.labels, req),
+      ...(await this.metadataOwnedFields(errand.labels, errand.status, req)),
       stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
     };
 
@@ -202,13 +223,18 @@ export class SupportManagementController {
       touched: _touched,
       reporterUserId: _reporterUserId,
       activeNotifications: _activeNotifications,
+      // Fashistoriken skrivs av Draken när fasen byts, och den aktiva fasen sätts via activePhaseId.
+      phases: _phases,
       ...errandData
     } = errand;
 
     if (!id.trim()) throw new HttpException(400, 'Errand id is required when updating an errand');
 
-    const labels = await this.validatedLabels(errandData.labels, req);
-    const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: { ...errandData, labels }, propagateClientError: true }, req);
+    const metadataOwnedFields = await this.metadataOwnedFields(errandData.labels, errandData.status, req);
+    const res = await this.apiService.patch<Partial<Errand>>(
+      { baseURL, url, data: { ...errandData, ...metadataOwnedFields }, propagateClientError: true },
+      req,
+    );
     if (!res.data) throw new HttpException(502, 'Invalid response when updating errand');
 
     return res.data;
