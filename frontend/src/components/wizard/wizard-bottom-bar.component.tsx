@@ -18,7 +18,7 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
 import { useActiveWizardSteps } from 'src/hooks/use-active-wizard-steps';
-import { usePrepareErrand } from 'src/hooks/use-prepare-errand';
+import { FacilitySelectionError, usePrepareErrand } from 'src/hooks/use-prepare-errand';
 import { useWizardStore } from 'src/stores/wizard-store';
 
 import { validateStep } from './wizard-step-validator';
@@ -57,7 +57,10 @@ export const WizardBottomBar: React.FC = () => {
       toastMessage({
         position: 'bottom',
         status: 'error',
-        message: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
+        message:
+          error instanceof FacilitySelectionError ?
+            t('errand-information:about.facility_required_to_save')
+          : (errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error')),
       });
     }
   };
@@ -81,7 +84,10 @@ export const WizardBottomBar: React.FC = () => {
       toastMessage({
         position: 'bottom',
         status: 'error',
-        message: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
+        message:
+          error instanceof FacilitySelectionError ?
+            t('errand-information:about.facility_required_to_save')
+          : (errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error')),
       });
     }
   };

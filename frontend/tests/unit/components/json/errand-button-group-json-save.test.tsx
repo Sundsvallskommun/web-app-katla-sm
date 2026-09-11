@@ -1,9 +1,12 @@
+import { WizardBottomBar } from '@components/wizard/wizard-bottom-bar.component';
 import { FormValidationProvider } from '@contexts/form-validation-provider';
+import type { LabelDTO } from '@data-contracts/backend/data-contracts';
 import type { ErrandFormDTO } from '@interfaces/errand-form';
 import { ErrandButtonGroup } from '@layouts/errand-button-group.component';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { useMetadataStore } from 'src/stores/metadata-store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { createErrandMock, routerPushMock, snackbarMock, updateErrandMock } = vi.hoisted(() => ({
@@ -70,7 +73,22 @@ vi.mock('@sk-web-gui/react', () => {
   };
 });
 
-function TestForm() {
+const rootLabel: LabelDTO = {
+  id: 'root',
+  resourceName: 'LOCATION',
+  resourcePath: 'LOCATION',
+  displayName: 'Platsstruktur',
+  classification: 'location-root',
+};
+const leafLabel: LabelDTO = {
+  id: 'leaf',
+  resourceName: 'UNIT',
+  resourcePath: 'LOCATION/UNIT',
+  displayName: 'Enhet',
+  classification: 'place',
+};
+
+function TestForm({ data = '{invalid-json', wizard = false }: { data?: string; wizard?: boolean }) {
   const methods = useForm<ErrandFormDTO>({
     defaultValues: {
       status: 'DRAFT',
@@ -78,7 +96,7 @@ function TestForm() {
         {
           schemaName: 'avvikelse-plats-handelse',
           schemaId: 'schema-v1',
-          data: '{invalid-json',
+          data,
         },
       ],
     },
@@ -87,24 +105,28 @@ function TestForm() {
   return (
     <FormProvider {...methods}>
       <FormValidationProvider>
-        <ErrandButtonGroup isNewErrand />
+        {wizard ?
+          <WizardBottomBar />
+        : <ErrandButtonGroup isNewErrand />}
       </FormValidationProvider>
     </FormProvider>
   );
 }
 
-describe('ErrandButtonGroup JSON save contract', () => {
+describe.each([false, true])('Draft save contract (wizard: %s)', (wizard) => {
+  const saveButtonName = wizard ? 'errand-information:wizard.save' : 'errand-information:save_draft';
   beforeEach(() => {
     createErrandMock.mockReset();
     routerPushMock.mockReset();
     snackbarMock.mockReset();
     updateErrandMock.mockReset();
+    useMetadataStore.setState({ metadata: { labels: { labelStructure: [{ ...rootLabel, labels: [leafLabel] }] } } });
   });
 
   it('handles invalid persisted JSON without calling the save API', async () => {
-    render(<TestForm />);
+    render(<TestForm wizard={wizard} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'errand-information:save_draft' }));
+    fireEvent.click(screen.getByRole('button', { name: saveButtonName }));
 
     await waitFor(() => {
       expect(snackbarMock).toHaveBeenCalledWith(
@@ -117,5 +139,38 @@ describe('ErrandButtonGroup JSON save contract', () => {
     expect(createErrandMock).not.toHaveBeenCalled();
     expect(updateErrandMock).not.toHaveBeenCalled();
     expect(routerPushMock).not.toHaveBeenCalled();
+  });
+
+  it.each([{}, { facilityInfo: {} }, { facilityInfo: { orgName: 'Okänd' } }])(
+    'blocks a draft without a valid place: %j',
+    async (data) => {
+      render(<TestForm wizard={wizard} data={JSON.stringify(data)} />);
+      fireEvent.click(screen.getByRole('button', { name: saveButtonName }));
+
+      await waitFor(() => {
+        expect(snackbarMock).toHaveBeenCalledWith({
+          position: 'bottom',
+          status: 'error',
+          message: 'errand-information:about.facility_required_to_save',
+        });
+      });
+      expect(createErrandMock).not.toHaveBeenCalled();
+      expect(updateErrandMock).not.toHaveBeenCalled();
+    }
+  );
+
+  it('saves a draft with the full location chain while other form fields are still empty', async () => {
+    createErrandMock.mockResolvedValue({ id: 'created', errandNumber: 'ERRAND-1', jsonParameters: [] });
+    render(<TestForm wizard={wizard} data={JSON.stringify({ facilityInfo: { orgName: 'Enhet' } })} />);
+    fireEvent.click(screen.getByRole('button', { name: saveButtonName }));
+
+    await waitFor(() => {
+      expect(createErrandMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'DRAFT',
+          labels: [rootLabel, leafLabel],
+        })
+      );
+    });
   });
 });

@@ -42,7 +42,8 @@
     "event_type_required": "Välj en händelsetyp",
     "event_concerns_required": "Välj vad händelsen berör",
     "event_concerns_group_facility_required": "Välj en plats där avvikelsen inträffat när händelsen berör grupp/hela verksamheten",
-    "facility_incomplete": "Slutför platsvalet genom att välja enhet – platsen styr vilka som får se ärendet"
+    "facility_incomplete": "Slutför platsvalet genom att välja enhet – platsen styr vilka som får se ärendet",
+    "facility_required_to_save": "Välj en plats och eventuell avdelning innan du sparar eller skickar in ärendet. Detta krävs även för utkast."
   },
   "reporter": {
     "title": "Rapportör",

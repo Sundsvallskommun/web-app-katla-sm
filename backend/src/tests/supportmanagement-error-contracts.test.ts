@@ -1,12 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
 import request from 'supertest';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App from '@/app';
 import { SupportManagementController } from '@/controllers/supportmanagement.controller';
 import { HttpException } from '@/exceptions/HttpException';
 import ApiService from '@/services/api.service';
 import { buildOpenApiSpec } from '@/utils/openapi-spec';
+
+import { errandLabelMetadata, validErrandLabels } from './fixtures/errand-labels';
 
 vi.mock('@/middlewares/auth.middleware', () => ({
   default: (req: Request, _res: Response, next: NextFunction) => {
@@ -25,6 +27,10 @@ vi.mock('@/middlewares/auth.middleware', () => ({
 
 const createApp = () => new App([SupportManagementController]).getServer();
 const app = createApp();
+
+beforeEach(() => {
+  vi.spyOn(ApiService.prototype, 'get').mockResolvedValue({ data: errandLabelMetadata, message: 'success' });
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -72,7 +78,7 @@ describe('SupportManagement HTTP error contracts', () => {
       message: 'success',
     });
 
-    const response = await request(app).post('/api/supportmanagement/errand/create').send({}).expect(200);
+    const response = await request(app).post('/api/supportmanagement/errand/create').send({ labels: validErrandLabels }).expect(200);
 
     expect(response.body).toEqual({ id: 'errand-id', errandNumber: 'ERRAND-1', stakeholders: [] });
     expect(postSpy).toHaveBeenCalledWith(expect.objectContaining({ propagateClientError: true }), expect.anything());
@@ -87,9 +93,11 @@ describe('SupportManagement HTTP error contracts', () => {
       },
       message: 'success',
     });
-    vi.spyOn(ApiService.prototype, 'get').mockResolvedValue({ data: 199001011234, message: 'success' });
+    vi.spyOn(ApiService.prototype, 'get')
+      .mockResolvedValueOnce({ data: errandLabelMetadata, message: 'success' })
+      .mockResolvedValue({ data: 199001011234, message: 'success' });
 
-    const response = await request(app).post('/api/supportmanagement/errand/create').send({}).expect(200);
+    const response = await request(app).post('/api/supportmanagement/errand/create').send({ labels: validErrandLabels }).expect(200);
 
     expect(response.body).toEqual({
       id: 'errand-id',
@@ -112,9 +120,11 @@ describe('SupportManagement HTTP error contracts', () => {
       },
       message: 'success',
     });
-    vi.spyOn(ApiService.prototype, 'get').mockResolvedValue({ data: { personNumber: '199001011234' }, message: 'success' });
+    vi.spyOn(ApiService.prototype, 'get')
+      .mockResolvedValueOnce({ data: errandLabelMetadata, message: 'success' })
+      .mockResolvedValue({ data: { personNumber: '199001011234' }, message: 'success' });
 
-    const response = await request(app).post('/api/supportmanagement/errand/create').send({}).expect(502);
+    const response = await request(app).post('/api/supportmanagement/errand/create').send({ labels: validErrandLabels }).expect(502);
 
     expect(response.body).toEqual({ message: 'Invalid person number response from Citizen API' });
   });
@@ -122,7 +132,7 @@ describe('SupportManagement HTTP error contracts', () => {
   it('propagates a typed upstream error when creating an errand', async () => {
     vi.spyOn(ApiService.prototype, 'post').mockRejectedValue(new HttpException(500, 'SupportManagement unavailable'));
 
-    const response = await request(app).post('/api/supportmanagement/errand/create').send({}).expect(500);
+    const response = await request(app).post('/api/supportmanagement/errand/create').send({ labels: validErrandLabels }).expect(500);
 
     expect(response.body).toEqual({ message: 'SupportManagement unavailable' });
   });
@@ -135,7 +145,7 @@ describe('SupportManagement HTTP error contracts', () => {
   it('accepts a created errand whose response carries no stakeholders', async () => {
     vi.spyOn(ApiService.prototype, 'post').mockResolvedValue({ data: { id: 'errand-id' }, message: 'success' });
 
-    const response = await request(app).post('/api/supportmanagement/errand/create').send({}).expect(200);
+    const response = await request(app).post('/api/supportmanagement/errand/create').send({ labels: validErrandLabels }).expect(200);
 
     expect(response.body).toMatchObject({ id: 'errand-id', stakeholders: [] });
   });
@@ -143,7 +153,7 @@ describe('SupportManagement HTTP error contracts', () => {
   it('returns 502 when create receives no response body at all', async () => {
     vi.spyOn(ApiService.prototype, 'post').mockResolvedValue({ data: undefined, message: 'success' });
 
-    const response = await request(app).post('/api/supportmanagement/errand/create').send({}).expect(502);
+    const response = await request(app).post('/api/supportmanagement/errand/create').send({ labels: validErrandLabels }).expect(502);
 
     expect(response.body).toEqual({ message: 'Invalid response when creating errand' });
   });
@@ -155,7 +165,10 @@ describe('SupportManagement HTTP error contracts', () => {
     const patchSpy = vi.spyOn(ApiService.prototype, 'patch').mockRejectedValue(new HttpException(409, 'Errand was modified elsewhere'));
 
     const payload = path.endsWith('/save') ? { id: 'errand-id', title: 'Changed' } : { title: 'Changed' };
-    const response = await request(app).patch(path).send(payload).expect(409);
+    const response = await request(app)
+      .patch(path)
+      .send({ ...payload, labels: validErrandLabels })
+      .expect(409);
 
     expect(response.body).toEqual({ message: 'Errand was modified elsewhere' });
     expect(patchSpy).toHaveBeenCalledWith(expect.objectContaining({ propagateClientError: true }), expect.anything());
@@ -176,7 +189,10 @@ describe('SupportManagement HTTP error contracts', () => {
   ])('returns 502 when %s receives an empty successful response', async (_operation, path, payload, messagePart) => {
     vi.spyOn(ApiService.prototype, 'patch').mockResolvedValue({ data: undefined, message: 'success' });
 
-    const response = await request(app).patch(path).send(payload).expect(502);
+    const response = await request(app)
+      .patch(path)
+      .send({ ...payload, labels: validErrandLabels })
+      .expect(502);
 
     expect(response.body).toEqual({ message: `Invalid response when ${messagePart} errand` });
   });

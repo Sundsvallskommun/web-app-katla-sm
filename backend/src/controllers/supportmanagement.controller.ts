@@ -3,7 +3,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { MUNICIPALITY_ID, NAMESPACE, NODE_ENV } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { Errand, MetadataResponse, Notification, PageErrand } from '@/data-contracts/supportmanagement/data-contracts';
+import { Errand, ErrandLabel, MetadataResponse, Notification, PageErrand } from '@/data-contracts/supportmanagement/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import type ApiResponse from '@/interfaces/api-service.interface';
 import { RequestWithUser } from '@/interfaces/auth.interface';
@@ -12,6 +12,7 @@ import { NotificationAcknowledgementResponse, NotificationDTO } from '@/response
 import { ErrandCountDTO, ErrandDTO, ErrandsQueryDTO, PageErrandDTO } from '@/responses/supportmanagement.response';
 import { MetadataResponseDTO } from '@/responses/supportmanagement-metadata.response';
 import ApiService from '@/services/api.service';
+import { validateErrandLabels } from '@/utils/errand-labels';
 import { logger } from '@/utils/logger';
 import { mapStakeholderDTOToStakeholder, mapStakeholderToStakeholderDTO } from '@/utils/stakeholder-mapping';
 import { apiURL } from '@/utils/util';
@@ -88,6 +89,11 @@ export class SupportManagementController {
   private apiService = new ApiService();
   private apiBase = getApiBase('supportmanagement');
 
+  private async validatedLabels(labels: unknown, req: RequestWithUser): Promise<ErrandLabel[]> {
+    const metadata = await this.getMetadata(req);
+    return validateErrandLabels(labels, metadata.labels?.labelStructure);
+  }
+
   @Post('/supportmanagement/errand/create')
   @OpenAPI({ summary: 'Create new errand' })
   @UseBefore(authMiddleware)
@@ -98,6 +104,7 @@ export class SupportManagementController {
 
     const errandInformation = {
       ...(errand as Errand),
+      labels: await this.validatedLabels(errand.labels, req),
       reporterUserId: req.user.username,
       stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
     };
@@ -162,6 +169,7 @@ export class SupportManagementController {
 
     const errandInformation = {
       ...errand,
+      labels: await this.validatedLabels(errand.labels, req),
       stakeholders: errand.stakeholders?.map(mapStakeholderDTOToStakeholder),
     };
 
@@ -199,7 +207,8 @@ export class SupportManagementController {
 
     if (!id.trim()) throw new HttpException(400, 'Errand id is required when updating an errand');
 
-    const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: errandData, propagateClientError: true }, req);
+    const labels = await this.validatedLabels(errandData.labels, req);
+    const res = await this.apiService.patch<Partial<Errand>>({ baseURL, url, data: { ...errandData, labels }, propagateClientError: true }, req);
     if (!res.data) throw new HttpException(502, 'Invalid response when updating errand');
 
     return res.data;

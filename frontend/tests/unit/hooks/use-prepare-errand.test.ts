@@ -1,7 +1,7 @@
 import { LabelDTO } from '@data-contracts/backend/data-contracts';
 import { ErrandFormDataItem, ErrandFormDTO } from '@interfaces/errand-form';
 import { renderHook } from '@testing-library/react';
-import { usePrepareErrand } from 'src/hooks/use-prepare-errand';
+import { FacilitySelectionError, usePrepareErrand } from 'src/hooks/use-prepare-errand';
 import { useMetadataStore } from 'src/stores/metadata-store';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -82,6 +82,7 @@ const errand = (
 });
 
 const renderPrepareErrand = () => renderHook(() => usePrepareErrand()).result.current;
+const completeFacility = () => facilityFormData({ orgName: 'Blå', parentOrgName: 'VOF ÄB Skottsundsbacken geme.' });
 
 describe('usePrepareErrand', () => {
   beforeEach(() => {
@@ -112,25 +113,43 @@ describe('usePrepareErrand', () => {
   ])('sätter rapporttypen %s som kedjan rot → typ', (eventType, resourceName) => {
     const { prepareErrandForApi } = renderPrepareErrand();
 
-    const prepared = prepareErrandForApi(errand([], 'GRUPP_VERKSAMHET', eventType), 'NEW');
+    const prepared = prepareErrandForApi(errand(completeFacility(), 'GRUPP_VERKSAMHET', eventType), 'NEW');
 
-    expect(prepared.labels?.map((l) => l.resourceName)).toEqual(['REPORT_TYPE', resourceName]);
+    expect(prepared.labels?.slice(0, 2).map((l) => l.resourceName)).toEqual(['REPORT_TYPE', resourceName]);
   });
 
   it('sätter ingen rapporttyp innan användaren valt en', () => {
     const { prepareErrandForApi } = renderPrepareErrand();
 
-    const prepared = prepareErrandForApi(errand([], 'GRUPP_VERKSAMHET', ''), 'NEW');
+    const prepared = prepareErrandForApi(errand(completeFacility(), 'GRUPP_VERKSAMHET', ''), 'DRAFT');
 
-    expect(prepared.labels).toEqual([]);
+    expect(prepared.labels?.map((l) => l.resourceName)).toEqual(['LOCATION', 'VOF_ALDREBOENDE', 'GEME', 'BLA']);
   });
 
-  it('lägger inte till någon platslabel när valet inte pekar ut en nod i strukturen', () => {
+  it.each(['NEW', 'DRAFT'])('stoppar %s när platsen saknas eller inte är fullständigt vald', (status) => {
     const { prepareErrandForApi } = renderPrepareErrand();
 
-    const prepared = prepareErrandForApi(errand(facilityFormData({ orgName: 'Okänd enhet' })), 'NEW');
+    for (const facility of [
+      undefined,
+      { orgName: '' },
+      { orgName: 'Okänd enhet' },
+      { orgName: 'VOF ÄB Skottsundsbacken geme.' },
+    ]) {
+      expect(() => prepareErrandForApi(errand(facilityFormData(facility)), status)).toThrow(FacilitySelectionError);
+    }
+  });
 
-    expect(prepared.labels?.map((l) => l.resourceName)).toEqual(['REPORT_TYPE', 'DEVIATION']);
+  it.each(['NEW', 'DRAFT'])('stoppar %s när metadata saknas trots ett sparat platsnamn', (status) => {
+    useMetadataStore.setState({ metadata: null });
+    const { prepareErrandForApi } = renderPrepareErrand();
+    expect(() => prepareErrandForApi(errand(completeFacility()), status)).toThrow(FacilitySelectionError);
+  });
+
+  it('behåller hela platskedjan även för utkast utan övriga obligatoriska formulärfält', () => {
+    const { prepareErrandForApi } = renderPrepareErrand();
+    const prepared = prepareErrandForApi({ errandFormData: completeFacility() }, 'DRAFT');
+    expect(prepared.status).toBe('DRAFT');
+    expect(prepared.labels.map((l) => l.resourceName)).toEqual(['LOCATION', 'VOF_ALDREBOENDE', 'GEME', 'BLA']);
   });
 
   it('namnger ärendeägaren med plats och enhet när händelsen berör hela verksamheten', () => {
