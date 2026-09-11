@@ -19,7 +19,7 @@ import { useId, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { appConfig } from 'src/config/appconfig';
-import { usePrepareErrand } from 'src/hooks/use-prepare-errand';
+import { FacilitySelectionError, usePrepareErrand } from 'src/hooks/use-prepare-errand';
 
 interface ErrandButtonGroupProps {
   isNewErrand: boolean;
@@ -66,7 +66,10 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       toastMessage({
         position: 'bottom',
         status: 'error',
-        message: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
+        message:
+          error instanceof FacilitySelectionError ?
+            t('errand-information:about.facility_required_to_save')
+          : (errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error')),
       });
     }
   };
@@ -88,7 +91,10 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       toastMessage({
         position: 'bottom',
         status: 'error',
-        message: errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error'),
+        message:
+          error instanceof FacilitySelectionError ?
+            t('errand-information:about.facility_required_to_save')
+          : (errandFormDataContractErrorMessage(error, tForms) ?? t('errand-information:save_message.error')),
       });
     }
   };

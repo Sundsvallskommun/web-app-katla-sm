@@ -21,6 +21,13 @@ const FACILITY_SCHEMA_NAME = 'avvikelse-plats-handelse';
  */
 export type FacilitySelectionStatus = 'NONE' | 'INCOMPLETE' | 'COMPLETE';
 
+export class FacilitySelectionError extends Error {
+  constructor() {
+    super('A complete location selection is required before saving an errand');
+    this.name = 'FacilitySelectionError';
+  }
+}
+
 const isFacilityInfo = (value: unknown): value is FacilityInfoDTO =>
   !!value && typeof value === 'object' && 'orgName' in value;
 
@@ -121,6 +128,11 @@ export function usePrepareErrand() {
   };
 
   const prepareErrandForApi = (values: ErrandFormDTO, status: string) => {
+    const jsonParameters = errandFormDataToJsonParameters(values.errandFormData);
+    // Gäller även utkast och kontrolleras på nytt vid det faktiska sparögonblicket.
+    // Backend äger säkerhetskontrollen; denna kontroll ger snabb återkoppling i formuläret.
+    if (getFacilityStatus(values.errandFormData) !== 'COMPLETE') throw new FacilitySelectionError();
+
     const { errandFormData, reportingForColleague: _reportingForColleague, ...errandWithoutFormData } = values;
     const eventType = getSelectedEventType(values);
     const eventConcerns = values.parameters?.find((p) => p.key === 'eventConcerns')?.values?.[0];
@@ -143,7 +155,7 @@ export function usePrepareErrand() {
       stakeholders,
       status,
       labels: buildLabels(eventType, errandFormData),
-      jsonParameters: errandFormDataToJsonParameters(errandFormData),
+      jsonParameters,
     };
   };
 

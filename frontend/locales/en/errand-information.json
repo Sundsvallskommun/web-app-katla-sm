@@ -42,7 +42,8 @@
     "event_type_required": "Select an event type",
     "event_concerns_required": "Select what the event concerns",
     "event_concerns_group_facility_required": "Select a location where the deviation occurred when the event concerns a group/the entire operation",
-    "facility_incomplete": "Complete the location selection by choosing a unit – the location controls who can see the case"
+    "facility_incomplete": "Complete the location selection by choosing a unit – the location controls who can see the case",
+    "facility_required_to_save": "Select a location and, if applicable, a department before saving or submitting the case. This is also required for drafts."
   },
   "reporter": {
     "title": "Reporter",
