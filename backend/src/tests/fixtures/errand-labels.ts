@@ -1,5 +1,7 @@
 import { ErrandLabel, Label, MetadataResponse } from '@/data-contracts/supportmanagement/data-contracts';
 
+import { errandPhases } from './errand-phases';
+
 export const locationLabels: Label[] = [
   { id: 'location', resourcePath: 'LOCATION', resourceName: 'LOCATION', classification: 'location-root', displayName: 'Platsstruktur' },
   { id: 'unit', resourcePath: 'LOCATION/UNIT', resourceName: 'UNIT', classification: 'place', displayName: 'Enhet' },
@@ -14,6 +16,7 @@ const deviation: Label = { id: 'deviation', resourcePath: 'REPORT_TYPE/DEVIATION
 export const siblingLabel: Label = { id: 'yellow', resourcePath: 'LOCATION/UNIT/YELLOW', resourceName: 'YELLOW', classification: 'place' };
 
 export const errandLabelMetadata: MetadataResponse = {
+  phases: errandPhases,
   labels: {
     labelStructure: [
       { ...root, labels: [{ ...unit, labels: [leaf, siblingLabel] }] },
