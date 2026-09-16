@@ -150,6 +150,33 @@ describe('message editor accessibility', () => {
     expect(document.getElementById('message-body-error')).not.toBeInTheDocument();
   });
 
+  it('does not show the required-field error for empty editor changes before a send attempt', async () => {
+    renderComposer();
+    enterMessage('Hej');
+    enterMessage('');
+
+    await waitFor(() => {
+      expect(screen.getByRole('textbox')).toHaveAccessibleDescription('Max 10000 tecken. 0 av 10000 tecken använda.');
+    });
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'false');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  it('clears the required-field error once text is entered after a send attempt', async () => {
+    const user = userEvent.setup();
+    renderComposer();
+    await user.click(screen.getByRole('button', { name: 'Skicka meddelande' }));
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toHaveTextContent('Skriv ett meddelande innan du skickar.');
+    });
+
+    enterMessage('Hej');
+    await waitFor(() => {
+      expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'false');
+    });
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
   it('connects and announces the required-field error without attempting to send', async () => {
     const user = userEvent.setup();
     renderComposer();
