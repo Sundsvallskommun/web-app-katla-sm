@@ -28,7 +28,7 @@ export const MessageComposer: React.FC<{
 
   const {
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitted, isSubmitting },
     handleSubmit,
     reset,
     setValue,
@@ -96,7 +96,8 @@ export const MessageComposer: React.FC<{
                 value={editorValue}
                 onChange={(event) => {
                   setValue('messageMarkup', event.target.value.markup ?? '');
-                  setValue('messagePlainText', event.target.value.plainText ?? '', { shouldValidate: true });
+                  // Quill skickar en ändring redan vid montering och återställning, så validera först efter ett sändförsök.
+                  setValue('messagePlainText', event.target.value.plainText ?? '', { shouldValidate: isSubmitted });
                 }}
               />
             )}
