@@ -6,7 +6,6 @@ import { ErrorAlertList } from '@components/misc/error-alert.component';
 import { SectionHeader } from '@components/misc/section-header.component';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { Button, Divider, RadioButton, Spinner } from '@sk-web-gui/react';
-import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -45,18 +44,6 @@ export const ErrandMessages: React.FC = () => {
       {errandId && errandNumber && <MessageComposer errandId={errandId} errandNumber={errandNumber} onSent={reload} />}
 
       <Divider />
-
-      <div>
-        <Button
-          variant="secondary"
-          leftIcon={<RefreshCw aria-hidden="true" />}
-          onClick={reload}
-          disabled={isLoading || isRefreshing || isLoadingMore}
-          loading={isRefreshing}
-        >
-          {t('messages:refresh')}
-        </Button>
-      </div>
 
       <RadioButton.Group inline data-cy="message-filter">
         {MESSAGE_FILTERS.map((option) => (

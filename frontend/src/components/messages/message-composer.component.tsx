@@ -4,6 +4,7 @@ import { RichTextEditor } from '@components/rich-text-editor/rich-text-editor.co
 import { createConversation, sendConversationMessage } from '@services/conversation-service/conversation-service';
 import { Button, FileUpload, FormControl, FormErrorMessage, UploadFile, useSnackbar } from '@sk-web-gui/react';
 import { sanitizeMessage } from '@utils/sanitize-message';
+import { SendHorizontal } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -77,31 +78,46 @@ export const MessageComposer: React.FC<{
       <fieldset disabled={isSubmitting} aria-busy={isSubmitting} className="contents">
         <FormControl id="message-body" className="w-full" required invalid={!!messageError}>
           <FormFieldLabel>{t('messages:compose_label')}</FormFieldLabel>
-          <Controller
-            control={control}
-            name="messagePlainText"
-            rules={{
-              validate: (value) => value.trim().length > 0 || t('messages:required'),
-            }}
-            render={() => (
-              <RichTextEditor
-                id="message-body"
-                labelledBy="message-body-label"
-                describedBy={editorDescription}
-                required
-                readOnly={isSubmitting}
-                disableToolbar={isSubmitting}
-                invalid={!!messageError}
-                className="[&_.ql-container]:h-[20rem] [&_.ql-toolbar.ql-snow]:h-auto [&_.ql-toolbar]:min-h-[4rem] [&_.ql-toolbar]:flex-wrap"
-                value={editorValue}
-                onChange={(event) => {
-                  setValue('messageMarkup', event.target.value.markup ?? '');
-                  // Quill skickar en ändring redan vid montering och återställning, så validera först efter ett sändförsök.
-                  setValue('messagePlainText', event.target.value.plainText ?? '', { shouldValidate: isSubmitted });
-                }}
-              />
-            )}
-          />
+          {/* Skicka-knappen ligger i editorrutan, nere till höger. Editorn lämnar plats åt den i nederkanten. */}
+          <div className="relative">
+            <Controller
+              control={control}
+              name="messagePlainText"
+              rules={{
+                validate: (value) => value.trim().length > 0 || t('messages:required'),
+              }}
+              render={() => (
+                <RichTextEditor
+                  id="message-body"
+                  labelledBy="message-body-label"
+                  describedBy={editorDescription}
+                  required
+                  readOnly={isSubmitting}
+                  disableToolbar={isSubmitting}
+                  invalid={!!messageError}
+                  className="[&_.ql-container]:h-[20rem] [&_.ql-container]:pb-56 [&_.ql-toolbar.ql-snow]:h-auto [&_.ql-toolbar]:min-h-[4rem] [&_.ql-toolbar]:flex-wrap"
+                  value={editorValue}
+                  onChange={(event) => {
+                    setValue('messageMarkup', event.target.value.markup ?? '');
+                    // Quill skickar en ändring redan vid montering och återställning, så validera först efter ett sändförsök.
+                    setValue('messagePlainText', event.target.value.plainText ?? '', { shouldValidate: isSubmitted });
+                  }}
+                />
+              )}
+            />
+            <Button
+              data-cy="send-message-button"
+              type="submit"
+              color="vattjom"
+              size="sm"
+              className="absolute bottom-12 right-12"
+              rightIcon={<SendHorizontal aria-hidden="true" />}
+              loading={isSubmitting}
+              disabled={isSubmitting || isOverLimit}
+            >
+              {t('messages:send')}
+            </Button>
+          </div>
           <div className="text-small flex flex-wrap justify-between gap-x-16 gap-y-4">
             <span id="message-body-limit" className="text-dark-secondary">
               {t('messages:character_limit', { limit: MESSAGE_CHARACTER_LIMIT })}
@@ -115,6 +131,8 @@ export const MessageComposer: React.FC<{
           </div>
           {messageError && <FormErrorMessage id="message-body-error">{messageError}</FormErrorMessage>}
         </FormControl>
+
+        {sendError && <FormErrorMessage>{sendError}</FormErrorMessage>}
 
         {/* Annonsera fel när de ändras, inte räknaren vid varje tangenttryckning. */}
         <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
@@ -154,20 +172,6 @@ export const MessageComposer: React.FC<{
             ))}
           </FileUpload.List>
         )}
-
-        {sendError && <FormErrorMessage>{sendError}</FormErrorMessage>}
-
-        <div>
-          <Button
-            data-cy="send-message-button"
-            type="submit"
-            color="vattjom"
-            loading={isSubmitting}
-            disabled={isSubmitting || isOverLimit}
-          >
-            {t('messages:send')}
-          </Button>
-        </div>
       </fieldset>
     </form>
   );

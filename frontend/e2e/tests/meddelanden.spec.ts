@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
   await page.route(`${messagePath}/mark-as-read`, emptyRoute());
 });
 
-test('older messages remain reachable after a system-only page, and refresh shows a new reply', async ({
+test('older messages remain reachable after a system-only page, and returning to the page shows a new reply', async ({
   page,
   appUrl,
 }) => {
@@ -47,7 +47,15 @@ test('older messages remain reachable after a system-only page, and refresh show
   await page.getByRole('button', { name: 'Visa äldre meddelanden' }).click();
   await expect(page.getByTestId('message-body')).toContainText('Tidigare meddelande');
   replyArrived = true;
-  await page.getByRole('button', { name: 'Uppdatera meddelanden' }).click();
+  // Meddelandena hämtas när sidan laddas, så ett flikbyte fram och tillbaka visar det nya svaret.
+  // Fliken döljer panelen direkt vid klick, så vänta på adressen. Dev-servern kompilerar
+  // Grundinformation vid första besöket, och det tar längre tid än standardväntan.
+  await page.getByRole('tab', { name: 'Grundinformation' }).click();
+  await expect(page).toHaveURL(/\/grundinformation$/, { timeout: 20_000 });
+  await page.getByRole('tab', { name: 'Meddelanden' }).click();
+  await expect(page).toHaveURL(/\/meddelanden$/);
+  await expect(page.getByText('Nytt svar från handläggaren', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Visa äldre meddelanden' }).click();
   await expect(page.getByTestId('message-body')).toHaveCount(2);
   await expect(page.getByText('Nytt svar från handläggaren', { exact: true })).toBeVisible();
   await expect(page.getByText('Tidigare meddelande', { exact: true })).toBeVisible();
@@ -63,7 +71,7 @@ test('the real editor and attachments are locked while a message is being sent',
   await page.goto(appUrl(`/arende/${mockErrand.errandNumber}/meddelanden`));
   const editor = page.locator('.ql-editor');
   await editor.fill('Meddelandet som ska skickas');
-  await page.getByRole('button', { name: 'Skicka meddelande' }).click();
+  await page.getByRole('button', { name: 'Skicka', exact: true }).click();
   try {
     await expect(editor).toHaveAttribute('contenteditable', 'false');
     await expect(page.locator('input[type="file"]')).toBeDisabled();

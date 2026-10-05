@@ -129,7 +129,7 @@ describe('message editor accessibility', () => {
     enterMessage('a'.repeat(10001));
 
     const editor = screen.getByRole('textbox');
-    const send = screen.getByRole('button', { name: 'Skicka meddelande' });
+    const send = screen.getByRole('button', { name: 'Skicka' });
     await waitFor(() => {
       expect(editor).toHaveAttribute('aria-invalid', 'true');
       expect(editor).toHaveAccessibleDescription(
@@ -165,7 +165,7 @@ describe('message editor accessibility', () => {
   it('clears the required-field error once text is entered after a send attempt', async () => {
     const user = userEvent.setup();
     renderComposer();
-    await user.click(screen.getByRole('button', { name: 'Skicka meddelande' }));
+    await user.click(screen.getByRole('button', { name: 'Skicka' }));
     await waitFor(() => {
       expect(screen.getByRole('status')).toHaveTextContent('Skriv ett meddelande innan du skickar.');
     });
@@ -180,7 +180,7 @@ describe('message editor accessibility', () => {
   it('connects and announces the required-field error without attempting to send', async () => {
     const user = userEvent.setup();
     renderComposer();
-    await user.click(screen.getByRole('button', { name: 'Skicka meddelande' }));
+    await user.click(screen.getByRole('button', { name: 'Skicka' }));
 
     await waitFor(() => {
       expect(screen.getByRole('textbox')).toHaveAccessibleDescription(
@@ -201,7 +201,7 @@ it('locks text and attachments during sending and clears only after success', as
   const onSent = vi.fn();
   const { container } = renderComposer(onSent);
   enterMessage('First message');
-  fireEvent.click(screen.getByRole('button', { name: 'Skicka meddelande' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Skicka' }));
   await waitFor(() => {
     expect(services.sendConversationMessage).toHaveBeenCalledWith('test-errand', 'conv-1', 'First message', []);
   });
@@ -226,13 +226,13 @@ it('preserves text and unlocks after failure so the same message can be retried'
   const onSent = vi.fn();
   renderComposer(onSent);
   enterMessage('Keep this');
-  fireEvent.click(screen.getByRole('button', { name: 'Skicka meddelande' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Skicka' }));
   await screen.findByText(messagesSv.send_error);
   const editor = screen.getByRole('textbox');
   expect(editor).toHaveTextContent('Keep this');
   expect(editor).toHaveAttribute('contenteditable', 'true');
   expect(onSent).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: 'Skicka meddelande' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Skicka' }));
   await waitFor(() => {
     expect(onSent).toHaveBeenCalledTimes(1);
   });

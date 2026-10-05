@@ -10,7 +10,7 @@ export const APIS = [
   },
   {
     name: 'supportmanagement-sprint',
-    version: '15.1',
+    version: '17.0',
   },
   {
     name: 'employee',

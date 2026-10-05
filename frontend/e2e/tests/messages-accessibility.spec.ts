@@ -43,6 +43,13 @@ test.describe('Message composer accessibility', () => {
         expect(bounds.x).toBeGreaterThanOrEqual(0);
         expect(bounds.right).toBeLessThanOrEqual(viewport.width);
       }
+      // Skicka-knappen ligger i editorrutan men under skrivytan, så att den aldrig täcker text.
+      const sendBounds = await measure(composer.getByTestId('send-message-button'));
+      const writingAreaBounds = await measure(editor);
+      expect(sendBounds.x).toBeGreaterThanOrEqual(editorBounds.x);
+      expect(sendBounds.right).toBeLessThanOrEqual(editorBounds.right);
+      expect(sendBounds.y).toBeGreaterThanOrEqual(writingAreaBounds.bottom);
+      expect(sendBounds.bottom).toBeLessThanOrEqual(editorBounds.bottom);
       const toolbar = composer.locator('.ql-toolbar');
       await expect(toolbar).toBeVisible();
       const toolbarButtons = toolbar.getByRole('button');

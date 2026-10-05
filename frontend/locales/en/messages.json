@@ -3,7 +3,7 @@
   "description": "Here you can contact the case worker handling your report and read their replies.",
   "compose_label": "Write a message",
   "topic": "Report {{errandNumber}}",
-  "send": "Send message",
+  "send": "Send",
   "sent": "The message was sent",
   "send_error": "Something went wrong when sending the message. Please try again.",
   "load_error": "The messages could not be loaded.",
@@ -22,6 +22,5 @@
   "unknown_sender": "Unknown sender",
   "attachment_fallback_name": "Attachment",
   "attachment_error": "The attachment could not be downloaded.",
-  "refresh": "Refresh messages",
   "load_more": "Show older messages"
 }
