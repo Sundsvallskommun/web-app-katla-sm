@@ -69,6 +69,17 @@ Frontendens `yarn dev`, `yarn build`, `yarn build:test` och analyskommandon anv�
 
 Detta är en tillfällig åtgärd efter en lokal incident med ett skenande antal Node-processer. Turbopacks hjälpprocesser är det främsta spåret, men exakt orsak är inte fastställd. Undvik direkta `next dev`/`next build` utan `--webpack`, eftersom Next 16 annars väljer Turbopack. Den uttryckliga projektroten i `next.config.js` behålls. Beroendeversioner, applikationsflöden och API-kontrakt påverkas inte av valet av byggverktyg.
 
+## Installerbar app (PWA)
+
+Frontenden kan installeras som en app från webbläsaren och öppnas då i ett eget fönster. Delarna är:
+
+- `frontend/src/app/manifest.ts`: webbmanifestet. Adresserna prefixas med `NEXT_PUBLIC_BASE_PATH`, och `start_url` pekar på översikten så att den alltid ligger inom manifestets scope.
+- `frontend/public/icons/` och `frontend/src/app/apple-icon.png`: ikonerna, kommunens symbol på blå bakgrund. PNG-filerna genereras från `frontend/public/icons/icon.svg` med `yarn generate:pwa-icons`. Byts källbilden ut ska den ha fylld bakgrund och motivet inom den inre cirkeln (40 % radie), eftersom samma bild används som maskable-ikon och på iOS.
+- `frontend/public/sw.js`: service workern. Den visar `frontend/public/offline.html` när en sidladdning misslyckas och cachar inget annat, eftersom sidor och API-svar innehåller personuppgifter. Höj `CACHE_VERSION` i `sw.js` när offlinesidan ändras.
+- Färgerna ligger i `frontend/src/config/pwa-config.ts`. Offlinesidan har egna kopior eftersom den är fristående.
+
+Service workern registreras bara i produktionsbyggen. Playwright blockerar service workers (`serviceWorkers: 'block'`) så att testernas mockar alltid träffar sidladdningarna.
+
 ## Tester
 
 ### Frontend (`cd frontend`)

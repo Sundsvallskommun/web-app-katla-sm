@@ -52,7 +52,7 @@ export default tseslint.config(
     rules: {
       'react-refresh/only-export-components': [
         'error',
-        { allowExportNames: ['generateMetadata', 'generateStaticParams'] },
+        { allowExportNames: ['generateMetadata', 'generateStaticParams', 'viewport'] },
       ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': 'off',
