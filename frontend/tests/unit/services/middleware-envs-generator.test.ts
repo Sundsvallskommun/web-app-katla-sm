@@ -25,9 +25,13 @@ describe('middleware environment generation', () => {
   });
 
   const runGenerator = async () => {
-    const environment = Object.fromEntries(
-      Object.entries(process.env).filter(([key]) => !environmentKeys.some((environmentKey) => environmentKey === key))
-    );
+    // Node utelämnar odefinierade värden ur barnprocessens miljö. Att skriva över nycklarna
+    // i stället för att filtrera bort dem behåller typen ProcessEnv, som kräver NODE_ENV så
+    // snart något test drar in Next-typerna.
+    const environment: NodeJS.ProcessEnv = {
+      ...process.env,
+      ...Object.fromEntries(environmentKeys.map((key) => [key, undefined])),
+    };
 
     execFileSync(process.execPath, [generatorPath], {
       cwd: workingDirectory,
