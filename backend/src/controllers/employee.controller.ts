@@ -67,7 +67,6 @@ export class EmployeeController {
         parameters: employmentParameters(mainEmployment),
       };
 
-      console.log('Stakeholder data retrieved:', stakeholder);
       return stakeholder;
     } catch (error) {
       logLookupFailure('getEmployeeByUserName', error);
