@@ -41,6 +41,9 @@ export default defineConfig({
     // Projektet använder data-cy-attribut som testselektorer
     testIdAttribute: 'data-cy',
     trace: 'on-first-retry',
+    // Produktionsbygget i CI registrerar en service worker. Sidladdningar som går via den
+    // syns inte för page.route, så testernas mockar skulle kunna passeras utan att märkas.
+    serviceWorkers: 'block',
   },
   projects: [
     {

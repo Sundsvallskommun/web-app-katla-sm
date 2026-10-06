@@ -40,4 +40,8 @@ module.exports = {
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];
   },
+  async headers() {
+    // En cachad sw.js mellan webbläsaren och servern skulle fördröja att en ny worker når användarna.
+    return [{ source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }] }];
+  },
 };

@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 
 import { mockErrand } from '../fixtures/mockErrand';
-import { mockMetadata } from '../fixtures/mockMetadata';
+import { MOCK_PLACE_NAME, MOCK_PLACE_PARENT_NAME, mockMetadataWithPlaceStructure } from '../fixtures/mockMetadata';
 import { mockReporterStakeholder, mockStakeholder } from '../fixtures/mockStakeholder';
 import { MOCK_COUNTRY_CODE_PHONE_NUMBER, MOCK_EMAIL, MOCK_HYPHEN_PERSON_NUMBER } from '../utils/constants';
 import { jsonRoute } from '../utils/routes';
@@ -18,15 +18,23 @@ const mockFormSchemaResponse = {
     type: 'object',
     additionalProperties: false,
     properties: {
+      // Samma form som i det riktiga schemat. Utan en komplett plats sparas inget ärende.
+      facilityInfo: {
+        type: 'object',
+        properties: { orgName: { type: 'string', minLength: 1 } },
+        required: ['orgName'],
+      },
       incidentDescription: {
         type: 'string',
         title: 'Beskriv händelsen',
         minLength: 1,
       },
     },
-    required: ['incidentDescription'],
+    required: ['facilityInfo', 'incidentDescription'],
   },
-  uiSchema: {},
+  uiSchema: {
+    facilityInfo: { 'ui:field': 'FacilitySearchWidget', 'ui:title': 'Enhet eller avdelning' },
+  },
 };
 
 /** Registrerar ärendet och verifierar POST-anropet, motsvarar cy.wait('@createDraftErrand') med assertions */
@@ -64,7 +72,10 @@ const registerErrandAndExpectDraft = async (page: Page, expectedStakeholderCount
   expect(body.jsonParameters).toEqual([
     {
       key: MOCK_FORM_SCHEMA_NAME,
-      value: { incidentDescription: MOCK_INCIDENT_DESCRIPTION },
+      value: {
+        facilityInfo: { orgName: MOCK_PLACE_NAME, parentOrgName: MOCK_PLACE_PARENT_NAME },
+        incidentDescription: MOCK_INCIDENT_DESCRIPTION,
+      },
       schemaId: MOCK_FORM_SCHEMA_ID,
     },
   ]);
@@ -91,6 +102,24 @@ const selectRequiredErrandParameters = async (page: Page) => {
  * registreringstester går genom denna, så ett nytt obligatoriskt fält behöver
  * bara läggas till här för att gälla både lyckad och misslyckad registrering.
  */
+/**
+ * Väljer platsen i platsväljaren. Väljaren skriver valet till formulärdatan några millisekunder
+ * efter att listan stängts, och en ändring i ett annat schemafält inom det fönstret skriver över
+ * valet. Ingen användare hinner dit, men Playwright gör det – därför görs valet sist i formuläret.
+ */
+const selectFacility = async (page: Page) => {
+  // Combobox-rollen ligger på omslutande element; själva sökfältet är en textbox med fältets etikett.
+  const facilitySearch = page.getByRole('textbox', { name: /Enhet eller avdelning/ });
+  await facilitySearch.click();
+  // Listan öppnas av tangenttryckningar, inte av ett satt värde. Söktexten är bara början av namnet,
+  // så att fältet visar hela namnet först när platsen faktiskt är vald.
+  await facilitySearch.pressSequentially(MOCK_PLACE_NAME.slice(0, 2));
+  await expect(page.getByRole('option', { name: MOCK_PLACE_NAME, exact: true })).toBeVisible();
+  await facilitySearch.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(facilitySearch).toHaveValue(MOCK_PLACE_NAME);
+};
+
 const completeRequiredErrandForm = async (page: Page) => {
   await selectRequiredErrandParameters(page);
 
@@ -98,6 +127,8 @@ const completeRequiredErrandForm = async (page: Page) => {
   await expect(incidentDescription).toBeEditable();
   await incidentDescription.fill(MOCK_INCIDENT_DESCRIPTION);
   await expect(incidentDescription).toHaveValue(MOCK_INCIDENT_DESCRIPTION);
+
+  await selectFacility(page);
 };
 
 test.describe('Register new errand page', () => {
@@ -106,7 +137,9 @@ test.describe('Register new errand page', () => {
     await page.route('**/supportmanagement/errand/create', jsonRoute(mockErrand));
     await page.route(`**/schemas/latest/${MOCK_FORM_SCHEMA_NAME}`, jsonRoute(mockFormSchemaResponse));
     await page.route(`**/schemas/${MOCK_FORM_SCHEMA_ID}`, jsonRoute(mockFormSchemaResponse));
-    await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadata));
+    await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadataWithPlaceStructure));
+    // Platsväljaren slår upp användarens anställningar för att fylla i enhetschefen.
+    await page.route('**/employee/employments', jsonRoute([]));
     await page.goto(appUrl('/arende/registrera'));
 
     // Att kontrollerna syns bevisar inte att de serverrenderade radioknapparna
