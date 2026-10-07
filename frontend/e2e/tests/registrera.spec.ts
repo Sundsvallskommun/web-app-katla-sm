@@ -4,6 +4,7 @@ import { mockErrand } from '../fixtures/mockErrand';
 import { MOCK_PLACE_NAME, MOCK_PLACE_PARENT_NAME, mockMetadataWithPlaceStructure } from '../fixtures/mockMetadata';
 import { mockReporterStakeholder, mockStakeholder } from '../fixtures/mockStakeholder';
 import { MOCK_COUNTRY_CODE_PHONE_NUMBER, MOCK_EMAIL, MOCK_HYPHEN_PERSON_NUMBER } from '../utils/constants';
+import { selectFacility } from '../utils/registration';
 import { jsonRoute } from '../utils/routes';
 import { addEmployeeStakeholder, addStakeholder, manuallyAddStakeholder, sectionByTitle } from '../utils/stakeholder';
 import { expect, test } from '../utils/test';
@@ -102,24 +103,6 @@ const selectRequiredErrandParameters = async (page: Page) => {
  * registreringstester går genom denna, så ett nytt obligatoriskt fält behöver
  * bara läggas till här för att gälla både lyckad och misslyckad registrering.
  */
-/**
- * Väljer platsen i platsväljaren. Väljaren skriver valet till formulärdatan några millisekunder
- * efter att listan stängts, och en ändring i ett annat schemafält inom det fönstret skriver över
- * valet. Ingen användare hinner dit, men Playwright gör det – därför görs valet sist i formuläret.
- */
-const selectFacility = async (page: Page) => {
-  // Combobox-rollen ligger på omslutande element; själva sökfältet är en textbox med fältets etikett.
-  const facilitySearch = page.getByRole('textbox', { name: /Enhet eller avdelning/ });
-  await facilitySearch.click();
-  // Listan öppnas av tangenttryckningar, inte av ett satt värde. Söktexten är bara början av namnet,
-  // så att fältet visar hela namnet först när platsen faktiskt är vald.
-  await facilitySearch.pressSequentially(MOCK_PLACE_NAME.slice(0, 2));
-  await expect(page.getByRole('option', { name: MOCK_PLACE_NAME, exact: true })).toBeVisible();
-  await facilitySearch.press('ArrowDown');
-  await page.keyboard.press('Enter');
-  await expect(facilitySearch).toHaveValue(MOCK_PLACE_NAME);
-};
-
 const completeRequiredErrandForm = async (page: Page) => {
   await selectRequiredErrandParameters(page);
 
