@@ -80,6 +80,19 @@ Frontenden kan installeras som en app från webbläsaren och öppnas då i ett e
 
 Service workern registreras bara i produktionsbyggen. Playwright blockerar service workers (`serviceWorkers: 'block'`) så att testernas mockar alltid träffar sidladdningarna.
 
+## Användarguide
+
+Appen har en användarguide på `/hjalp`, "Så rapporterar du en avvikelse". Den nås via **Hjälp** i sidhuvudet på alla sidor och går steg för steg igenom rapporteringen med skärmbilder och numrerade pilar.
+
+Skärmbilderna och pilarnas lägen genereras automatiskt från det riktiga flödet med Playwright:
+
+```
+cd frontend
+yarn generate:user-guide
+```
+
+Guiden ska uppdateras i samma ändring som rapporteringsflödet. Krav, rutin och filer beskrivs i [AGENTS.md](AGENTS.md). I Claude Code finns kommandot `/user-guide` som går igenom uppdateringen.
+
 ## Tester
 
 ### Frontend (`cd frontend`)

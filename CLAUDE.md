@@ -19,6 +19,7 @@ yarn test:watch             # Unit tests in watch mode
 yarn test:coverage          # Unit tests with coverage
 yarn e2e                    # Playwright e2e tests (requires built app or running dev server)
 yarn e2e:ui                 # Playwright interactive UI mode
+yarn generate:user-guide    # Regenerate the user guide screenshots and arrow positions (see AGENTS.md)
 yarn generate:contracts     # Regenerate API data contracts from swagger
 ```
 
@@ -54,6 +55,14 @@ yarn type-check             # TypeScript check without emit
 ### Data Contracts
 Both frontend and backend have `src/data-contracts/` directories with TypeScript types generated from Swagger/OpenAPI specs via `swagger-typescript-api`. Regenerate with `yarn generate:contracts`.
 
+## User Guide (keep it current — mandatory)
+
+The app has a user guide at `/hjalp` ("Så rapporterar du en avvikelse"), reachable from every page via **Hjälp** in the header. Its screenshots and arrows are generated from the real flow by Playwright.
+
+**Every change that affects what a user sees or does while reporting must update the guide in the same change**: the registration flow, a button/heading/label the guide points at, the deviation form schema, a feature flag that changes the flow, or a new user-facing feature (add a new step or section). A change that leaves the guide outdated is not done. Requirements and the update procedure are in AGENTS.md, imported here:
+
+@AGENTS.md
+
 ## Path Aliases (Frontend tsconfig)
 - `@components/*` → `src/components/*`
 - `@services/*` → `src/services/*`
@@ -77,6 +86,7 @@ Both frontend and backend have `src/data-contracts/` directories with TypeScript
 - **Vitest (frontend)**: unit/component tests in `frontend/tests/unit/`, config in `vitest.config.mts`, setup in `tests/setup.ts`
 - **Vitest (backend)**: tests in `backend/src/tests/`, config in `vitest.config.mts` (SWC transform for decorator metadata); deterministic test environment in `src/tests/setup.ts`
 - **Playwright (frontend)**: e2e tests in `frontend/e2e/tests/`, helpers in `e2e/utils/`, fixtures in `e2e/fixtures/`, config in `playwright.config.ts`; run against a production build (`yarn build && yarn e2e`) or a running dev server
+- **User guide**: `e2e/tests/user-guide.spec.ts` walks the reporting flow; in CI it fails when an element the guide points at disappears, and with `yarn generate:user-guide` it rewrites the screenshots and manifest
 - **Coverage**: Vitest v8 coverage via `yarn test:coverage`
 - **CI**: `.github/workflows/ci.yml` runs lint, type-check, unit tests (frontend + backend) and Playwright e2e
 
