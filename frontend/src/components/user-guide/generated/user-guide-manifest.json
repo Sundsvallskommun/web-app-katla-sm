@@ -1,0 +1,259 @@
+{
+  "generatedAt": "2026-10-07",
+  "screenshots": {
+    "overview": {
+      "file": "overview.c4e6c6a6.webp",
+      "width": 1280,
+      "height": 800,
+      "targets": {
+        "new-report-button": {
+          "x": 24,
+          "y": 103,
+          "width": 271,
+          "height": 40
+        }
+      }
+    },
+    "reporter": {
+      "file": "reporter.fd2a4db4.webp",
+      "width": 1136,
+      "height": 416,
+      "targets": {
+        "reporter-card": {
+          "x": 104,
+          "y": 178,
+          "width": 976,
+          "height": 126
+        },
+        "colleague-checkbox": {
+          "x": 104,
+          "y": 336,
+          "width": 236.6,
+          "height": 24
+        }
+      }
+    },
+    "about": {
+      "file": "about.695fec2c.webp",
+      "width": 1088,
+      "height": 510,
+      "targets": {
+        "event-type": {
+          "x": 56,
+          "y": 186,
+          "width": 746.1,
+          "height": 124
+        },
+        "event-concerns": {
+          "x": 56,
+          "y": 382,
+          "width": 345,
+          "height": 72
+        }
+      }
+    },
+    "user": {
+      "file": "user.9cca3e05.webp",
+      "width": 1088,
+      "height": 602,
+      "targets": {
+        "person-search": {
+          "x": 56,
+          "y": 186,
+          "width": 525,
+          "height": 40
+        },
+        "add-person": {
+          "x": 73,
+          "y": 434,
+          "width": 183.1,
+          "height": 40
+        },
+        "add-manually": {
+          "x": 56,
+          "y": 514,
+          "width": 167.1,
+          "height": 32
+        }
+      }
+    },
+    "other-parties": {
+      "file": "other-parties.f45142bb.webp",
+      "width": 1088,
+      "height": 374,
+      "targets": {
+        "search-type": {
+          "x": 56,
+          "y": 154,
+          "width": 199.6,
+          "height": 28
+        },
+        "party-search": {
+          "x": 56,
+          "y": 240,
+          "width": 525,
+          "height": 40
+        }
+      }
+    },
+    "deviation-place": {
+      "file": "deviation-place.d7a43baa.webp",
+      "width": 1088,
+      "height": 290,
+      "targets": {
+        "facility": {
+          "x": 56,
+          "y": 194,
+          "width": 600,
+          "height": 40
+        }
+      }
+    },
+    "deviation-time": {
+      "file": "deviation-time.762c9ae7.webp",
+      "width": 1136,
+      "height": 428,
+      "targets": {
+        "event-date": {
+          "x": 104,
+          "y": 176,
+          "width": 320,
+          "height": 40
+        },
+        "occurred-date": {
+          "x": 104,
+          "y": 332,
+          "width": 320,
+          "height": 40
+        }
+      }
+    },
+    "deviation-description": {
+      "file": "deviation-description.8ce96e95.webp",
+      "width": 1136,
+      "height": 860,
+      "targets": {
+        "event-description": {
+          "x": 104,
+          "y": 176,
+          "width": 976,
+          "height": 240
+        },
+        "actions-taken": {
+          "x": 104,
+          "y": 514,
+          "width": 976,
+          "height": 96
+        }
+      }
+    },
+    "submit": {
+      "file": "submit.096a3653.webp",
+      "width": 1280,
+      "height": 343,
+      "targets": {
+        "cancel-button": {
+          "x": 939.8,
+          "y": 111,
+          "width": 45.1,
+          "height": 24
+        },
+        "submit-button": {
+          "x": 1008.8,
+          "y": 103,
+          "width": 151.2,
+          "height": 40
+        }
+      }
+    },
+    "error-summary": {
+      "file": "error-summary.b8470494.webp",
+      "width": 1088,
+      "height": 422,
+      "targets": {
+        "summary": {
+          "x": 49,
+          "y": 50,
+          "width": 236,
+          "height": 21
+        },
+        "summary-link": {
+          "x": 212.7,
+          "y": 97,
+          "width": 32,
+          "height": 32
+        }
+      }
+    },
+    "confirm": {
+      "file": "confirm.3f7c63fd.webp",
+      "width": 532,
+      "height": 216,
+      "targets": {
+        "confirm-button": {
+          "x": 130.1,
+          "y": 136,
+          "width": 151.2,
+          "height": 40
+        }
+      }
+    },
+    "submitted": {
+      "file": "submitted.a4f7d587.webp",
+      "width": 1088,
+      "height": 528,
+      "targets": {
+        "receipt": {
+          "x": 368.1,
+          "y": 145,
+          "width": 351.8,
+          "height": 37
+        },
+        "back-to-overview": {
+          "x": 437.9,
+          "y": 264,
+          "width": 212.2,
+          "height": 40
+        }
+      }
+    },
+    "mobile-step": {
+      "file": "mobile-step.87d012a2.webp",
+      "width": 390,
+      "height": 844,
+      "targets": {
+        "step-indicator": {
+          "x": 16,
+          "y": 144,
+          "width": 53.7,
+          "height": 16
+        },
+        "next-button": {
+          "x": 201,
+          "y": 800,
+          "width": 173,
+          "height": 32
+        }
+      }
+    },
+    "mobile-summary": {
+      "file": "mobile-summary.2424d8db.webp",
+      "width": 390,
+      "height": 844,
+      "targets": {
+        "summary": {
+          "x": 16,
+          "y": 214,
+          "width": 358,
+          "height": 350
+        },
+        "submit-button": {
+          "x": 262.7,
+          "y": 800,
+          "width": 111.3,
+          "height": 32
+        }
+      }
+    }
+  }
+}

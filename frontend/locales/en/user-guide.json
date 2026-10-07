@@ -1,0 +1,133 @@
+{
+  "help_link": {
+    "text": "Help",
+    "label": "Help: how to report an incident",
+    "label_new_tab": "Help: how to report an incident (opens in a new tab)"
+  },
+  "back_to_overview": "Back to the overview",
+  "title": "How to report an incident",
+  "intro": "This guide shows you step by step how to report an incident or a case of misconduct in {{app}}. The pictures show what the screen looks like. The numbered arrows point to what you click or fill in, and the same numbers appear in the list below each picture. The pictures show the Swedish version of the service.",
+  "toc_title": "Contents",
+  "step_label": "Step {{number}}",
+  "optional": "Optional",
+  "tip": "Good to know",
+  "screenshots_updated": "The pictures in this guide were updated on {{date}}.",
+  "before_you_start": {
+    "title": "Good to have at hand",
+    "what": "What happened, and roughly when and where it happened.",
+    "person_number": "The personal identity number of the care recipient, if the report concerns an individual.",
+    "others": "Names or usernames of other people who matter to the case, for example a colleague you report on behalf of."
+  },
+  "steps": {
+    "start": {
+      "title": "Start a new report",
+      "text": "Go to the overview and click <strong>{{newReport}}</strong>. If you have a case open, you will find the <strong>{{reportShortcut}}</strong> button in the top right corner instead.",
+      "alt": "The overview with the list of your reports. The {{newReport}} button is at the top of the menu on the left.",
+      "callouts": {
+        "new_report": "Click <strong>{{newReport}}</strong> to open the form."
+      }
+    },
+    "reporter": {
+      "title": "Check your details",
+      "text": "At the top of the form you are listed as <strong>{{reporter}}</strong>. Your details are filled in automatically, so you usually do not need to do anything here.",
+      "alt": "The {{reporter}} section with your name and contact details and the {{reportingForColleague}} checkbox.",
+      "callouts": {
+        "reporter_card": "Your name and contact details are already filled in.",
+        "colleague": "Reporting on behalf of someone else? Tick <strong>{{reportingForColleague}}</strong> and find your colleague by personal identity number or username."
+      }
+    },
+    "about": {
+      "title": "Choose the type of report and who it concerns",
+      "text": "Under <strong>{{about}}</strong> you make two choices. Both are required before you can send the report.",
+      "alt": "The {{about}} section with the choices {{eventType}} and {{eventConcerns}}.",
+      "callouts": {
+        "event_type": "Choose <strong>{{deviation}}</strong> if something did not turn out as intended or planned. Choose <strong>{{misconduct}}</strong> if the event posed a serious risk to the individual's life, safety or health.",
+        "event_concerns": "Choose <strong>{{individual}}</strong> if the event concerns one person, or <strong>{{group}}</strong> if it concerns several."
+      },
+      "tip": "If you choose <strong>{{misconduct}}</strong>: {{misconductInfo}}"
+    },
+    "user": {
+      "title": "Add the care recipient",
+      "badge": "Only for an individual",
+      "text": "Once you have chosen <strong>{{individual}}</strong>, the <strong>{{userSection}}</strong> section appears. This is where you add the person the report concerns.",
+      "alt": "The {{userSection}} section with a search field for the personal identity number, a person found and the buttons {{addPerson}} and {{addManually}}.",
+      "callouts": {
+        "search": "Enter the care recipient's personal identity number, YYYYMMDD-NNNN, and click <strong>{{search}}</strong>. Check that the right person is shown.",
+        "add_person": "Fill in an email address and phone number if you can, then click <strong>{{addPerson}}</strong>.",
+        "add_manually": "Does the care recipient lack a Swedish personal identity number? Click <strong>{{addManually}}</strong> and fill in the name and contact details yourself."
+      }
+    },
+    "other_parties": {
+      "title": "Add other parties",
+      "text": "Under <strong>{{otherParties}}</strong> you can add other people who matter to the case, for example a relative, a doctor or a colleague. You can skip this step.",
+      "alt": "The {{otherParties}} section with a choice between {{person}} and {{employee}} and a search field.",
+      "callouts": {
+        "search_type": "Choose <strong>{{person}}</strong> to search by personal identity number, or <strong>{{employee}}</strong> to search by a colleague's username.",
+        "search": "Enter the personal identity number or username, click <strong>{{search}}</strong> and then <strong>{{addPerson}}</strong>."
+      }
+    },
+    "deviation": {
+      "title": "Describe what happened",
+      "text": "At the bottom of the form you describe the event itself, in three parts. Fields marked (obligatoriskt), meaning required, must be filled in.",
+      "place_alt": "The Plats (place) card with the Enhet eller avdelning (unit or department) field, where a unit has been chosen.",
+      "time_alt": "The Tidpunkter (times) card with fields for the date and time when the event was discovered and when it happened.",
+      "description_alt": "The Beskrivning av händelse (description of the event) card with fields for the event, the immediate actions and suggested improvements.",
+      "callouts": {
+        "facility": "Type the beginning of the name of the unit or department where the event took place and choose it in the list. The place decides who can see the report, so choose all the way down to the right unit.",
+        "event_date": "Enter the date when the event was discovered. The time next to it is optional.",
+        "occurred_date": "If you know when the event happened, fill it in here. Otherwise leave the fields empty.",
+        "event_description": "Describe what happened, step by step. Keep to the facts and be as specific as you can.",
+        "actions_taken": "If you can, describe what was done straight away and any suggested improvements. Those fields are optional."
+      }
+    },
+    "submit": {
+      "title": "Send the report",
+      "text": "When everything is filled in, click <strong>{{register}}</strong> in the top right corner. The button stays visible when you scroll, so you do not need to go back up.",
+      "alt": "The top of the page with the heading and the buttons {{cancel}} and {{register}}.",
+      "callouts": {
+        "submit": "Click <strong>{{register}}</strong> when you are done.",
+        "cancel": "Do not want to send the report? Click <strong>{{cancel}}</strong>. Nothing you have filled in is saved.",
+        "summary": "The heading shows how many things you need to fix.",
+        "summary_link": "Click the arrow next to a row to go straight to the field.",
+        "confirm": "Click <strong>{{confirmSubmit}}</strong> to send the report."
+      },
+      "draft_tip": "Not finished yet? Click <strong>{{saveDraft}}</strong>. You will then find the report under <strong>{{drafts}}</strong> in the overview and can continue later.",
+      "missing_text": "If something is missing, the report is not sent. Instead, a list at the top of the form shows what you need to fix.",
+      "missing_alt": "A box at the top of the form listing what is missing, with an arrow next to each row.",
+      "confirm_text": "When everything is filled in, {{app}} asks whether you want to send the report. Once you have sent it, you can no longer change it.",
+      "confirm_alt": "The {{confirmTitle}} dialog with the buttons {{cancel}} and {{confirmSubmit}}."
+    },
+    "submitted": {
+      "title": "Done, the report has been sent",
+      "text": "When the report has been sent you see the message <strong>{{submittedTitle}}</strong>. You will then find the report under <strong>{{submittedList}}</strong> in the overview.",
+      "alt": "The message {{submittedTitle}} and the {{backToOverview}} button.",
+      "callouts": {
+        "receipt": "The message confirms that the report has been received.",
+        "back": "Click <strong>{{backToOverview}}</strong> to go back."
+      }
+    }
+  },
+  "appendix": {
+    "mobile": {
+      "title": "Reporting from your phone",
+      "text": "On a phone the form is split into steps. You fill in the same details as on a computer, but one section at a time.",
+      "step_alt": "The first step of the form on a phone, with the step counter at the top and the {{next}} button at the bottom.",
+      "summary_text": "The last step shows a summary of all steps before you send.",
+      "summary_alt": "The summary on a phone, with one row per step and the {{submitShort}} button at the bottom.",
+      "callouts": {
+        "step_indicator": "This shows which step you are on and how many steps there are.",
+        "next": "Tap <strong>{{next}}</strong> to continue. If something is missing, you are told before you can move on.",
+        "summary": "Each step is shown with its status. Tap <strong>{{edit}}</strong> to go back and make changes.",
+        "submit": "Tap <strong>{{submitShort}}</strong> and confirm to send the report."
+      }
+    },
+    "after": {
+      "title": "After you have sent the report",
+      "text": "The report is listed under <strong>{{submittedList}}</strong> in the overview while it is being handled, and under <strong>{{closedList}}</strong> once it is closed. If the case officer sends you a message, you get a notification at the bell in the header. Open the report and choose the <strong>{{messages}}</strong> tab to read and reply."
+    }
+  },
+  "ready": {
+    "title": "Ready to report?",
+    "text": "You can always come back here via <strong>{{help}}</strong> in the header."
+  }
+}
