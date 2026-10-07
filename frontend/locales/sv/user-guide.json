@@ -1,0 +1,133 @@
+{
+  "help_link": {
+    "text": "Hjälp",
+    "label": "Hjälp: så rapporterar du en avvikelse",
+    "label_new_tab": "Hjälp: så rapporterar du en avvikelse (öppnas i en ny flik)"
+  },
+  "back_to_overview": "Tillbaka till översikten",
+  "title": "Så rapporterar du en avvikelse",
+  "intro": "Den här guiden visar steg för steg hur du rapporterar en avvikelse eller ett missförhållande i {{app}}. Bilderna visar hur det ser ut på skärmen. De numrerade pilarna pekar på det du ska klicka på eller fylla i, och samma nummer finns i listan under varje bild.",
+  "toc_title": "Innehåll",
+  "step_label": "Steg {{number}}",
+  "optional": "Valfritt",
+  "tip": "Bra att veta",
+  "screenshots_updated": "Bilderna i guiden uppdaterades {{date}}.",
+  "before_you_start": {
+    "title": "Bra att ha till hands",
+    "what": "Vad som hände, och ungefär när och var det hände.",
+    "person_number": "Personnumret till brukaren, om rapporten gäller en enskild brukare.",
+    "others": "Namn eller användarnamn på andra personer som är viktiga för ärendet, till exempel en kollega du rapporterar åt."
+  },
+  "steps": {
+    "start": {
+      "title": "Starta en ny rapport",
+      "text": "Gå till översikten och klicka på <strong>{{newReport}}</strong>. Om du har ett ärende öppet hittar du i stället knappen <strong>{{reportShortcut}}</strong> uppe till höger.",
+      "alt": "Översikten med listan över dina rapporter. Knappen {{newReport}} står överst i menyn till vänster.",
+      "callouts": {
+        "new_report": "Klicka på <strong>{{newReport}}</strong> för att öppna formuläret."
+      }
+    },
+    "reporter": {
+      "title": "Kontrollera dina uppgifter",
+      "text": "Överst i formuläret står du som <strong>{{reporter}}</strong>. Dina uppgifter hämtas automatiskt, så här behöver du oftast inte göra något.",
+      "alt": "Avsnittet {{reporter}} med dina namn- och kontaktuppgifter och kryssrutan {{reportingForColleague}}.",
+      "callouts": {
+        "reporter_card": "Dina namn- och kontaktuppgifter är redan ifyllda.",
+        "colleague": "Rapporterar du åt någon annan? Kryssa i <strong>{{reportingForColleague}}</strong> och sök fram kollegan med personnummer eller användarnamn."
+      }
+    },
+    "about": {
+      "title": "Välj typ av rapport och vem den berör",
+      "text": "Under <strong>{{about}}</strong> gör du två val. Båda måste vara gjorda innan du kan skicka rapporten.",
+      "alt": "Avsnittet {{about}} med valen {{eventType}} och {{eventConcerns}}.",
+      "callouts": {
+        "event_type": "Välj <strong>{{deviation}}</strong> om något inte blev som det var tänkt eller planerat. Välj <strong>{{misconduct}}</strong> om händelsen innebar en allvarlig risk för den enskildes liv, säkerhet eller hälsa.",
+        "event_concerns": "Välj <strong>{{individual}}</strong> om händelsen gäller en person, eller <strong>{{group}}</strong> om den gäller flera."
+      },
+      "tip": "Väljer du <strong>{{misconduct}}</strong> gäller följande: {{misconductInfo}}"
+    },
+    "user": {
+      "title": "Lägg till brukaren",
+      "badge": "Bara för enskild brukare",
+      "text": "När du har valt <strong>{{individual}}</strong> visas avsnittet <strong>{{userSection}}</strong>. Där lägger du till den person som rapporten gäller.",
+      "alt": "Avsnittet {{userSection}} med sökfält för personnummer, en hittad person och knapparna {{addPerson}} och {{addManually}}.",
+      "callouts": {
+        "search": "Skriv brukarens personnummer, ÅÅÅÅMMDD-NNNN, och klicka på <strong>{{search}}</strong>. Kontrollera att rätt person visas.",
+        "add_person": "Fyll gärna i e-postadress och telefonnummer och klicka sedan på <strong>{{addPerson}}</strong>.",
+        "add_manually": "Har brukaren inget svenskt personnummer? Klicka på <strong>{{addManually}}</strong> och fyll i namn och kontaktuppgifter själv."
+      }
+    },
+    "other_parties": {
+      "title": "Lägg till övriga parter",
+      "text": "Under <strong>{{otherParties}}</strong> kan du lägga till andra personer som är viktiga för ärendet, till exempel en anhörig, en läkare eller en kollega. Du kan hoppa över det här steget.",
+      "alt": "Avsnittet {{otherParties}} med val mellan {{person}} och {{employee}} och ett sökfält.",
+      "callouts": {
+        "search_type": "Välj <strong>{{person}}</strong> för att söka på personnummer, eller <strong>{{employee}}</strong> för att söka på en kollegas användarnamn.",
+        "search": "Skriv personnumret eller användarnamnet, klicka på <strong>{{search}}</strong> och sedan på <strong>{{addPerson}}</strong>."
+      }
+    },
+    "deviation": {
+      "title": "Beskriv vad som hände",
+      "text": "Längst ned i formuläret beskriver du själva händelsen, i tre delar. Fält som är märkta (obligatoriskt) måste du fylla i.",
+      "place_alt": "Kortet Plats med fältet Enhet eller avdelning, där en enhet är vald.",
+      "time_alt": "Kortet Tidpunkter med fält för datum och tid då händelsen upptäcktes och inträffade.",
+      "description_alt": "Kortet Beskrivning av händelse med fälten Händelse, Åtgärder som vidtogs direkt och Förslag på förbättringar.",
+      "callouts": {
+        "facility": "Skriv början av namnet på enheten eller avdelningen där händelsen inträffade och välj den i listan. Platsen styr vem som får se rapporten, så välj ända ned till rätt enhet.",
+        "event_date": "Ange vilket datum händelsen upptäcktes. Klockslaget bredvid är frivilligt.",
+        "occurred_date": "Vet du när händelsen inträffade fyller du i det här. Annars lämnar du fälten tomma.",
+        "event_description": "Beskriv vad som hände, steg för steg. Skriv sakligt och så konkret du kan.",
+        "actions_taken": "Fyll gärna i vad som gjordes direkt och om du har förslag på förbättringar. De fälten är frivilliga."
+      }
+    },
+    "submit": {
+      "title": "Skicka rapporten",
+      "text": "När allt är ifyllt klickar du på <strong>{{register}}</strong> uppe till höger. Knappen följer med när du skrollar, så du behöver inte gå tillbaka upp.",
+      "alt": "Sidans överkant med rubriken och knapparna {{cancel}} och {{register}}.",
+      "callouts": {
+        "submit": "Klicka på <strong>{{register}}</strong> när du är klar.",
+        "cancel": "Vill du inte skicka rapporten? Klicka på <strong>{{cancel}}</strong>. Det du har fyllt i sparas inte.",
+        "summary": "Rubriken visar hur många saker du behöver åtgärda.",
+        "summary_link": "Klicka på pilen vid en rad för att komma direkt till fältet.",
+        "confirm": "Klicka på <strong>{{confirmSubmit}}</strong> för att skicka in rapporten."
+      },
+      "draft_tip": "Inte klar än? Klicka på <strong>{{saveDraft}}</strong>. Du hittar sedan rapporten under <strong>{{drafts}}</strong> i översikten och kan fortsätta senare.",
+      "missing_text": "Om något saknas skickas rapporten inte. I stället visas en lista överst i formuläret med det du behöver åtgärda.",
+      "missing_alt": "En ruta överst i formuläret som listar det som saknas, med en pil vid varje rad.",
+      "confirm_text": "När allt är ifyllt frågar {{app}} om du vill skicka rapporten. Efter att du har skickat den kan du inte ändra den längre.",
+      "confirm_alt": "Rutan {{confirmTitle}} med knapparna {{cancel}} och {{confirmSubmit}}."
+    },
+    "submitted": {
+      "title": "Klart, rapporten är inskickad",
+      "text": "När rapporten har skickats in ser du beskedet <strong>{{submittedTitle}}</strong>. Rapporten finns sedan under <strong>{{submittedList}}</strong> i översikten.",
+      "alt": "Beskedet {{submittedTitle}} och knappen {{backToOverview}}.",
+      "callouts": {
+        "receipt": "Beskedet bekräftar att rapporten har kommit in.",
+        "back": "Klicka på <strong>{{backToOverview}}</strong> för att komma tillbaka."
+      }
+    }
+  },
+  "appendix": {
+    "mobile": {
+      "title": "Rapportera från mobilen",
+      "text": "På mobilen är formuläret uppdelat i steg. Du fyller i samma uppgifter som på datorn, men ett avsnitt i taget.",
+      "step_alt": "Formulärets första steg på en mobil, med stegräknaren överst och knappen {{next}} längst ned.",
+      "summary_text": "I sista steget ser du en sammanfattning av alla steg innan du skickar.",
+      "summary_alt": "Sammanfattningen på en mobil, med en rad per steg och knappen {{submitShort}} längst ned.",
+      "callouts": {
+        "step_indicator": "Här ser du vilket steg du är på och hur många steg det finns.",
+        "next": "Tryck på <strong>{{next}}</strong> för att gå vidare. Saknas något får du veta det innan du kommer vidare.",
+        "summary": "Varje steg visas med sin status. Tryck på <strong>{{edit}}</strong> för att gå tillbaka och ändra.",
+        "submit": "Tryck på <strong>{{submitShort}}</strong> och bekräfta för att skicka in rapporten."
+      }
+    },
+    "after": {
+      "title": "Efter att du har skickat in",
+      "text": "Rapporten finns under <strong>{{submittedList}}</strong> i översikten medan den handläggs, och under <strong>{{closedList}}</strong> när den är avslutad. Om handläggaren skickar ett meddelande får du en notis vid klockan i sidhuvudet. Öppna rapporten och välj fliken <strong>{{messages}}</strong> för att läsa och svara."
+    }
+  },
+  "ready": {
+    "title": "Redo att rapportera?",
+    "text": "Du kan alltid komma tillbaka hit via <strong>{{help}}</strong> i sidhuvudet."
+  }
+}

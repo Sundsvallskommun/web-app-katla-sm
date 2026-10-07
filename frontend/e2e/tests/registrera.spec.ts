@@ -1,9 +1,10 @@
 import type { Page } from '@playwright/test';
 
 import { mockErrand } from '../fixtures/mockErrand';
-import { mockMetadata } from '../fixtures/mockMetadata';
+import { MOCK_PLACE_NAME, MOCK_PLACE_PARENT_NAME, mockMetadataWithPlaceStructure } from '../fixtures/mockMetadata';
 import { mockReporterStakeholder, mockStakeholder } from '../fixtures/mockStakeholder';
 import { MOCK_COUNTRY_CODE_PHONE_NUMBER, MOCK_EMAIL, MOCK_HYPHEN_PERSON_NUMBER } from '../utils/constants';
+import { selectFacility } from '../utils/registration';
 import { jsonRoute } from '../utils/routes';
 import { addEmployeeStakeholder, addStakeholder, manuallyAddStakeholder, sectionByTitle } from '../utils/stakeholder';
 import { expect, test } from '../utils/test';
@@ -18,15 +19,23 @@ const mockFormSchemaResponse = {
     type: 'object',
     additionalProperties: false,
     properties: {
+      // Samma form som i det riktiga schemat. Utan en komplett plats sparas inget ärende.
+      facilityInfo: {
+        type: 'object',
+        properties: { orgName: { type: 'string', minLength: 1 } },
+        required: ['orgName'],
+      },
       incidentDescription: {
         type: 'string',
         title: 'Beskriv händelsen',
         minLength: 1,
       },
     },
-    required: ['incidentDescription'],
+    required: ['facilityInfo', 'incidentDescription'],
   },
-  uiSchema: {},
+  uiSchema: {
+    facilityInfo: { 'ui:field': 'FacilitySearchWidget', 'ui:title': 'Enhet eller avdelning' },
+  },
 };
 
 /** Registrerar ärendet och verifierar POST-anropet, motsvarar cy.wait('@createDraftErrand') med assertions */
@@ -64,7 +73,10 @@ const registerErrandAndExpectDraft = async (page: Page, expectedStakeholderCount
   expect(body.jsonParameters).toEqual([
     {
       key: MOCK_FORM_SCHEMA_NAME,
-      value: { incidentDescription: MOCK_INCIDENT_DESCRIPTION },
+      value: {
+        facilityInfo: { orgName: MOCK_PLACE_NAME, parentOrgName: MOCK_PLACE_PARENT_NAME },
+        incidentDescription: MOCK_INCIDENT_DESCRIPTION,
+      },
       schemaId: MOCK_FORM_SCHEMA_ID,
     },
   ]);
@@ -98,6 +110,8 @@ const completeRequiredErrandForm = async (page: Page) => {
   await expect(incidentDescription).toBeEditable();
   await incidentDescription.fill(MOCK_INCIDENT_DESCRIPTION);
   await expect(incidentDescription).toHaveValue(MOCK_INCIDENT_DESCRIPTION);
+
+  await selectFacility(page);
 };
 
 test.describe('Register new errand page', () => {
@@ -106,7 +120,9 @@ test.describe('Register new errand page', () => {
     await page.route('**/supportmanagement/errand/create', jsonRoute(mockErrand));
     await page.route(`**/schemas/latest/${MOCK_FORM_SCHEMA_NAME}`, jsonRoute(mockFormSchemaResponse));
     await page.route(`**/schemas/${MOCK_FORM_SCHEMA_ID}`, jsonRoute(mockFormSchemaResponse));
-    await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadata));
+    await page.route('**/supportmanagement/metadata', jsonRoute(mockMetadataWithPlaceStructure));
+    // Platsväljaren slår upp användarens anställningar för att fylla i enhetschefen.
+    await page.route('**/employee/employments', jsonRoute([]));
     await page.goto(appUrl('/arende/registrera'));
 
     // Att kontrollerna syns bevisar inte att de serverrenderade radioknapparna

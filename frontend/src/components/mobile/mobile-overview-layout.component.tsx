@@ -3,6 +3,7 @@
 import { LinkButton } from '@components/navigation/link-button.component';
 import { NotificationsBell } from '@components/notifications/notification-bell';
 import { NotificationsWrapper } from '@components/notifications/notification-wrapper';
+import { HelpLink } from '@components/user-guide/help-link.component';
 import { Button } from '@sk-web-gui/react';
 import { capitalize } from 'lodash';
 import { Menu, Plus } from 'lucide-react';
@@ -34,6 +35,7 @@ export const MobileOverviewLayout: React.FC = () => {
       <MainPageMobileHeader
         actions={
           <div className="flex items-center gap-12">
+            <HelpLink iconOnly />
             <div className="[&>button]:!mx-0">
               <NotificationsBell
                 inverted
