@@ -23,7 +23,15 @@
     "new": "Nya",
     "previous": "Tidigare",
     "none_new": "Inga nya notifieringar",
-    "none_previous": "Inga tidigare notifieringar"
+    "none_previous": "Inga tidigare notifieringar",
+    "select": "Välj notisen för ärende {{errandNumber}}",
+    "select_all_new": "Välj alla nya notiser",
+    "mark_as_read": "Markera som läst ({{count}})",
+    "marked_as_read_one": "Notisen är markerad som läst.",
+    "marked_as_read_other": "{{count}} notiser är markerade som lästa.",
+    "show_events_one": "Visa {{count}} händelse",
+    "show_events_other": "Visa {{count}} händelser",
+    "hide_events": "Dölj händelser"
   },
   "language": {
     "label": "Språk",

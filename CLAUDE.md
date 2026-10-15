@@ -51,6 +51,7 @@ yarn type-check             # TypeScript check without emit
 - **Auth**: Passport.js with SAML 2.0 strategy, session-based
 - **External APIs**: SupportManagement, Citizen, Employee, SimulatorServer (via WSO2)
 - **Response mapping**: DTOs in `src/responses/` transform external API data
+- **Notifications**: SupportManagement's subscriber model — SM subscribes the reporter when the errand is created, and an errand's notifications are acknowledged when the errand page opens. A user action that makes several writes runs in `withRequestGroup` (`frontend/src/services/api-service.ts`) so it becomes one notification. A write the system makes on its own (read markers, acknowledgements) passes `notifySubscribers: false` to `ApiService`, which sends `X-notify: false`; never use it for what a user did. See README, "Notiser".
 
 ### Data Contracts
 Both frontend and backend have `src/data-contracts/` directories with TypeScript types generated from Swagger/OpenAPI specs via `swagger-typescript-api`. Regenerate with `yarn generate:contracts`.

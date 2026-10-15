@@ -7,10 +7,10 @@
   },
   "notification": {
     "to_errand": "Till ärendet",
-    "from": "Från: {{name}}",
     "event": "Händelse: {{label}}",
-    "unknown_sender": "Okänd",
+    "default_label": "Händelse på ärendet",
     "subtype": {
+      "ASSIGNMENT": "Ärendet tilldelat",
       "ATTACHMENT": "Ny bilaga",
       "DECISION": "Nytt beslut",
       "ERRAND": "Ärende uppdaterat",
@@ -18,6 +18,24 @@
       "NOTE": "Ny kommentar/anteckning",
       "SYSTEM": "Fasbyte",
       "SUSPENSION": "Parkering upphört"
+    },
+    "removed": {
+      "ASSIGNMENT": "Tilldelning borttagen",
+      "ATTACHMENT": "Bilaga borttagen",
+      "DECISION": "Beslut borttaget",
+      "MESSAGE": "Meddelande borttaget",
+      "NOTE": "Kommentar/anteckning borttagen"
+    },
+    "summary": {
+      "ASSIGNMENT": "{{amount}} tilldelningar",
+      "ATTACHMENT": "{{amount}} nya bilagor",
+      "DECISION": "{{amount}} nya beslut",
+      "ERRAND": "{{amount}} uppdateringar av ärendet",
+      "MESSAGE": "{{amount}} nya meddelanden",
+      "NOTE": "{{amount}} nya kommentarer/anteckningar",
+      "SYSTEM": "{{amount}} fasbyten",
+      "SUSPENSION": "{{amount}} parkeringar som upphört",
+      "mixed": "{{amount}} nya händelser"
     }
   },
   "api_errors": {
@@ -25,7 +43,8 @@
     "errands": "Ärendena kunde inte hämtas. Försök igen senare.",
     "counts": "Antalet ärenden kunde inte hämtas. Försök igen senare.",
     "notifications": "Notiserna kunde inte hämtas. Försök igen senare.",
-    "acknowledge_notification": "Notisen kunde inte kvitteras.",
+    "acknowledge_notifications_one": "Notisen kunde inte markeras som läst.",
+    "acknowledge_notifications_other": "{{count}} notiser kunde inte markeras som lästa.",
     "errand": "Ärendet kunde inte hämtas. Försök igen senare."
   },
   "errand-table": {

@@ -2,11 +2,13 @@ import axios, { AxiosRequestConfig, AxiosResponse, RawAxiosRequestHeaders } from
 import { Request } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
+import { getApiBase } from '@/config/api-config';
 import { HttpException } from '@/exceptions/HttpException';
 import ApiResponse from '@/interfaces/api-service.interface';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { User } from '@/interfaces/users.interface';
 import { logger } from '@/utils/logger';
+import { REQUEST_GROUP_HEADER, requestGroupIdFor } from '@/utils/request-group';
 import { apiURL } from '@/utils/util';
 
 import ApiTokenService from './api-token.service';
@@ -14,7 +16,16 @@ import ApiTokenService from './api-token.service';
 export interface ApiRequestConfig extends AxiosRequestConfig {
   /** Bevara en uppströms 4xx-status utan att exponera dess obetrodda svarsbody. */
   propagateClientError?: boolean;
+  /**
+   * `false` gör en skrivning mot SupportManagement tyst: de som följer ärendet får ingen notis om
+   * den. Bara för det systemet skriver på egen hand, som läsmarkeringar och kvittenser, aldrig för
+   * något användaren själv gjort.
+   */
+  notifySubscribers?: false;
 }
+
+/** SupportManagements sätt att hålla en enskild skrivning utanför notiserna. */
+const SILENT_WRITE_HEADERS = { 'X-notify': 'false' } as const;
 
 interface ApiRequest extends Omit<Partial<RequestWithUser>, 'session'> {
   session: Omit<Partial<Request['session']>, 'user'> & { user?: Pick<User, 'username'> };
@@ -104,6 +115,13 @@ const resolveRequestUrl = (config: Pick<AxiosRequestConfig, 'baseURL' | 'url'>):
   return { requestUrl, boundaryUrl };
 };
 
+/** Bara SupportManagement läser gruppen; ingen annan uppströmstjänst får en header den inte känner till. */
+const isSupportManagementRequest = (requestUrl: URL): boolean => requestUrl.pathname.includes(`/${getApiBase('supportmanagement')}/`);
+
+/** Gruppheadern för ett anrop till SupportManagement som görs för en användares request, annars inget. */
+const requestGroupHeaders = (requestUrl: URL, req: ApiRequest | undefined): Record<string, string> =>
+  req && isSupportManagementRequest(requestUrl) ? { [REQUEST_GROUP_HEADER]: requestGroupIdFor(req) } : {};
+
 const logAxiosErrorResponse = (response: AxiosResponse<unknown>): void => {
   const requestId = response.config.headers.get('X-Request-Id');
   const safeRequestId = typeof requestId === 'string' ? requestId : 'unknown';
@@ -172,7 +190,7 @@ class ApiService {
   }
 
   private async request<T>(config: ApiRequestConfig, req?: ApiRequest): Promise<ApiResponse<T>> {
-    const { propagateClientError = false, ...axiosConfig } = config;
+    const { propagateClientError = false, notifySubscribers, ...axiosConfig } = config;
     const { requestUrl, boundaryUrl } = resolveRequestUrl(axiosConfig);
     const token = await this.apiTokenService.getToken();
 
@@ -187,6 +205,8 @@ class ApiService {
       headers: {
         'Content-Type': 'application/json',
         ...configHeaders,
+        ...requestGroupHeaders(requestUrl, req),
+        ...(notifySubscribers === false ? SILENT_WRITE_HEADERS : {}),
         Authorization: `Bearer ${token}`,
         'X-Request-Id': requestId,
         'X-Sent-By': `type=adAccount; ${req?.user?.username}`,

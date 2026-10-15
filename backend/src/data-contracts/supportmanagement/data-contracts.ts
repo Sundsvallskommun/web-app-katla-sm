@@ -1644,6 +1644,32 @@ export interface SubscriberNotification {
    * @example "2000-10-31T01:30:00.000+02:00"
    */
   acknowledged?: string;
+  /** Events that have occurred on the errand since the notification was last acknowledged */
+  events?: SubscriberNotificationEvent[];
+}
+
+export interface SubscriberNotificationEvent {
+  /**
+   * Timestamp when the event occurred
+   * @format date-time
+   * @example "2000-10-31T01:30:00.000+02:00"
+   */
+  created?: string;
+  /**
+   * Event type
+   * @example "UPDATE"
+   */
+  eventType?: string;
+  /**
+   * Description of the event
+   * @example "Bilaga har skapats"
+   */
+  description?: string;
+  /**
+   * Subtype describing what kind of entity the event refers to
+   * @example "ATTACHMENT"
+   */
+  subType?: string;
 }
 
 /** Action definition model describing an available action and its conditions/parameters */

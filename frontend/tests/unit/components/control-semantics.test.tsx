@@ -101,7 +101,18 @@ describe('control semantics', () => {
 
   it('exposes notification count and expanded state without a false menu-item role', () => {
     const toggleShow = vi.fn();
-    useNotificationStore.setState({ activeNotifications: [{ id: 'notification-1' }] });
+    useNotificationStore.setState({
+      activeNotifications: [
+        {
+          id: 'notification-1',
+          created: '2026-08-12T08:00:00Z',
+          acknowledged: false,
+          errandId: 'errand-1',
+          errandNumber: 'ERRAND-1',
+          events: [],
+        },
+      ],
+    });
 
     renderLocalized(<NotificationsBell expanded toggleShow={toggleShow} />);
 

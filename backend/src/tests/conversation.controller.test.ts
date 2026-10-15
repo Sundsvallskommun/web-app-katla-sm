@@ -245,6 +245,8 @@ describe('sending messages', () => {
 
     const [config] = postSpy.mock.calls[0] ?? [];
     expect((config as { data?: unknown }).data).toEqual({ messageIds: ['msg-1', 'msg-2'] });
+    // Läsmarkeringen är rapportörens egen läsning och ska inte bli en notis hos handläggaren.
+    expect(config?.notifySubscribers).toBe(false);
   });
 
   it('avvisar en tom lista av meddelanden att markera', async () => {

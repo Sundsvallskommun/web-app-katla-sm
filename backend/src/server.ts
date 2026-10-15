@@ -9,6 +9,7 @@ import { HealthController } from './controllers/health.controller';
 import { SchemaController } from './controllers/schema.controller';
 import { SupportManagementController } from './controllers/supportmanagement.controller';
 import { SupportManagementConversationController } from './controllers/supportmanagement-conversation.controller';
+import { SupportManagementNotificationController } from './controllers/supportmanagement-notification.controller';
 import { UserController } from './controllers/user.controller';
 
 validateEnv();
@@ -19,6 +20,7 @@ const app = new App([
   HealthController,
   SupportManagementController,
   SupportManagementConversationController,
+  SupportManagementNotificationController,
   EmployeeController,
   CitizenController,
   SchemaController,
