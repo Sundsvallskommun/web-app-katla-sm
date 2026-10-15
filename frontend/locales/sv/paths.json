@@ -6,5 +6,9 @@
   "/example": {
     "title": "Exempelsida",
     "description": "Beskrivning utav exempelsidan"
+  },
+  "/hjalp": {
+    "title": "Så rapporterar du en avvikelse",
+    "description": "Steg-för-steg-guide med bilder som visar hur du rapporterar en avvikelse eller ett missförhållande."
   }
 }

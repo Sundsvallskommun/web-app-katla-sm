@@ -52,6 +52,9 @@ export default function BaseErrandLayout({ children, registerNewErrand }: BaseEr
         logoHref={registerNewErrand ? undefined : `${process.env.NEXT_PUBLIC_BASE_PATH}/oversikt`}
         brandAside={registerNewErrand ? undefined : <StatusLabel status={status} />}
         onBeforeLanguageSwitch={saveFormBeforeLanguageSwitch}
+        // Formuläret lever bara i minnet, och en navigering inom appen tömmer det utan varning.
+        // Guiden öppnas därför bredvid, så att den går att läsa medan rapporten fylls i.
+        helpLink="new-tab"
         actions={
           // Genvägen till registreringen döljs på registreringssidan – där leder den tillbaka
           // till sidan man redan står på.

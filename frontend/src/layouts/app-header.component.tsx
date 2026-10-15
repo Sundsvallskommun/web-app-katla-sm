@@ -3,6 +3,7 @@
 import { LanguageSwitchButton } from '@components/misc/language-switch-button.component';
 import { NotificationsBell } from '@components/notifications/notification-bell';
 import { NotificationsWrapper } from '@components/notifications/notification-wrapper';
+import { HelpLink } from '@components/user-guide/help-link.component';
 import { AppUserMenu } from '@components/user-menu/app-user-menu.component';
 import { PageHeader } from '@layouts/page-header.component';
 import { createUserMenuGroups } from '@layouts/userMenuGroup';
@@ -43,11 +44,16 @@ interface AppHeaderProps {
   actions?: ReactNode;
   /** Sidor med tillstånd i minnet får rädda undan det innan språkbytet navigerar. */
   onBeforeLanguageSwitch?: () => void;
+  /**
+   * Hur hjälplänken öppnar användarguiden: i en ny flik där sidan bär osparat innehåll, och
+   * inte alls på guiden själv.
+   */
+  helpLink?: 'same-tab' | 'new-tab' | 'none';
 }
 
 /**
- * Appens sidhuvud: varumärke till vänster, aviseringar, språkval och inloggad användare till
- * höger. Delas av rapporteringen och översikten så att de har samma rad högst upp.
+ * Appens sidhuvud: varumärke till vänster, hjälp, aviseringar, språkval och inloggad användare
+ * till höger. Delas av rapporteringen, översikten och guiden så att de har samma rad högst upp.
  */
 export const AppHeader: React.FC<AppHeaderProps> = ({
   subtitle,
@@ -56,6 +62,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   mobileMenu,
   actions,
   onBeforeLanguageSwitch,
+  helpLink = 'same-tab',
 }) => {
   const { t } = useTranslation();
   const user = useUserStore((s) => s.user);
@@ -85,6 +92,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     />
   );
 
+  const renderHelpLink = (iconOnly: boolean) =>
+    helpLink === 'none' ? null : <HelpLink iconOnly={iconOnly} openInNewTab={helpLink === 'new-tab'} />;
+
   return (
     <>
       <div className="relative z-[15]">
@@ -102,6 +112,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           }
           userMenu={
             <div className="flex h-fit items-center">
+              {renderHelpLink(false)}
               {notificationsBell}
               <LanguageSwitchButton inverted onBeforeSwitch={onBeforeLanguageSwitch} />
               <Divider orientation="vertical" className="mx-16" />
@@ -128,6 +139,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           }
           mobileMenu={
             <div className="flex flex-wrap items-center justify-end gap-8">
+              {renderHelpLink(true)}
               {notificationsBell}
               <LanguageSwitchButton inverted onBeforeSwitch={onBeforeLanguageSwitch} />
               {mobileMenu}

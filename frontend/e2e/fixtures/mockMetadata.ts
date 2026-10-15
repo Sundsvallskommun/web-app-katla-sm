@@ -1,4 +1,4 @@
-import { MetadataResponseDTO } from '@data-contracts/backend/data-contracts';
+import { LabelDTO, MetadataResponseDTO } from '@data-contracts/backend/data-contracts';
 
 export const mockMetadata: MetadataResponseDTO = {
   categories: [
@@ -64,4 +64,62 @@ export const mockMetadata: MetadataResponseDTO = {
       created: '2025-12-09T09:23:09.485+01:00',
     },
   ],
+};
+
+export const MOCK_PLACE_NAME = 'Blå';
+export const MOCK_PLACE_PARENT_NAME = 'VOF ÄB Skottsundsbacken geme.';
+
+/**
+ * Platsstruktur med en enhet och två avdelningar. Ett ärende går bara att spara när platsvalet
+ * pekar ut en nod längst ned i strukturen, så registreringstesterna behöver minst en sådan.
+ */
+const mockPlaceStructure: LabelDTO = {
+  id: 'e2e-location',
+  classification: 'location-root',
+  displayName: 'Platsstruktur',
+  resourceName: 'LOCATION',
+  resourcePath: 'LOCATION',
+  labels: [
+    {
+      id: 'e2e-location-vof',
+      classification: 'location',
+      displayName: 'VOF Äldreboende',
+      resourceName: 'VOF_ALDREBOENDE',
+      resourcePath: 'LOCATION/VOF_ALDREBOENDE',
+      labels: [
+        {
+          id: 'e2e-location-geme',
+          classification: 'location',
+          displayName: MOCK_PLACE_PARENT_NAME,
+          resourceName: 'GEME',
+          resourcePath: 'LOCATION/VOF_ALDREBOENDE/GEME',
+          labels: [
+            {
+              id: 'e2e-location-bla',
+              classification: 'location',
+              displayName: MOCK_PLACE_NAME,
+              resourceName: 'BLA',
+              resourcePath: 'LOCATION/VOF_ALDREBOENDE/GEME/BLA',
+              labels: [],
+            },
+            {
+              id: 'e2e-location-gul',
+              classification: 'location',
+              displayName: 'Gul',
+              resourceName: 'GUL',
+              resourcePath: 'LOCATION/VOF_ALDREBOENDE/GEME/GUL',
+              labels: [],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+export const mockMetadataWithPlaceStructure: MetadataResponseDTO = {
+  ...mockMetadata,
+  labels: {
+    labelStructure: [...(mockMetadata.labels?.labelStructure ?? []), mockPlaceStructure],
+  },
 };

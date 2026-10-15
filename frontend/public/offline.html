@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#444450" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#fafafa" />
+    <title>Katla – ingen anslutning</title>
+    <!--
+      Visas av service workern i stället för sidan som inte gick att ladda, så adressen är
+      användarens ursprungliga sida. Allt ligger därför inline: relativa länkar till stilar
+      eller bilder skulle peka fel och ändå inte gå att hämta utan nät.
+      Färgerna motsvarar appens i ljust och mörkt läge (se src/config/pwa-config.ts).
+      Höj CACHE_VERSION i sw.js när den här filen ändras.
+    -->
+    <style>
+      :root {
+        color-scheme: light dark;
+        --background: #ffffff;
+        --text: #1c1c28;
+        --text-secondary: #51515c;
+        --button-background: #444450;
+        --button-text: #ffffff;
+        --focus-ring: #0c8ced;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #2f2f3c;
+          --text: #ffffff;
+          --text-secondary: #b7b7ba;
+          --button-background: #fafafa;
+          --button-text: #1c1c28;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        background: var(--background);
+        color: var(--text);
+        font-family: Raleway, Arial, Helvetica, sans-serif;
+        line-height: 1.5;
+      }
+
+      main {
+        max-width: 32rem;
+        text-align: center;
+      }
+
+      svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.75rem;
+        line-height: 1.25;
+      }
+
+      p {
+        margin: 0 0 24px;
+        color: var(--text-secondary);
+      }
+
+      button {
+        min-height: 44px;
+        padding: 10px 20px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--button-background);
+        color: var(--button-text);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button:focus-visible {
+        outline: 3px solid var(--focus-ring);
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <!-- Ikonen wifi-off från Lucide (ISC-licens), samma ikonbibliotek som appen använder. -->
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 20h.01" />
+        <path d="M8.5 16.429a5 5 0 0 1 7 0" />
+        <path d="M5 12.859a10 10 0 0 1 5.17-2.69" />
+        <path d="M19 12.859a10 10 0 0 0-2.007-1.523" />
+        <path d="M2 8.82a15 15 0 0 1 4.177-2.643" />
+        <path d="M22 8.82a15 15 0 0 0-11.288-3.764" />
+        <path d="m2 2 20 20" />
+      </svg>
+      <h1>Ingen anslutning</h1>
+      <p>
+        Sidan kunde inte laddas eftersom Katla inte gick att nå. Kontrollera din internetanslutning och försök igen.
+        Sidan laddas om automatiskt när anslutningen är tillbaka.
+      </p>
+      <button type="button" id="retry">Försök igen</button>
+    </main>
+    <script>
+      const reload = () => {
+        window.location.reload();
+      };
+      document.getElementById('retry').addEventListener('click', reload);
+      window.addEventListener('online', reload);
+    </script>
+  </body>
+</html>

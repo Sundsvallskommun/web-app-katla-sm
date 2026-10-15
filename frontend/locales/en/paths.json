@@ -6,5 +6,9 @@
   "/example": {
     "title": "Example page",
     "description": "Description of the example page"
+  },
+  "/hjalp": {
+    "title": "How to report an incident",
+    "description": "A step-by-step guide with pictures showing how to report an incident or a case of misconduct."
   }
 }

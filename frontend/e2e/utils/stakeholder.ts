@@ -25,7 +25,7 @@ export const sectionByTitle = (page: Page, title: string): Locator =>
  * som fångar pekarhändelser, så ett vanligt Playwright-klick når dem inte.
  * Ett syntetiskt klick-event motsvarar hur Cypress klickade på dem.
  */
-const syntheticClick = (locator: Locator) => locator.dispatchEvent('click');
+export const syntheticClick = (locator: Locator) => locator.dispatchEvent('click');
 
 export const addStakeholder = async (page: Page, scope: Locator, role: string) => {
   await page.route(`**/citizen/person/${MOCK_PERSON_NUMBER}`, jsonRoute({ ...mockStakeholder, role }));
