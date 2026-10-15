@@ -80,6 +80,16 @@ Frontenden kan installeras som en app från webbläsaren och öppnas då i ett e
 
 Service workern registreras bara i produktionsbyggen. Playwright blockerar service workers (`serviceWorkers: 'block'`) så att testernas mockar alltid träffar sidladdningarna.
 
+## Notiser
+
+Notiserna kommer från SupportManagements prenumerationsmodell, samma som i Draken.
+
+- **Vem får notiser.** SupportManagement prenumererar rapportören på ärendet när det skapas, med namnrymdens rapportörsprofil. Katla prenumererar ingen på eget initiativ, och vilka händelser rapportören får styrs av profilen.
+- **En notis per ärende.** SupportManagement samlar allt som hänt sedan användaren senast läste i en notis per ärende (`GET /supportmanagement/notifications`). BFF:en läser alla sidor och lämnar händelserna med den senaste först. Klockan hämtar listan en gång i minuten, pausar i en dold flik och hämtar direkt när användaren byter vy.
+- **Läst.** Ärendets notiser markeras som lästa när ärendet öppnas, hur användaren än kommer dit (`PUT /supportmanagement/errand/:errandId/notifications/acknowledge`). I panelen kan användaren också kryssa i nya notiser och välja **Markera som läst** (`PATCH /supportmanagement/notifications/acknowledge`). SupportManagement kontrollerar inte vems en notis är, så BFF:en kvitterar bara användarens egna.
+- **En handling blir en notis.** Alla anrop under en användarhandling bär samma `X-Request-Group-Id`, så SupportManagement gör en notis av dem. Frontend sätter id:t med `withRequestGroup` (`frontend/src/services/api-service.ts`), till exempel när ett meddelande skickas och samtalet skapas i samma handling. BFF:en skickar id:t vidare till SupportManagement, eller ger requesten ett eget id om webbläsaren inte skickade något (`backend/src/utils/request-group.ts`).
+- **Tysta skrivningar.** Det systemet skriver på egen hand notifierar ingen: läsmarkeringar av meddelanden och kvittenser av notiser. BFF:en skickar då `X-notify: false` (`notifySubscribers: false` i `ApiService`). Ändringar användaren själv gör ska aldrig vara tysta.
+
 ## Användarguide
 
 Appen har en användarguide på `/hjalp`, "Så rapporterar du en avvikelse". Den nås via **Hjälp** i sidhuvudet på alla sidor och går steg för steg igenom rapporteringen med skärmbilder och numrerade pilar.
