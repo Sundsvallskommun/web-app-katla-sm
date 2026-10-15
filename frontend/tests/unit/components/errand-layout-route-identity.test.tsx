@@ -8,6 +8,7 @@ import { useMetadataStore } from 'src/stores/metadata-store';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
+  acknowledgeErrandNotifications: vi.fn(),
   getErrandUsingErrandNumber: vi.fn(),
   jsonParametersToErrandFormData: vi.fn(() => []),
   metadataLoadState: { value: 'ready' },
@@ -50,6 +51,9 @@ vi.mock('src/hooks/use-load-metadata', () => ({
   useLoadMetadata: () => ({ metadataError: null, metadataLoadState: mocks.metadataLoadState.value }),
 }));
 vi.mock('src/hooks/use-auto-init-reporter', () => ({ useAutoInitReporter: vi.fn() }));
+vi.mock('src/hooks/use-acknowledge-errand-notifications', () => ({
+  useAcknowledgeErrandNotifications: mocks.acknowledgeErrandNotifications,
+}));
 vi.mock('src/stores/wizard-store', () => ({
   useWizardStore: (selector: (state: { reset: () => void }) => unknown) => selector({ reset: mocks.wizardReset }),
 }));
@@ -193,6 +197,26 @@ describe('errand layout route identity', () => {
     expect(screen.queryByLabelText('forms:loading')).not.toBeInTheDocument();
     expect(screen.getByText('registration-content')).toBeInTheDocument();
     expect(screen.getByTestId('base-header')).toHaveTextContent('new-errand');
+  });
+
+  it('marks the notifications of an opened errand as read once it is loaded', async () => {
+    getErrandMock.mockResolvedValueOnce({ id: 'id-a', errandNumber: 'ERRAND-A', status: 'NEW', jsonParameters: [] });
+
+    render(<ErrandLayoutContent>errand-content</ErrandLayoutContent>);
+
+    expect(mocks.acknowledgeErrandNotifications).toHaveBeenLastCalledWith(undefined);
+    expect(await screen.findByText('errand-content')).toBeInTheDocument();
+    expect(mocks.acknowledgeErrandNotifications).toHaveBeenLastCalledWith('id-a');
+  });
+
+  it('marks nothing as read while a new report is registered', () => {
+    mocks.pathname.value = '/arende/registrera';
+    mocks.params.value.errandnumber = undefined;
+
+    render(<ErrandLayoutContent>registration-content</ErrandLayoutContent>);
+
+    expect(screen.getByText('registration-content')).toBeInTheDocument();
+    expect(mocks.acknowledgeErrandNotifications).not.toHaveBeenCalledWith(expect.any(String));
   });
 
   it('removes A header, status and actions synchronously and never exposes A when B fails', async () => {

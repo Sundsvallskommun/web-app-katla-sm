@@ -23,7 +23,15 @@
     "new": "New",
     "previous": "Earlier",
     "none_new": "No new notifications",
-    "none_previous": "No earlier notifications"
+    "none_previous": "No earlier notifications",
+    "select": "Select the notification for case {{errandNumber}}",
+    "select_all_new": "Select all new notifications",
+    "mark_as_read": "Mark as read ({{count}})",
+    "marked_as_read_one": "The notification is marked as read.",
+    "marked_as_read_other": "{{count}} notifications are marked as read.",
+    "show_events_one": "Show {{count}} event",
+    "show_events_other": "Show {{count}} events",
+    "hide_events": "Hide events"
   },
   "language": {
     "label": "Language",

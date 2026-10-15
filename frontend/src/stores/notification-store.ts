@@ -1,21 +1,23 @@
-import { NotificationDTO } from '@data-contracts/backend/data-contracts';
-import { sortBy } from 'lodash';
+import { SupportNotificationDTO } from '@data-contracts/backend/data-contracts';
+import { newestFirst } from '@utils/notifications';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-interface NotificationState {
-  activeNotifications: NotificationDTO[];
-  acknowledgedNotifications: NotificationDTO[];
-  setNotifications: (notifications: NotificationDTO[]) => void;
+interface NotificationLists {
+  activeNotifications: SupportNotificationDTO[];
+  acknowledgedNotifications: SupportNotificationDTO[];
 }
 
-const newestFirst = (notifications: NotificationDTO[]): NotificationDTO[] => sortBy(notifications, 'created').reverse();
+interface NotificationState extends NotificationLists {
+  setNotifications: (notifications: SupportNotificationDTO[]) => void;
+}
+
+const EMPTY_NOTIFICATIONS: NotificationLists = { activeNotifications: [], acknowledgedNotifications: [] };
 
 export const useNotificationStore = create<NotificationState>()(
   persist(
     (set) => ({
-      activeNotifications: [],
-      acknowledgedNotifications: [],
+      ...EMPTY_NOTIFICATIONS,
       setNotifications: (notifications) =>
         set({
           activeNotifications: newestFirst(notifications.filter((notification) => !notification.acknowledged)),
@@ -25,6 +27,14 @@ export const useNotificationStore = create<NotificationState>()(
     {
       name: 'notification-storage',
       storage: createJSONStorage(() => sessionStorage),
+      partialize: ({ activeNotifications, acknowledgedNotifications }): NotificationLists => ({
+        activeNotifications,
+        acknowledgedNotifications,
+      }),
+      // Version 1 är en notis per ärende med händelser. En sparad lista i den gamla formen, en notis
+      // per händelse, ersätts med en tom lista tills nästa hämtning.
+      version: 1,
+      migrate: () => EMPTY_NOTIFICATIONS,
     }
   )
 );

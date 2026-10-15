@@ -7,10 +7,10 @@
   },
   "notification": {
     "to_errand": "To the case",
-    "from": "From: {{name}}",
     "event": "Event: {{label}}",
-    "unknown_sender": "Unknown",
+    "default_label": "Event on the case",
     "subtype": {
+      "ASSIGNMENT": "Case assigned",
       "ATTACHMENT": "New attachment",
       "DECISION": "New decision",
       "ERRAND": "Case updated",
@@ -18,6 +18,24 @@
       "NOTE": "New comment/note",
       "SYSTEM": "Phase change",
       "SUSPENSION": "Suspension ended"
+    },
+    "removed": {
+      "ASSIGNMENT": "Assignment removed",
+      "ATTACHMENT": "Attachment removed",
+      "DECISION": "Decision removed",
+      "MESSAGE": "Message removed",
+      "NOTE": "Comment/note removed"
+    },
+    "summary": {
+      "ASSIGNMENT": "{{amount}} assignments",
+      "ATTACHMENT": "{{amount}} new attachments",
+      "DECISION": "{{amount}} new decisions",
+      "ERRAND": "{{amount}} updates to the case",
+      "MESSAGE": "{{amount}} new messages",
+      "NOTE": "{{amount}} new comments/notes",
+      "SYSTEM": "{{amount}} phase changes",
+      "SUSPENSION": "{{amount}} suspensions ended",
+      "mixed": "{{amount}} new events"
     }
   },
   "api_errors": {
@@ -25,7 +43,8 @@
     "errands": "The cases could not be retrieved. Please try again later.",
     "counts": "The number of cases could not be retrieved. Please try again later.",
     "notifications": "The notifications could not be retrieved. Please try again later.",
-    "acknowledge_notification": "The notification could not be acknowledged.",
+    "acknowledge_notifications_one": "The notification could not be marked as read.",
+    "acknowledge_notifications_other": "{{count}} notifications could not be marked as read.",
     "errand": "The case could not be retrieved. Please try again later."
   },
   "errand-table": {

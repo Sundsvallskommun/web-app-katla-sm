@@ -21,23 +21,29 @@ export interface UserApiResponse {
   message: string;
 }
 
-export interface NotificationDTO {
-  id?: string;
+export interface SupportNotificationEventDTO {
   created?: string;
-  modified?: string;
-  ownerFullName?: string;
-  ownerId?: string;
-  createdBy?: string;
-  createdByFullName?: string;
-  type?: string;
-  subtype?: string;
+  eventType?: string;
+  subType?: string;
   description?: string;
-  content?: string;
-  expires?: string;
-  globalAcknowledged?: boolean;
-  acknowledged?: boolean;
-  errandId?: string;
-  errandNumber?: string;
+}
+
+export interface SupportNotificationDTO {
+  id: string;
+  created: string;
+  acknowledged: boolean;
+  errandId: string;
+  errandNumber: string;
+  events: SupportNotificationEventDTO[];
+}
+
+export interface AcknowledgeNotificationsDTO {
+  ids: string[];
+}
+
+export interface AcknowledgeNotificationsResultDTO {
+  acknowledged: string[];
+  failed: string[];
 }
 
 export interface TypeDTO {

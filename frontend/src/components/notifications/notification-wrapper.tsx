@@ -3,13 +3,14 @@
 import { ErrorAlert } from '@components/misc/error-alert.component';
 import { MainPageMobileHeader } from '@components/mobile/main-page-mobile-header.component';
 import { ModalLayer } from '@components/modal-layer/modal-layer.component';
-import { getNotifications } from '@services/errand-service/errand-service';
-import { Button, cx, Divider, Header, Spinner } from '@sk-web-gui/react';
+import { Button, Checkbox, cx, Divider, Header, Spinner, useSnackbar } from '@sk-web-gui/react';
 import { Mail, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
+import { useAcknowledgeNotifications } from 'src/hooks/use-acknowledge-notifications';
 import { useMediaQuery } from 'src/hooks/use-media-query';
+import { useNotificationPoller } from 'src/hooks/use-notification-poller';
 import { useNotificationStore } from 'src/stores/notification-store';
 
 import { NotificationItem } from './notification-item';
@@ -19,34 +20,60 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
   setShow,
 }) => {
   const { t } = useTranslation();
-  const { activeNotifications, acknowledgedNotifications, setNotifications } = useNotificationStore();
+  const toastMessage = useSnackbar();
+  const { activeNotifications, acknowledgedNotifications } = useNotificationStore();
+  const { loadState, refresh } = useNotificationPoller();
+  const acknowledge = useAcknowledgeNotifications();
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set());
+  const [isAcknowledging, setIsAcknowledging] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    let active = true;
-    setIsLoading(true);
-    void getNotifications()
-      .then((notifications) => {
-        if (!active) return;
-        setNotifications(notifications);
-        setError(null);
-      })
-      .catch(() => {
-        if (active) setError(t('api_errors.notifications'));
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
+    if (show) {
+      void refresh();
+    } else {
+      setSelectedIds(new Set());
+    }
+  }, [refresh, show]);
 
-    return () => {
-      active = false;
-    };
-  }, [setNotifications, show, t]);
-
+  // Ett val som gällde en notis som inte längre är ny räknas inte.
+  const selectedNotifications = activeNotifications.filter((notification) => selectedIds.has(notification.id));
+  const allNewSelected = activeNotifications.length > 0 && selectedNotifications.length === activeNotifications.length;
+  const isLoading = loadState === 'loading';
+  const error = loadState === 'error' ? t('api_errors.notifications') : null;
   const hasNotifications = activeNotifications.length > 0 || acknowledgedNotifications.length > 0;
+
+  const toggleSelected = (notificationId: string) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (!next.delete(notificationId)) next.add(notificationId);
+      return next;
+    });
+  };
+
+  const toggleAllNew = () => {
+    setSelectedIds(allNewSelected ? new Set() : new Set(activeNotifications.map((notification) => notification.id)));
+  };
+
+  const markSelectedAsRead = async () => {
+    const ids = selectedNotifications.map((notification) => notification.id);
+    setIsAcknowledging(true);
+    const failed = await acknowledge(ids);
+    // De som inte gick att markera står kvar som valda, så att ett nytt försök inte kräver nya kryss.
+    setSelectedIds(new Set(failed));
+    setIsAcknowledging(false);
+
+    const markedCount = ids.length - failed.length;
+    if (markedCount > 0) {
+      toastMessage({
+        position: 'bottom',
+        closeable: true,
+        message: t('layout:notifications.marked_as_read', { count: markedCount }),
+        status: 'success',
+      });
+    }
+  };
 
   const notificationContent = (
     <div className="flex-grow mt-sm mb-0 p-24 pt-0 flex flex-col gap-24 overflow-auto">
@@ -59,14 +86,48 @@ export const NotificationsWrapper: React.FC<{ show: boolean; setShow: (arg0: boo
           <div className="flex flex-col gap-4">
             <Divider.Section>
               <div className="flex gap-sm items-center">
+                {activeNotifications.length > 0 && (
+                  <Checkbox
+                    checked={allNewSelected}
+                    indeterminate={selectedNotifications.length > 0 && !allNewSelected}
+                    onChange={toggleAllNew}
+                    aria-label={t('layout:notifications.select_all_new')}
+                    data-cy="notification-select-all"
+                  />
+                )}
                 <h2 className="text-h4-sm">{t('layout:notifications.new')}</h2>
               </div>
             </Divider.Section>
+            {selectedNotifications.length > 0 && (
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="primary"
+                  color="vattjom"
+                  loading={isAcknowledging}
+                  disabled={isAcknowledging}
+                  onClick={() => {
+                    void markSelectedAsRead();
+                  }}
+                  data-cy="mark-notifications-as-read"
+                >
+                  {t('layout:notifications.mark_as_read', { count: selectedNotifications.length })}
+                </Button>
+              </div>
+            )}
             {activeNotifications.length > 0 ?
               <ul>
                 {activeNotifications.map((notification) => (
                   <li key={notification.id}>
-                    <NotificationItem notification={notification} />
+                    <NotificationItem
+                      notification={notification}
+                      selection={{
+                        selected: selectedIds.has(notification.id),
+                        onToggle: () => {
+                          toggleSelected(notification.id);
+                        },
+                      }}
+                    />
                   </li>
                 ))}
               </ul>

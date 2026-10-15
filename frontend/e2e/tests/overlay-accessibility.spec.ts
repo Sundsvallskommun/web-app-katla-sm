@@ -1,4 +1,4 @@
-import type { NotificationDTO } from '@data-contracts/backend/data-contracts';
+import type { SupportNotificationDTO } from '@data-contracts/backend/data-contracts';
 import type { Page } from '@playwright/test';
 
 import { mockErrands } from '../fixtures/mockErrands';
@@ -6,13 +6,16 @@ import { mockMetadata } from '../fixtures/mockMetadata';
 import { jsonRoute } from '../utils/routes';
 import { expect, test } from '../utils/test';
 
-const notifications: NotificationDTO[] = [
+const notifications: SupportNotificationDTO[] = [
   {
     id: 'overlay-accessibility-notification',
+    errandId: 'overlay-accessibility-errand',
     errandNumber: 'AIA-25120019',
-    description: 'Rapport uppdaterad',
     created: '2026-09-04T08:00:00Z',
     acknowledged: false,
+    events: [
+      { created: '2026-09-04T08:00:00Z', eventType: 'UPDATE', subType: 'ERRAND', description: 'Rapport uppdaterad' },
+    ],
   },
 ];
 
@@ -47,6 +50,8 @@ test.describe('Modal overlay accessibility', () => {
       await trigger.click();
       const dialog = page.getByRole('dialog', { name: 'Notifieringar', exact: true });
       const close = dialog.getByRole('button', { name: 'Stäng notifieringar' });
+      const selectAll = dialog.getByRole('checkbox', { name: 'Välj alla nya notiser' });
+      const selectNotification = dialog.getByRole('checkbox', { name: 'Välj notisen för ärende AIA-25120019' });
       const notificationLink = dialog.getByRole('link', { name: 'AIA-25120019' });
 
       await expect(dialog).toHaveAttribute('aria-modal', 'true');
@@ -58,7 +63,12 @@ test.describe('Modal overlay accessibility', () => {
         element.focus();
       });
       await expect(close).toBeFocused();
+      // Kryssrutorna för att markera notiser som lästa nås med tangentbordet, före länken till ärendet.
       await close.press('Tab');
+      await expect(selectAll).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(selectNotification).toBeFocused();
+      await page.keyboard.press('Tab');
       await expect(notificationLink).toBeFocused();
 
       const first = viewport.width < 800 ? dialog.getByRole('link').first() : close;

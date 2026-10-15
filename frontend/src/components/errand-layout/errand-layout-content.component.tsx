@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FormProvider, Resolver, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { MOBILE_BREAKPOINT } from 'src/constants/responsive';
+import { useAcknowledgeErrandNotifications } from 'src/hooks/use-acknowledge-errand-notifications';
 import { useAutoInitReporter } from 'src/hooks/use-auto-init-reporter';
 import { useLoadMetadata } from 'src/hooks/use-load-metadata';
 import { useMediaQuery } from 'src/hooks/use-media-query';
@@ -184,6 +185,9 @@ const ErrandRouteContent: React.FC<ErrandRouteContentProps> = ({ children, route
 
   const errandStatus = methods.watch('status');
   const errandNumber = methods.watch('errandNumber');
+  const errandId = methods.watch('id');
+  // Att öppna ärendet är att läsa det som hänt där, så dess notiser markeras som lästa.
+  useAcknowledgeErrandNotifications(route.kind === 'existing' && loadState === 'ready' ? errandId : undefined);
   const isDraft = errandStatus === 'DRAFT';
   // Ett utkast är samma oavslutade arbete oavsett om det just skapats eller
   // återupptagits, och wizarden är det gränssnitt som är byggt för smal skärm.
