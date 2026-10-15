@@ -1,6 +1,7 @@
 'use client';
 import { FormFieldLabel } from '@components/form-field-label/form-field-label.component';
 import { RichTextEditor } from '@components/rich-text-editor/rich-text-editor.component';
+import { withRequestGroup } from '@services/api-service';
 import { createConversation, sendConversationMessage } from '@services/conversation-service/conversation-service';
 import { Button, FileUpload, FormControl, FormErrorMessage, UploadFile, useSnackbar } from '@sk-web-gui/react';
 import { sanitizeMessage } from '@utils/sanitize-message';
@@ -54,10 +55,13 @@ export const MessageComposer: React.FC<{
   const onSubmit = async (data: MessageFormModel) => {
     setSendError(null);
     try {
-      const conversation = await createConversation(errandId, t('messages:topic', { errandNumber }));
-      if (!conversation.id) throw new Error('Conversation without id');
+      // Samtalet och meddelandet i det är en och samma handling, och blir en notis hos handläggaren.
+      await withRequestGroup(async () => {
+        const conversation = await createConversation(errandId, t('messages:topic', { errandNumber }));
+        if (!conversation.id) throw new Error('Conversation without id');
 
-      await sendConversationMessage(errandId, conversation.id, sanitizeMessage(data.messageMarkup), data.files);
+        await sendConversationMessage(errandId, conversation.id, sanitizeMessage(data.messageMarkup), data.files);
+      });
 
       toastMessage({ position: 'bottom', closeable: false, message: t('messages:sent'), status: 'success' });
       reset();

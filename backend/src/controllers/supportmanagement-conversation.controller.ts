@@ -245,6 +245,8 @@ export class SupportManagementConversationController {
         baseURL: apiURL(this.apiBase),
         url: `${this.conversationsPath(errandId)}/${conversationId}/messages/mark-as-read`,
         data: request,
+        // Läsmarkeringen är rapportörens egen läsning; ingen som följer ärendet ska få en notis om den.
+        notifySubscribers: false,
       },
       req,
     );
