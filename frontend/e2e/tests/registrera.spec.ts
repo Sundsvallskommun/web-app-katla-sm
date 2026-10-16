@@ -1,3 +1,4 @@
+import type { StakeholderDTO } from '@data-contracts/backend/data-contracts';
 import type { Page } from '@playwright/test';
 
 import { mockErrand } from '../fixtures/mockErrand';
@@ -42,8 +43,12 @@ const mockFormSchemaResponse = {
 interface CreateErrandRequestBody {
   jsonParameters?: { key: string; value: unknown; schemaId: string }[];
   parameters?: { key: string; values: string[] }[];
-  stakeholders?: unknown[];
+  stakeholders?: StakeholderDTO[];
 }
+
+/** Partens roll och typ av externt id, i den ordning parterna skickades. */
+const stakeholderIdTypes = (body: CreateErrandRequestBody) =>
+  body.stakeholders?.map(({ role, externalIdType }) => ({ role, externalIdType }));
 
 /**
  * Öppnar bekräftelsedialogen och returnerar submit-knappen. Delas av lyckade och
@@ -85,6 +90,7 @@ const registerErrandAndExpectDraft = async (page: Page, expectedStakeholderCount
   // En inskickad rapport landar på kvittot, inte i det inlämnade ärendets formulär.
   await expect(page).toHaveURL(/\/arende\/inskickad$/);
   await expect(page.getByRole('heading', { name: 'Rapporten är inskickad' })).toBeVisible();
+  return body;
 };
 
 const selectRequiredErrandParameters = async (page: Page) => {
@@ -153,7 +159,14 @@ test.describe('Register new errand page', () => {
       await expect(ovrigaParter.getByTestId('add-manual-person-button')).toBeVisible();
     }
 
-    await registerErrandAndExpectDraft(page, 4);
+    const body = await registerErrandAndExpectDraft(page, 4);
+    // Typen följer med från uppslaget: rapportören är anställd, de som söktes på personnummer privatpersoner.
+    expect(stakeholderIdTypes(body)).toEqual([
+      { role: 'REPORTER', externalIdType: 'EMPLOYEE' },
+      { role: 'PRIMARY', externalIdType: 'PRIVATE' },
+      { role: 'CONTACT', externalIdType: 'PRIVATE' },
+      { role: 'CONTACT', externalIdType: 'PRIVATE' },
+    ]);
   });
 
   test('Preserves entered data and stays on the form when registration fails', async ({ page }) => {
@@ -296,7 +309,12 @@ test.describe('Register new errand page', () => {
     await expect(stakeholderCard.getByTestId('stakeholder-email')).toContainText(MOCK_EMAIL);
     await expect(stakeholderCard.getByTestId('stakeholder-phonenumber')).toContainText(MOCK_COUNTRY_CODE_PHONE_NUMBER);
 
-    await registerErrandAndExpectDraft(page, 3);
+    const body = await registerErrandAndExpectDraft(page, 3);
+    expect(stakeholderIdTypes(body)).toEqual([
+      { role: 'REPORTER', externalIdType: 'EMPLOYEE' },
+      { role: 'PRIMARY', externalIdType: 'PRIVATE' },
+      { role: 'CONTACT', externalIdType: 'EMPLOYEE' },
+    ]);
   });
 
   test('Reporter information should be displayed', async ({ page }) => {
