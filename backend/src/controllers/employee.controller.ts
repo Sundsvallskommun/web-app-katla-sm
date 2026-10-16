@@ -11,6 +11,7 @@ import { UserEmploymentDTO } from '@/responses/employee.response';
 import { StakeholderDTO } from '@/responses/supportmanagement.response';
 import ApiService from '@/services/api.service';
 import { employmentParameters } from '@/utils/employment-type';
+import { EXTERNAL_ID_TYPE_EMPLOYEE } from '@/utils/external-id-type';
 import { addHyphenToPersonNumber } from '@/utils/stakeholder-mapping';
 
 /**
@@ -55,6 +56,7 @@ export class EmployeeController {
 
       const stakeholder: StakeholderDTO = {
         externalId: personDataRes.data.personid,
+        externalIdType: EXTERNAL_ID_TYPE_EMPLOYEE,
         city: personDataRes.data.city ?? undefined,
         firstName: personDataRes.data.givenname ?? undefined,
         lastName: personDataRes.data.lastname ?? undefined,
@@ -102,6 +104,7 @@ export class EmployeeController {
 
       const stakeholder: StakeholderDTO = {
         externalId: personDataRes.data.personid,
+        externalIdType: EXTERNAL_ID_TYPE_EMPLOYEE,
         firstName: personDataRes.data.givenname ?? undefined,
         lastName: personDataRes.data.lastname ?? undefined,
         address: personDataRes.data.address ?? undefined,

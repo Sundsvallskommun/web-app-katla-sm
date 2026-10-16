@@ -9,6 +9,7 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import { StakeholderDTO } from '@/responses/supportmanagement.response';
 import ApiService from '@/services/api.service';
+import { EXTERNAL_ID_TYPE_PRIVATE } from '@/utils/external-id-type';
 import { addHyphenToPersonNumber } from '@/utils/stakeholder-mapping';
 
 @Controller()
@@ -33,6 +34,7 @@ export class CitizenController {
 
       const stakeholder: StakeholderDTO = {
         externalId: res.data.personId,
+        externalIdType: EXTERNAL_ID_TYPE_PRIVATE,
         city: address.city ?? undefined,
         firstName: res.data.givenname ?? undefined,
         lastName: res.data.lastname ?? undefined,

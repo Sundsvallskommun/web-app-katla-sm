@@ -26,6 +26,7 @@ export const userGuideMe: ApiResponse<User> = {
 
 export const userGuideReporter: StakeholderDTO = {
   externalId: '0f6e5c1a-2b3d-4e5f-8a9b-0c1d2e3f4a5b',
+  externalIdType: 'EMPLOYEE',
   firstName: 'Alex',
   lastName: 'Andersson',
   address: '',
@@ -41,6 +42,7 @@ export const userGuideReporter: StakeholderDTO = {
 export const userGuideCareRecipient: StakeholderDTO = {
   personNumber: MOCK_HYPHEN_PERSON_NUMBER,
   externalId: '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d',
+  externalIdType: 'PRIVATE',
   firstName: 'Kim',
   lastName: 'Exempelsson',
   address: 'Exempelvägen 1',

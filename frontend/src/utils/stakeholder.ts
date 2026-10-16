@@ -6,8 +6,9 @@ import * as yup from 'yup';
 export const shouldShowContactDetails = (roles?: string[]) =>
   !(roles?.includes('PRIMARY') && appConfig.features.reducedStakeholderInfo);
 
+// Ingen externalIdType här: typen sätts av BFF:ens uppslag, som vet om personen hittades
+// bland privatpersonerna eller de anställda.
 export const emptyStakeholder: StakeholderDTO = {
-  externalIdType: 'PERSON',
   externalId: '',
   personNumber: '',
   firstName: '',

@@ -4,6 +4,7 @@ import { MOCK_COUNTRY_CODE_PHONE_NUMBER, MOCK_EMAIL, MOCK_HYPHEN_PERSON_NUMBER }
 
 export const mockReporterStakeholder: StakeholderDTO = {
   externalId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+  externalIdType: 'EMPLOYEE',
   city: '',
   firstName: 'Test',
   lastName: 'Testsson',
@@ -19,6 +20,7 @@ export const mockReporterStakeholder: StakeholderDTO = {
 export const mockStakeholder: StakeholderDTO = {
   personNumber: MOCK_HYPHEN_PERSON_NUMBER,
   externalId: 'aaaaaaaa-ffff-cccc-dddd-eeeeeeeeeeee',
+  externalIdType: 'PRIVATE',
   city: 'mockCity',
   firstName: 'Mock',
   lastName: 'Person',
