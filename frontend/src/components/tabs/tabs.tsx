@@ -1,3 +1,5 @@
+import { errandBasicInformationPath, errandMessagesPath } from '@utils/errand-paths';
+
 interface TabItem {
   labelKey: string;
   path: string;
@@ -9,7 +11,7 @@ interface TabItem {
  * på registreringssidan, vilket inte märktes så länge det bara fanns en flik att klicka på.
  */
 export const getVisibleTabs = (errandNumber: string): TabItem[] => [
-  { labelKey: 'common:tabs.basic_information', path: `/arende/${errandNumber}/grundinformation`, visible: true },
-  { labelKey: 'common:tabs.messages', path: `/arende/${errandNumber}/meddelanden`, visible: true },
+  { labelKey: 'common:tabs.basic_information', path: errandBasicInformationPath(errandNumber), visible: true },
+  { labelKey: 'common:tabs.messages', path: errandMessagesPath(errandNumber), visible: true },
   // { labelKey: 'common:tabs.attachments', path: `/arende/${errandNumber}/bilagor`, visible: true },
 ];

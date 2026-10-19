@@ -10,6 +10,7 @@ import { useFormValidation } from '@contexts/form-validation-context';
 import { ErrandFormDTO } from '@interfaces/errand-form';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import { Button, Dialog, useSnackbar } from '@sk-web-gui/react';
+import { errandBasicInformationPath } from '@utils/errand-paths';
 import { getSelectedEventType } from '@utils/report-type';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -52,7 +53,7 @@ export const WizardBottomBar: React.FC = () => {
       const errandFormData = jsonParametersToErrandFormData(errand.jsonParameters);
       toastMessage({ position: 'bottom', status: 'success', message: t('errand-information:save_message.draft') });
       reset({ ...errand, errandFormData });
-      router.push(`/arende/${errand.errandNumber}/grundinformation`);
+      router.push(errandBasicInformationPath(errand.errandNumber));
     } catch (error: unknown) {
       toastMessage({
         position: 'bottom',

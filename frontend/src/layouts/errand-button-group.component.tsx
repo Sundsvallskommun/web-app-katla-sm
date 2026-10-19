@@ -13,6 +13,7 @@ import { ErrandFormDTO } from '@interfaces/errand-form';
 import { createErrand, updateErrand } from '@services/errand-service/errand-service';
 import { Button, Dialog, Link, useSnackbar } from '@sk-web-gui/react';
 import { EVENT_CONCERNS_INDIVIDUAL } from '@utils/errand-helpers';
+import { errandBasicInformationPath } from '@utils/errand-paths';
 import { getSelectedEventType } from '@utils/report-type';
 import { useRouter } from 'next/navigation';
 import { useId, useRef, useState } from 'react';
@@ -60,7 +61,7 @@ export const ErrandButtonGroup: React.FC<ErrandButtonGroupProps> = ({ isNewErran
       reset({ ...errand, errandFormData });
 
       if (isNewErrand) {
-        router.push(`/arende/${errand.errandNumber}/grundinformation`);
+        router.push(errandBasicInformationPath(errand.errandNumber));
       }
     } catch (error: unknown) {
       toastMessage({

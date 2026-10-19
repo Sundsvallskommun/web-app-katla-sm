@@ -1,4 +1,5 @@
 import { SupportNotificationDTO, SupportNotificationEventDTO } from '@data-contracts/backend/data-contracts';
+import { errandMessagesPath } from '@utils/errand-paths';
 import type { TFunction } from 'i18next';
 
 /** SupportManagement markerar det som tagits bort med DELETE; allt annat är något som tillkommit eller ändrats. */
@@ -49,6 +50,6 @@ export const notificationSummary = (notification: SupportNotificationDTO, t: TFu
 export const newestFirst = (notifications: SupportNotificationDTO[]): SupportNotificationDTO[] =>
   [...notifications].sort((first, second) => new Date(second.created).getTime() - new Date(first.created).getTime());
 
-/** Ärendet som notisen gäller. */
+/** Ärendet som notisen gäller, öppnat på meddelandefliken som alla ärenden. */
 export const notificationHref = (notification: SupportNotificationDTO): string =>
-  `/arende/${notification.errandNumber}/grundinformation`;
+  errandMessagesPath(notification.errandNumber);

@@ -74,6 +74,6 @@ describe('notification texts', () => {
     const newer = notification([], '2026-10-02T08:00:00Z');
 
     expect(newestFirst([older, newer])).toEqual([newer, older]);
-    expect(notificationHref(older)).toBe('/arende/VOF-1/grundinformation');
+    expect(notificationHref(older)).toBe('/arende/VOF-1/meddelanden');
   });
 });

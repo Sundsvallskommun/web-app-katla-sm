@@ -157,7 +157,7 @@ describe('control semantics', () => {
     );
 
     const link = screen.getByRole('link', { name: 'Öppna ärende AIA-25120019' });
-    expect(link).toHaveAttribute('href', '/arende/AIA-25120019/grundinformation');
+    expect(link).toHaveAttribute('href', '/arende/AIA-25120019/meddelanden');
     expect(link.querySelector('button')).not.toBeInTheDocument();
   });
 

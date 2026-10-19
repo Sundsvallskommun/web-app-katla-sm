@@ -72,7 +72,8 @@ test.describe('Overview page', () => {
     // Klicket läggs på ärendenumret, alltså utanför pilknappen, för att visa att hela raden bär det.
     await firstRow.getByText('AIA-25120019').click();
 
-    await expect(page).toHaveURL(/\/arende\/AIA-25120019\/grundinformation$/);
+    // Ett ärende öppnas på meddelandefliken, där det händer något efter att rapporten skickats in.
+    await expect(page).toHaveURL(/\/arende\/AIA-25120019\/meddelanden$/);
   });
 
   test('Anchors the notification panel to the viewport right edge', async ({ page }) => {

@@ -4,6 +4,7 @@ import { StatusLabel } from '@components/misc/status-label.component';
 import { LinkButton } from '@components/navigation/link-button.component';
 import { ErrandDTO } from '@data-contracts/backend/data-contracts';
 import { getTypeDisplayName } from '@utils/errand-helpers';
+import { errandMessagesPath } from '@utils/errand-paths';
 import dayjs from 'dayjs';
 import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -20,7 +21,7 @@ interface MobileErrandCardProps {
 export const MobileErrandCard: React.FC<MobileErrandCardProps> = ({ errand }) => {
   const { t } = useTranslation();
   const router = useRouter();
-  const url = `/arende/${errand.errandNumber}/grundinformation`;
+  const url = errandMessagesPath(errand.errandNumber);
 
   return (
     <div

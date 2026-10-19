@@ -123,7 +123,7 @@
     },
     "after": {
       "title": "Efter att du har skickat in",
-      "text": "Rapporten finns under <strong>{{submittedList}}</strong> i översikten medan den handläggs, och under <strong>{{closedList}}</strong> när den är avslutad. Om handläggaren skickar ett meddelande får du en notis vid klockan i sidhuvudet. Öppna rapporten och välj fliken <strong>{{messages}}</strong> för att läsa och svara. När du öppnar rapporten markeras dess notiser som lästa."
+      "text": "Rapporten finns under <strong>{{submittedList}}</strong> i översikten medan den handläggs, och under <strong>{{closedList}}</strong> när den är avslutad. Om handläggaren skickar ett meddelande får du en notis vid klockan i sidhuvudet. Klicka på notisen eller på rapporten i översikten. Rapporten öppnas på fliken <strong>{{messages}}</strong>, där du läser och svarar. När du öppnar rapporten markeras dess notiser som lästa."
     }
   },
   "ready": {

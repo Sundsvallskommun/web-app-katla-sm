@@ -123,7 +123,7 @@
     },
     "after": {
       "title": "After you have sent the report",
-      "text": "The report is listed under <strong>{{submittedList}}</strong> in the overview while it is being handled, and under <strong>{{closedList}}</strong> once it is closed. If the case officer sends you a message, you get a notification at the bell in the header. Open the report and choose the <strong>{{messages}}</strong> tab to read and reply. When you open the report, its notifications are marked as read."
+      "text": "The report is listed under <strong>{{submittedList}}</strong> in the overview while it is being handled, and under <strong>{{closedList}}</strong> once it is closed. If the case officer sends you a message, you get a notification at the bell in the header. Click the notification or the report in the overview. The report opens on the <strong>{{messages}}</strong> tab, where you read and reply. When you open the report, its notifications are marked as read."
     }
   },
   "ready": {

@@ -6,6 +6,7 @@ import { LinkButton } from '@components/navigation/link-button.component';
 import { CenterDiv } from '@layouts/center-div.component';
 import { Spinner, Table } from '@sk-web-gui/react';
 import { getTypeDisplayName } from '@utils/errand-helpers';
+import { errandMessagesPath } from '@utils/errand-paths';
 import dayjs from 'dayjs';
 import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -50,7 +51,7 @@ export const ErrandTable: React.FC = () => {
 
             <Table.Body>
               {rows.map((errand, index) => {
-                const errandUrl = `/arende/${errand.errandNumber}/grundinformation`;
+                const errandUrl = errandMessagesPath(errand.errandNumber);
 
                 return (
                   <Table.Row
